@@ -2,16 +2,16 @@ package com.sts.sontalksign
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import com.sts.sontalksign.databinding.ActivityMainBinding
+import com.sts.sontalksign.databinding.ActivityMainNavBarBinding
 
-class MainActivity : AppCompatActivity() {
+class MainActivityNavBar : AppCompatActivity() {
 
     private val binding by lazy {
-        ActivityMainBinding.inflate(layoutInflater)
+        ActivityMainNavBarBinding.inflate(layoutInflater)
     }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
-        
     }
 }
