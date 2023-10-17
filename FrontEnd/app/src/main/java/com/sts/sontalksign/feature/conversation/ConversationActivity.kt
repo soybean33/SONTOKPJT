@@ -1,4 +1,4 @@
-package com.sts.sontalksign
+package com.sts.sontalksign.feature.conversation
 
 import android.Manifest
 import android.content.Intent

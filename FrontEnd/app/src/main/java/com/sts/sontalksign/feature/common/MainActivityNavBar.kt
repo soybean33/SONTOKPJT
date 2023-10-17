@@ -1,10 +1,13 @@
-package com.sts.sontalksign
+package com.sts.sontalksign.feature.common
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import androidx.core.content.ContentProviderCompat.requireContext
 import androidx.core.content.ContextCompat
+import com.sts.sontalksign.R
 import com.sts.sontalksign.databinding.ActivityMainNavBarBinding
+import com.sts.sontalksign.feature.conversation.ConversationFragment
+import com.sts.sontalksign.feature.history.HistoryFragment
+import com.sts.sontalksign.feature.setting.SettingFragment
 
 class MainActivityNavBar : AppCompatActivity() {
 
@@ -40,7 +43,9 @@ class MainActivityNavBar : AppCompatActivity() {
     private fun changeNavColor() {
         if(fragmentState[0]) {
             binding.ivGotoHistory.setColorFilter(getColor(R.color.rectangle100))
-            binding.flGotoHistory.setBackgroundColor(ContextCompat.getColor(this, R.color.rectangle500))
+            binding.flGotoHistory.setBackgroundColor(ContextCompat.getColor(this,
+                R.color.rectangle500
+            ))
 
             binding.ivGotoConversation.setColorFilter(getColor(R.color.rectangle500))
             binding.flGotoConversation.setBackgroundColor(ContextCompat.getColor(this, R.color.base))
@@ -53,7 +58,9 @@ class MainActivityNavBar : AppCompatActivity() {
             binding.flGotoHistory.setBackgroundColor(ContextCompat.getColor(this, R.color.base))
 
             binding.ivGotoConversation.setColorFilter(getColor(R.color.rectangle100))
-            binding.flGotoConversation.setBackgroundColor(ContextCompat.getColor(this, R.color.rectangle500))
+            binding.flGotoConversation.setBackgroundColor(ContextCompat.getColor(this,
+                R.color.rectangle500
+            ))
 
             binding.ivGotoSetting.setColorFilter(getColor(R.color.rectangle500))
             binding.flGotoSetting.setBackgroundColor(ContextCompat.getColor(this, R.color.base))
@@ -66,7 +73,9 @@ class MainActivityNavBar : AppCompatActivity() {
             binding.flGotoConversation.setBackgroundColor(ContextCompat.getColor(this, R.color.base))
 
             binding.ivGotoSetting.setColorFilter(getColor(R.color.rectangle100))
-            binding.flGotoSetting.setBackgroundColor(ContextCompat.getColor(this, R.color.rectangle500))
+            binding.flGotoSetting.setBackgroundColor(ContextCompat.getColor(this,
+                R.color.rectangle500
+            ))
         }
     }
 

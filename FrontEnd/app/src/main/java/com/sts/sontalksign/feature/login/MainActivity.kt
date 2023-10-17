@@ -1,8 +1,9 @@
-package com.sts.sontalksign
+package com.sts.sontalksign.feature.login
 
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import com.sts.sontalksign.feature.common.MainActivityNavBar
 import com.sts.sontalksign.databinding.ActivityMainBinding
 
 class MainActivity : AppCompatActivity() {
