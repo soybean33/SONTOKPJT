@@ -1,10 +1,11 @@
-package com.sts.sontalksign
+package com.sts.sontalksign.feature.setting
 
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import com.sts.sontalksign.R
 import com.sts.sontalksign.databinding.FragmentSettingBinding
 
 
