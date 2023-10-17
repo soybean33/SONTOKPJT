@@ -19,5 +19,5 @@
     <color name="base">#FFFBFAF7</color>
     <color name="maingray">#FF757575</color>
     <color name="subgray">#FFD9D9D9</color>
-
+    <color name="listtile">#FFFFFCF9</color>
 </resources>
