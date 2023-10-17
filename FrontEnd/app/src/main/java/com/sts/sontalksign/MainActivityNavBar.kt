@@ -23,6 +23,17 @@ class MainActivityNavBar : AppCompatActivity() {
 
         binding.ivGotoHistory.setOnClickListener {
             setFrag(0)
+            changeNavColor()
+        }
+
+        binding.ivGotoConversation.setOnClickListener {
+            setFrag(1)
+            changeNavColor()
+        }
+
+        binding.ivGotoSetting.setOnClickListener {
+            setFrag(2)
+            changeNavColor()
         }
     }
 
@@ -35,7 +46,7 @@ class MainActivityNavBar : AppCompatActivity() {
             binding.flGotoConversation.setBackgroundColor(ContextCompat.getColor(this, R.color.base))
 
             binding.ivGotoSetting.setColorFilter(getColor(R.color.rectangle500))
-            binding.ivGotoSetting.setBackgroundColor(ContextCompat.getColor(this, R.color.base))
+            binding.flGotoSetting.setBackgroundColor(ContextCompat.getColor(this, R.color.base))
         }
         else if(fragmentState[1]) {
             binding.ivGotoHistory.setColorFilter(getColor(R.color.rectangle500))
@@ -45,7 +56,7 @@ class MainActivityNavBar : AppCompatActivity() {
             binding.flGotoConversation.setBackgroundColor(ContextCompat.getColor(this, R.color.rectangle500))
 
             binding.ivGotoSetting.setColorFilter(getColor(R.color.rectangle500))
-            binding.ivGotoSetting.setBackgroundColor(ContextCompat.getColor(this, R.color.base))
+            binding.flGotoSetting.setBackgroundColor(ContextCompat.getColor(this, R.color.base))
         }
         else if(fragmentState[2]) {
             binding.ivGotoHistory.setColorFilter(getColor(R.color.rectangle500))
@@ -55,7 +66,7 @@ class MainActivityNavBar : AppCompatActivity() {
             binding.flGotoConversation.setBackgroundColor(ContextCompat.getColor(this, R.color.base))
 
             binding.ivGotoSetting.setColorFilter(getColor(R.color.rectangle100))
-            binding.ivGotoSetting.setBackgroundColor(ContextCompat.getColor(this, R.color.rectangle500))
+            binding.flGotoSetting.setBackgroundColor(ContextCompat.getColor(this, R.color.rectangle500))
         }
     }
 
