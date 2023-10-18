@@ -1,14 +1,319 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".feature.setting.SettingFragment">
 
-    <!-- TODO: Update blank fragment layout -->
-    <TextView
+    <LinearLayout
+        android:id="@+id/llv_SettingTab"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:text="Setting" />
+        android:orientation="vertical"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
 
-</FrameLayout>
+        <Space
+            android:layout_width="match_parent"
+            android:layout_height="40dp" />
+
+        <LinearLayout
+            android:id="@+id/llh_SettingTab"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="horizontal"
+            android:weightSum="100">
+
+            <Space
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="5" />
+
+            <LinearLayout
+                android:id="@+id/llh_SettingTabSmall"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="90"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/tv_SettingTitle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="@font/line_seed_kr_bd"
+                    android:text="설정"
+                    android:textColor="@color/jaffa500"
+                    android:textSize="24sp" />
+
+                <Space
+                    android:layout_width="match_parent"
+                    android:layout_height="20dp" />
+
+                <TextView
+                    android:id="@+id/tv_ThemeSettingTitle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="@font/line_seed_kr_rg"
+                    android:text="테마 설정"
+                    android:textColor="@color/black"
+                    android:textSize="20sp" />
+
+                <Space
+                    android:layout_width="match_parent"
+                    android:layout_height="5dp" />
+
+                <LinearLayout
+                    android:id="@+id/llv_ThemeSetting"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/background_setting"
+                    android:orientation="vertical">
+
+                    <LinearLayout
+                        android:id="@+id/llh_TextSizeSetting"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:weightSum="5">
+
+                        <ImageView
+                            android:id="@+id/iv_TextSizeSetting"
+                            android:layout_width="0dp"
+                            android:layout_height="match_parent"
+                            android:layout_weight="2"
+                            android:src="@drawable/baseline_format_size_24" />
+
+                        <TextView
+                            android:id="@+id/tv_TextSizeSetting"
+                            android:layout_width="0dp"
+                            android:layout_height="match_parent"
+                            android:layout_margin="10dp"
+                            android:layout_weight="3"
+                            android:fontFamily="@font/line_seed_kr_rg"
+                            android:gravity="center_vertical"
+                            android:text="글자 크기"
+                            android:textColor="@color/black"
+                            android:textSize="16sp" />
+                    </LinearLayout>
+
+                    <ImageView
+                        android:id="@+id/iv_UnderlineWhite1"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginLeft="20dp"
+                        android:layout_marginRight="20dp"
+                        android:src="@drawable/underline"
+                        app:srcCompat="@drawable/underline_setting" />
+
+                    <LinearLayout
+                        android:id="@+id/llh_BackgroundColorSetting"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:weightSum="5">
+
+                        <ImageView
+                            android:id="@+id/iv_BackgroundColorSetting"
+                            android:layout_width="0dp"
+                            android:layout_height="match_parent"
+                            android:layout_weight="2"
+                            android:src="@drawable/baseline_color_lens_24" />
+
+                        <TextView
+                            android:id="@+id/tv_BackgroundColorSetting"
+                            android:layout_width="0dp"
+                            android:layout_height="match_parent"
+                            android:layout_margin="10dp"
+                            android:layout_weight="3"
+                            android:fontFamily="@font/line_seed_kr_rg"
+                            android:gravity="center_vertical"
+                            android:text="배경색 설정"
+                            android:textColor="@color/black"
+                            android:textSize="16sp" />
+                    </LinearLayout>
+
+                </LinearLayout>
+
+                <Space
+                    android:layout_width="match_parent"
+                    android:layout_height="30dp" />
+
+                <TextView
+                    android:id="@+id/tv_GeneralSettingTitle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="@font/line_seed_kr_rg"
+                    android:text="일반"
+                    android:textColor="@color/black"
+                    android:textSize="20sp" />
+
+                <Space
+                    android:layout_width="match_parent"
+                    android:layout_height="5dp" />
+
+                <LinearLayout
+                    android:id="@+id/llv_GeneralSetting"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/background_setting"
+                    android:orientation="vertical">
+
+                    <LinearLayout
+                        android:id="@+id/llh_VersionInfo"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:orientation="horizontal"
+                        android:weightSum="5">
+
+                        <ImageView
+                            android:id="@+id/iv_VersionInfo"
+                            android:layout_width="0dp"
+                            android:layout_height="match_parent"
+                            android:layout_weight="2"
+                            android:src="@drawable/baseline_insert_drive_file_24" />
+
+                        <TextView
+                            android:id="@+id/tv_VersionInfo"
+                            android:layout_width="0dp"
+                            android:layout_height="match_parent"
+                            android:layout_margin="10dp"
+                            android:layout_weight="2"
+                            android:fontFamily="@font/line_seed_kr_rg"
+                            android:gravity="center_vertical"
+                            android:text="버전 정보"
+                            android:textColor="@color/black"
+                            android:textSize="16sp" />
+
+                        <TextView
+                            android:id="@+id/tv_version"
+                            android:layout_width="0dp"
+                            android:layout_height="match_parent"
+                            android:layout_weight="1"
+                            android:fontFamily="@font/line_seed_kr_rg"
+                            android:gravity="center_vertical"
+                            android:text="1.0 ver"
+                            android:textColor="@color/black" />
+                    </LinearLayout>
+
+                    <ImageView
+                        android:id="@+id/iv_UnderlineWhite2"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginLeft="20dp"
+                        android:layout_marginRight="20dp"
+                        android:src="@drawable/underline"
+                        app:srcCompat="@drawable/underline_setting" />
+
+                    <LinearLayout
+                        android:id="@+id/llh_EditPassword"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:orientation="horizontal"
+                        android:weightSum="5">
+
+                        <ImageView
+                            android:id="@+id/iv_EditPassword"
+                            android:layout_width="0dp"
+                            android:layout_height="match_parent"
+                            android:layout_weight="2"
+                            android:src="@drawable/baseline_lock_24" />
+
+                        <TextView
+                            android:id="@+id/tv_EditPassword"
+                            android:layout_width="0dp"
+                            android:layout_height="match_parent"
+                            android:layout_margin="10dp"
+                            android:layout_weight="3"
+                            android:fontFamily="@font/line_seed_kr_rg"
+                            android:gravity="center_vertical"
+                            android:text="비밀번호 변경"
+                            android:textColor="@color/black"
+                            android:textSize="16sp" />
+                    </LinearLayout>
+
+                    <ImageView
+                        android:id="@+id/iv_UnderlineWhite3"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginLeft="20dp"
+                        android:layout_marginRight="20dp"
+                        android:src="@drawable/underline"
+                        app:srcCompat="@drawable/underline_setting" />
+
+                    <LinearLayout
+                        android:id="@+id/llh_Logout"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:orientation="horizontal"
+                        android:weightSum="5">
+
+                        <ImageView
+                            android:id="@+id/iv_Logout"
+                            android:layout_width="0dp"
+                            android:layout_height="match_parent"
+                            android:layout_weight="2"
+                            android:src="@drawable/baseline_sensor_door_24" />
+
+                        <TextView
+                            android:id="@+id/tv_Logout"
+                            android:layout_width="0dp"
+                            android:layout_height="match_parent"
+                            android:layout_margin="10dp"
+                            android:layout_weight="3"
+                            android:fontFamily="@font/line_seed_kr_rg"
+                            android:gravity="center_vertical"
+                            android:text="로그아웃"
+                            android:textColor="@color/black"
+                            android:textSize="16sp" />
+                    </LinearLayout>
+
+                    <ImageView
+                        android:id="@+id/iv_UnderlineWhite4"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginLeft="20dp"
+                        android:layout_marginRight="20dp"
+                        android:src="@drawable/underline"
+                        app:srcCompat="@drawable/underline_setting" />
+
+                    <LinearLayout
+                        android:id="@+id/llh_Leave"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:orientation="horizontal"
+                        android:weightSum="5">
+
+                        <ImageView
+                            android:id="@+id/iv_Leave"
+                            android:layout_width="0dp"
+                            android:layout_height="match_parent"
+                            android:layout_weight="2"
+                            android:src="@drawable/baseline_logout_24" />
+
+                        <TextView
+                            android:id="@+id/tv_Leave"
+                            android:layout_width="0dp"
+                            android:layout_height="match_parent"
+                            android:layout_margin="10dp"
+                            android:layout_weight="3"
+                            android:fontFamily="@font/line_seed_kr_rg"
+                            android:gravity="center_vertical"
+                            android:text="회원탈퇴"
+                            android:textColor="@color/black"
+                            android:textSize="16sp" />
+                    </LinearLayout>
+
+                </LinearLayout>
+
+            </LinearLayout>
+
+            <Space
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="5" />
+        </LinearLayout>
+    </LinearLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>
