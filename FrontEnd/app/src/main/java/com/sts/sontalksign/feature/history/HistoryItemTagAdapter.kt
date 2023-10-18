@@ -6,7 +6,7 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.sts.sontalksign.databinding.HistoryItemTagBinding
 
-class HistoryItemTagAdaper (val historyItemList: ArrayList<HistoryItemModel>) : RecyclerView.Adapter<HistoryItemTagAdaper.CustomViewHolder>() {
+class HistoryItemTagAdapter (val historyItemList: ArrayList<HistoryItemModel>) : RecyclerView.Adapter<HistoryItemTagAdapter.CustomViewHolder>() {
 
     inner class CustomViewHolder(private val binding: HistoryItemTagBinding) : RecyclerView.ViewHolder(binding.root) {
         val tvHistoryTagItemShape: TextView = binding.tvHistoryTagItemShape
@@ -19,7 +19,7 @@ class HistoryItemTagAdaper (val historyItemList: ArrayList<HistoryItemModel>) : 
     override fun onCreateViewHolder(
         parent: ViewGroup,
         viewType: Int
-    ): HistoryItemTagAdaper.CustomViewHolder {
+    ): HistoryItemTagAdapter.CustomViewHolder {
         val binding = HistoryItemTagBinding.inflate(LayoutInflater.from(parent.context), parent, false)
         return CustomViewHolder(binding)
     }
@@ -29,7 +29,7 @@ class HistoryItemTagAdaper (val historyItemList: ArrayList<HistoryItemModel>) : 
         return historyItemList.size
     }
 
-    override fun onBindViewHolder(holder: HistoryItemTagAdaper.CustomViewHolder, position: Int) {
+    override fun onBindViewHolder(holder: HistoryItemTagAdapter.CustomViewHolder, position: Int) {
         val historyItemList = historyItemList[position]
         holder.bind(historyItemList)
     }
