@@ -15,6 +15,8 @@
     <color name="jaffa200">#FFFFD5A8</color>
     <color name="jaffa500">#FFFE6B11</color>
     <color name="rectangle100">#FFFFE9D9</color>
+    <color name="rectangle300">#FFBC8C</color>
+    <color name="rectangle400">#FFA665</color>
     <color name="rectangle500">#FFFF903F</color>
     <color name="base">#FFFBFAF7</color>
     <color name="maingray">#FF757575</color>
