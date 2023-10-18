@@ -2,8 +2,6 @@ package com.sts.sontalksign.feature.history
 
 import android.os.Bundle
 import android.preference.PreferenceManager
-import android.telecom.Call
-import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
@@ -11,6 +9,7 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.sts.sontalksign.R
 import com.sts.sontalksign.databinding.FragmentHistoryBinding
+
 
 class HistoryFragment : Fragment() {
 
@@ -38,8 +37,6 @@ class HistoryFragment : Fragment() {
         // 어댑터 설정 (여기서 dataList는 데이터 리스트로 대체해야 합니다)
         historyListAdapter = HistoryListAdapter(historyList)
         binding.rvHistoryItem.adapter = historyListAdapter
-
-
 
 
         historyList.clear()
