@@ -3,12 +3,15 @@ package com.sts.sontalksign.feature.history
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import android.widget.TextView
+import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.sts.sontalksign.databinding.HistoryItemBinding
 
 
 class HistoryListAdapter (val historyList: ArrayList<HistoryListModel>) : RecyclerView.Adapter<HistoryListAdapter.CustomViewHolder>() {
-
+//    private lateinit var historyItemTagAdapter: HistoryItemTagAdapter
+//
+//    var historyItemList: ArrayList<HistoryItemModel> = ArrayList()
     inner class CustomViewHolder(private val binding: HistoryItemBinding) : RecyclerView.ViewHolder(binding.root) {
         val tvHistoryTitle: TextView = binding.tvHistoryItemTitle
         val tvEndedTime: TextView = binding.tvHistoryItemTime
@@ -27,6 +30,9 @@ class HistoryListAdapter (val historyList: ArrayList<HistoryListModel>) : Recycl
     ): HistoryListAdapter.CustomViewHolder {
         val binding = HistoryItemBinding.inflate(LayoutInflater.from(parent.context), parent, false)
         return CustomViewHolder(binding)
+
+
+
     }
 
     override fun getItemCount(): Int {
@@ -41,7 +47,8 @@ class HistoryListAdapter (val historyList: ArrayList<HistoryListModel>) : Recycl
         val innerRecyclerView = holder.rvHistoryItemTagCompoenet
 
         // Create an adapter for the inner RecyclerView and bind data to it.
-        val innerAdapter = HistoryItemTagAdaper(historyList.historyitemmodel)
+        val innerAdapter = HistoryItemTagAdapter(historyList.historyitemmodel)
+        innerRecyclerView.layoutManager = LinearLayoutManager(holder.itemView.context, LinearLayoutManager.VERTICAL, false)
         innerRecyclerView.adapter = innerAdapter
 
     }
