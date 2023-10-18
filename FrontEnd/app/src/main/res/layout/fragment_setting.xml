@@ -18,7 +18,7 @@
 
         <Space
             android:layout_width="match_parent"
-            android:layout_height="20dp" />
+            android:layout_height="40dp" />
 
         <LinearLayout
             android:id="@+id/llh_SettingTab"
@@ -61,11 +61,15 @@
                     android:textColor="@color/black"
                     android:textSize="20sp" />
 
+                <Space
+                    android:layout_width="match_parent"
+                    android:layout_height="5dp" />
+
                 <LinearLayout
                     android:id="@+id/llv_ThemeSetting"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:background="@drawable/backgound_setting"
+                    android:background="@drawable/background_setting"
                     android:orientation="vertical">
 
                     <LinearLayout
@@ -99,6 +103,8 @@
                         android:id="@+id/iv_UnderlineWhite1"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
+                        android:layout_marginLeft="20dp"
+                        android:layout_marginRight="20dp"
                         android:src="@drawable/underline"
                         app:srcCompat="@drawable/underline_setting" />
 
@@ -133,7 +139,7 @@
 
                 <Space
                     android:layout_width="match_parent"
-                    android:layout_height="20dp" />
+                    android:layout_height="30dp" />
 
                 <TextView
                     android:id="@+id/tv_GeneralSettingTitle"
@@ -144,11 +150,15 @@
                     android:textColor="@color/black"
                     android:textSize="20sp" />
 
+                <Space
+                    android:layout_width="match_parent"
+                    android:layout_height="5dp" />
+
                 <LinearLayout
                     android:id="@+id/llv_GeneralSetting"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:background="@drawable/backgound_setting"
+                    android:background="@drawable/background_setting"
                     android:orientation="vertical">
 
                     <LinearLayout
@@ -192,6 +202,8 @@
                         android:id="@+id/iv_UnderlineWhite2"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
+                        android:layout_marginLeft="20dp"
+                        android:layout_marginRight="20dp"
                         android:src="@drawable/underline"
                         app:srcCompat="@drawable/underline_setting" />
 
@@ -226,6 +238,8 @@
                         android:id="@+id/iv_UnderlineWhite3"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
+                        android:layout_marginLeft="20dp"
+                        android:layout_marginRight="20dp"
                         android:src="@drawable/underline"
                         app:srcCompat="@drawable/underline_setting" />
 
@@ -260,6 +274,8 @@
                         android:id="@+id/iv_UnderlineWhite4"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
+                        android:layout_marginLeft="20dp"
+                        android:layout_marginRight="20dp"
                         android:src="@drawable/underline"
                         app:srcCompat="@drawable/underline_setting" />
 
