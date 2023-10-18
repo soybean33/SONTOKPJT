@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/cl_HistoryItem"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <LinearLayout
+        android:id="@+id/llh_HistoryItem"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="horizontal"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <LinearLayout
+            android:id="@+id/llv_HistoryItem"
+            android:layout_width="320dp"
+            android:layout_height="100dp"
+            android:background="@drawable/underline"
+            android:orientation="vertical">
+
+            <Space
+                android:layout_width="match_parent"
+                android:layout_height="10dp" />
+
+            <LinearLayout
+                android:id="@+id/llh_HistoryItemTitle"
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:layout_weight="100"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/tv_HistoryItemTitle"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="40"
+                    android:fontFamily="@font/line_seed_kr_bd"
+                    android:gravity="center_vertical"
+                    android:paddingStart="3dp"
+                    android:text="Title"
+                    android:textColor="@color/black"
+                    android:textSize="18sp" />
+
+                <Space
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="30" />
+
+                <TextView
+                    android:id="@+id/tv_HistoryItemTime"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="30"
+                    android:fontFamily="@font/line_seed_kr_rg"
+                    android:gravity="center_vertical"
+                    android:text="00 시 00 분"
+                    android:textSize="14sp" />
+            </LinearLayout>
+
+            <Space
+                android:layout_width="match_parent"
+                android:layout_height="5dp" />
+
+            <LinearLayout
+                android:id="@+id/llh_HistoryItemTag"
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:layout_weight="100"
+                android:orientation="horizontal">
+
+                <LinearLayout
+                    android:id="@+id/llh_nsv_HistoryItemTagCompoenet"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <androidx.recyclerview.widget.RecyclerView
+                        android:id="@+id/rv_HistoryItemTagCompoenet"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent" />
+                </LinearLayout>
+
+            </LinearLayout>
+
+            <Space
+                android:layout_width="match_parent"
+                android:layout_height="10dp"
+                android:layout_weight="1" />
+
+        </LinearLayout>
+
+    </LinearLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>
