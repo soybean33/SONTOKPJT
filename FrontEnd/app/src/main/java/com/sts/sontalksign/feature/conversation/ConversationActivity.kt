@@ -23,6 +23,7 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.sts.sontalksign.R
 import com.sts.sontalksign.databinding.ActivityConversationBinding
+import com.sts.sontalksign.feature.common.CustomForm
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 
@@ -103,7 +104,13 @@ class ConversationActivity : AppCompatActivity() {
 
     //대화 종료 처리 함수
     private fun stopConversation() {
+        //팝업을 띄운다
+        val cForm = CustomForm(this)
+        cForm.setOnBtnStoreClickedListener {
+        }
 
+        //팝업 종료시 액티비티 종료
+        cForm.show("저장합니다")
     }
 
     private fun allPermissionsGranted() = REQUIRED_PERMISSIONS.all {
