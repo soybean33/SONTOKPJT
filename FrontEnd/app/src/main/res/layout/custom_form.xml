@@ -43,23 +43,20 @@
         android:layout_marginVertical="30dp"
         android:layout_marginHorizontal="27dp">
 
-        <com.sts.sontalksign.feature.common.CustomInput
+        <com.sts.sontalksign.feature.common.CustomInputText
             android:id="@+id/ci_title_conversation"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            app:inputTitleText="제목"
-            app:inputContentType="text"
+            app:inputTitle="@string/input_title"
             />
 
-        <com.sts.sontalksign.feature.common.CustomInput
+        <com.sts.sontalksign.feature.common.CustomInputTag
             android:id="@+id/ci_tag_conversation"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="13dp"
-            app:inputTitleText="태그"
-            app:inputContentType="text"
+            app:inputTitle="@string/input_tag"
             />
     </LinearLayout>
-
 
 </androidx.constraintlayout.widget.ConstraintLayout>
