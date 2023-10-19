@@ -1,39 +1,26 @@
 package com.sts.sontalksign.feature.history
 
-import android.content.Context
 import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
-import android.widget.BaseAdapter
-import android.widget.TextView
+import androidx.recyclerview.widget.RecyclerView
 import com.sts.sontalksign.databinding.HistoryItemTagBinding
 
-class HistoryItemTagAdapter(private val context: Context, private val historyItemList: ArrayList<HistoryItemModel>) : BaseAdapter() {
+class HistoryItemTagAdapter(private val historyItemList: ArrayList<HistoryItemModel>) : RecyclerView.Adapter<HistoryItemTagAdapter.TagViewHolder>() {
 
-    override fun getCount(): Int {
-        return historyItemList.size
-    }
-
-    override fun getItem(position: Int): Any {
-        return historyItemList[position]
-    }
-
-    override fun getItemId(position: Int): Long {
-        return position.toLong()
-    }
-
-    override fun getView(position: Int, convertView: View?, parent: ViewGroup?): View {
-        val binding: HistoryItemTagBinding
-        if (convertView == null) {
-            binding = HistoryItemTagBinding.inflate(LayoutInflater.from(context), parent, false)
-            binding.root.tag = binding
-        } else {
-            binding = convertView.tag as HistoryItemTagBinding
+    inner class TagViewHolder(private val binding: HistoryItemTagBinding) : RecyclerView.ViewHolder(binding.root) {
+        fun bind(item: HistoryItemModel) {
+            binding.tvHistoryTagItemShape.text = item.historyItemTag.toString()
         }
+    }
 
-        val currentItem = historyItemList[position]
-        binding.tvHistoryTagItemShape.text = currentItem.historyItemTag.toString()
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): TagViewHolder {
+        val binding = HistoryItemTagBinding.inflate(LayoutInflater.from(parent.context), parent, false)
+        return TagViewHolder(binding)
+    }
 
-        return binding.root
+    override fun getItemCount(): Int = historyItemList.size
+
+    override fun onBindViewHolder(holder: TagViewHolder, position: Int) {
+        holder.bind(historyItemList[position])
     }
 }
