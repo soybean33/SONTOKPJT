@@ -79,9 +79,9 @@
                     <ImageView
                         android:id="@+id/iv_FilterTemp"
                         android:layout_width="0dp"
-                        android:layout_height="50dp"
+                        android:layout_height="28dp"
                         android:layout_weight="10"
-                        android:src="@drawable/ic_launcher_foreground" />
+                        android:src="@drawable/filter_default" />
                 </LinearLayout>
 
                 <Space
@@ -105,7 +105,8 @@
                         <androidx.recyclerview.widget.RecyclerView
                             android:id="@+id/rv_HistoryItem"
                             android:layout_width="match_parent"
-                            android:layout_height="wrap_content" />
+                            android:layout_height="match_parent"
+                            android:background="@drawable/topline" />
                     </LinearLayout>
                 </androidx.core.widget.NestedScrollView>
             </LinearLayout>
