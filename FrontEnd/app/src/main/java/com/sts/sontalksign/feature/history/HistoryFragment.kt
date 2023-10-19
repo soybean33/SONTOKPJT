@@ -31,7 +31,15 @@ class HistoryFragment : Fragment() {
         // 리사이클러뷰 초기화
         val recyclerViewList = binding.rvHistoryItem
         recyclerViewList.layoutManager = LinearLayoutManager(context, LinearLayoutManager.VERTICAL, false)
-        recyclerViewList.setHasFixedSize(true)
+        recyclerViewList.setHasFixedSize(false)
+
+        // 더미 데이터 생성
+        val dummyData1 = HistoryListModel("Title 1", "Time 1", ArrayList())
+        val dummyData2 = HistoryListModel("Title 2", "Time 2", ArrayList())
+
+        // 더미 데이터를 리스트에 추가
+        historyList.add(dummyData1)
+        historyList.add(dummyData2)
 
 
         // 어댑터 설정 (여기서 dataList는 데이터 리스트로 대체해야 합니다)
@@ -39,91 +47,13 @@ class HistoryFragment : Fragment() {
         binding.rvHistoryItem.adapter = historyListAdapter
 
 
-        historyList.clear()
+//        historyList.clear()
 
 
         val pref = PreferenceManager.getDefaultSharedPreferences(requireContext())  // import androidx.preference.PreferenceManager 인지 확인
         val token = pref.getString("SERVER_ACCESS_TOKEN", "1")
 
-//        Log.d("엑세스토큰입니다", token.toString())
-//        api.MyCoins(authorization = "Bearer ${token}").enqueue(object: Callback<ArrayList<HistoryListModel>> {
-//            override fun onResponse(call: Call<ArrayList<HistoryListModel>>, response: Response<ArrayList<HistoryListModel>>) {
-//                if(response.code() == 200) {    // 200 Success
-//                    Log.d("로그", "보유 마패 전체 조회: 200 Success")
 //
-//                    val responseBody = response.body()
-//
-//
-//
-//                    if (responseBody != null) {
-//                        for (coin in responseBody) {
-//
-//
-//                            historyList.add(coin)
-//
-//                        }
-//                        HistoryListAdapter.notifyDataSetChanged()
-//                    } else {
-//                        showNoDataMessage()
-//                    }
-//
-//                    HistoryListAdapter = HistoryListAdapter(historyList)
-//
-//                    binding.rvHistoryItem.adapter = HistoryListAdapter
-//
-//
-//
-//                }
-//                else if(response.code() == 400) {   // 400 Bad Request - Message에 누락 필드명 기입
-//                    Log.d("로그", "내 자산 전체 조회: 400 Bad Request")
-//                }
-//                else if(response.code() == 401) {   // 401 Unauthorized - 인증 토큰값 무효
-//                    Log.d("로그", "내 자산 전체 조회: 401 Unauthorized")
-//                }
-//                else if(response.code() == 403) {
-//                    Log.d("로그", "내 자산 전체 조회: 403 Forbidden")
-//                }
-//                else if(response.code() == 404) {   // 404 Not Found
-//                    Log.d("로그", "내 자산 전체 조회: 404 Not Found")
-//                }
-//            }
-//            override fun onFailure(call: Call<ArrayList<HistoryListModel>>, t: Throwable) {
-//                Log.d("로그", "내 자산 전체 조회: onFailure")
-//            }
-//        })
-//
-//        api.MyTotalAsset(authorization = "Bearer ${token}").enqueue(object : Callback<HistoryListModel> {
-//            override fun onResponse(call: Call<HistoryListModel>, response: Response<HistoryListModel>) {
-//                if (response.code() == 200) {    // 200 Success
-//                    Log.d("로그", "내 자산 전체 조회: 200 Success")
-//
-//                    val responseBody = response.body()
-//
-//
-//
-//                    if (responseBody != null) {
-//
-//                    }
-//                }
-//                else if(response.code() == 400) {   // 400 Bad Request - Message에 누락 필드명 기입
-//                    Log.d("로그", "최근 기록 리스트 조회: 400 Bad Request")
-//                }
-//                else if(response.code() == 401) {   // 401 Unauthorized - 인증 토큰값 무효
-//                    Log.d("로그", "최근 기록 리스트 조회: 401 Unauthorized")
-//                }
-//                else if(response.code() == 403) {
-//                    Log.d("로그", "최근 기록 리스트 조회: 403 Forbidden")
-//                }
-//                else if(response.code() == 404) {   // 404 Not Found
-//                    Log.d("로그", "최근 기록 리스트 조회: 404 Not Found")
-//                }
-//            }
-//            override fun onFailure(call: Call<HistoryListModel>, t: Throwable) {
-//                Log.d("로그", "최근 기록 리스트 조회: onFailure")
-//
-//            }
-//        })
-
 
         return view
 
@@ -135,7 +65,7 @@ class HistoryFragment : Fragment() {
         // 예를 들어, TextView에 메시지를 설정하거나 다이얼로그를 표시할 수 있습니다.
         // 예제로 TextView에 메시지 설정하는 방법을 보여드리겠습니다.
 
-        val noDataMessage = "보유한 마패가 없습니다." // 표시할 메시지를 지정
+        val noDataMessage = "대화한 내역이 없습니다." // 표시할 메시지를 지정
 //        binding.tvViewNoData.text = noDataMessage
 //        binding.tvViewNoData.visibility = View.VISIBLE // TextView를 화면에 표시
     }
