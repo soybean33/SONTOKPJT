@@ -26,7 +26,6 @@ class CustomForm(private val context : AppCompatActivity) {
             fDialog.dismiss()
         }
 
-        //fDialog.window?.setGravity(Gravity.TOP)
         fDialog.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
 
         fDialog.show()
