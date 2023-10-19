@@ -2,8 +2,8 @@
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/custom_input_layout"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content">
 
     <EditText
         android:id="@+id/tv_input_content"
@@ -11,6 +11,7 @@
         android:layout_height="wrap_content"
         android:layout_gravity="left|top"
         android:layout_marginTop="11dp"
+        android:paddingLeft="5dp"
         android:background="@drawable/input_content"
         android:text="" />
 
@@ -18,9 +19,11 @@
         android:id="@+id/tv_input_title"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_gravity="left|top"
         android:layout_marginLeft="9dp"
+        android:gravity="center"
         android:background="@drawable/input_title"
-        android:text="" />
+        android:textSize="13sp"
+        android:textColor="@color/black"
+        android:fontFamily="@font/line_seed_kr_bd"/>
 
 </FrameLayout>
