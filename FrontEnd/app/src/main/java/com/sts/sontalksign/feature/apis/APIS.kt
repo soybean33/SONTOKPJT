@@ -1,4 +1,4 @@
-package com.sts.sontalksign.feature
+package com.sts.sontalksign.feature.apis
 
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder

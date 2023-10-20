@@ -1,4 +1,4 @@
-package com.sts.sontalksign.feature
+package com.sts.sontalksign.feature.apis
 
 /*
 * data class [클래스명] (
