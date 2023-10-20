@@ -21,6 +21,7 @@ class ConversationFragment : Fragment() {
         binding.btnStartConversation.setOnClickListener {
             Log.d(TAG, "btnGotoMain is clicked!!")
             val intent = Intent(this.activity, ConversationActivity::class.java)
+            intent.putExtra("isRecord", binding.recordSwitch.isChecked)
             startActivity(intent)
         }
 
