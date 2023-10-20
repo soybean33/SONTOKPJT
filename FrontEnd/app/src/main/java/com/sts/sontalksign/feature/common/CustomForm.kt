@@ -16,7 +16,7 @@ class CustomForm(private val context : AppCompatActivity) {
     fun show() {
         binding = CustomFormBinding.inflate(context.layoutInflater)
         fDialog.requestWindowFeature(Window.FEATURE_NO_TITLE)
-        fDialog.setCancelable(false)
+        //fDialog.setCancelable(false)
         fDialog.setContentView(binding.root)
         fDialog.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
 
