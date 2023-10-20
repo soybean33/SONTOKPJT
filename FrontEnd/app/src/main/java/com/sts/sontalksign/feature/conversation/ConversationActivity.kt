@@ -51,6 +51,8 @@ class ConversationActivity : AppCompatActivity() {
 
     private lateinit var cameraExecutor: ExecutorService
 
+    private var isNowRecording: Boolean = false
+
     //내부저장소 - txt 파일
     private var directory: String? = null
     private var filename: String? = null
@@ -58,6 +60,8 @@ class ConversationActivity : AppCompatActivity() {
     private val dataFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
     private val timeFormat = SimpleDateFormat("HH:mm")
 
+    private lateinit var textList: ArrayList<String>
+    private var addedText: Int = 0
     private var myTextLine: String? = null
     private var yourTextLine: String? = null
 
@@ -73,34 +77,68 @@ class ConversationActivity : AppCompatActivity() {
                 this, REQUIRED_PERMISSIONS, REQUEST_CODE_PERMISSIONS
             )
         }
-        
+
+        cameraExecutor = Executors.newSingleThreadExecutor()
+
         //이벤트 리스너 설정
         binding.etTextConversation.setOnEditorActionListener { textView, actionId, keyEvent ->
             var handled = false
             if(actionId == EditorInfo.IME_ACTION_DONE) {
-                writeTextFile(textView.text.toString())
+                addTextLine(textView.text.toString(), false)
                 binding.etTextConversation.setText("")
             }
             handled
         }
         binding.btnStopConversation.setOnClickListener { stopConversation() }
 
-        cameraExecutor = Executors.newSingleThreadExecutor()
-
-        myTextLine = ">>"
-        yourTextLine = "<<"
+        isNowRecording = intent.getBooleanExtra("isRecord", false)
         createTextFile()
     }
 
+    //대화 내용 기록
     private fun createTextFile() {
+        //녹음하기 미선택의 경우
+        if(!isNowRecording) return
+
         //내부 저장소 경로
         currentTime = System.currentTimeMillis() //ms로 반환
         directory = filesDir.absolutePath //내부경로의 절대 경로
         filename = dataFormat.format(currentTime) + ".txt"
+
+        textList = ArrayList<String> (10)
+        addedText = 0
+    }
+
+    private fun getMyConversation(content:String, time:String) : String {
+        return getString(R.string.my_conversation_tag) + content + getString(R.string.my_conversation_tag) + time
+    }
+
+    private fun getYourConversation(content:String, time:String) : String {
+        return getString(R.string.your_conversation_tag) + content + getString(R.string.your_conversation_tag) + time
+    }
+
+    //isMine - 0:나의 대사, 1:상대의 대사
+    private fun addTextLine(content:String, isMine:Boolean) {
+        //녹음하기 미선택의 경우
+        if(!isNowRecording) return
+
+        var bContent = String()
+        currentTime = System.currentTimeMillis()
+        when(isMine) {
+            true -> bContent = getMyConversation(content, timeFormat.format(currentTime))
+            false -> bContent = getYourConversation(content, timeFormat.format(currentTime))
+        }
+
+        textList?.add(bContent)
+        addedText++
+
+        if(addedText == 10) {
+            writeTextFile()
+        }
     }
 
     //파일 쓰기
-    private fun writeTextFile(content:String) {
+    private fun writeTextFile() {
         val dir = File(directory)
 
         //파일 미존재 시 디렉토리 및 파일 생성
@@ -110,16 +148,18 @@ class ConversationActivity : AppCompatActivity() {
 
         //파일의 full path
         val writer = FileWriter(directory + "/" + filename, true)
-        currentTime = System.currentTimeMillis()
-
-        val bContent = myTextLine + content + myTextLine + timeFormat.format(currentTime)
 
         //쓰기 속도 향상
         val buffer = BufferedWriter(writer)
-        buffer.write(bContent)
+        for(content in textList) {
+            buffer.write(content)
+        }
         buffer.close()
+
+        textList.clear()
+        addedText = 0
     }
-    
+
     //파일 읽기 - ConversationActivity에서는 미사용
     private fun readTextFile(fullpath: String) : String {
         val file = File(fullpath)
@@ -181,13 +221,16 @@ class ConversationActivity : AppCompatActivity() {
                 //앱에 더이상 포커스 없는 경우 등의 실패 케이스 처리
                 Log.e(TAG, "Use case binding failed", exc)
             }
-            
+
             //기본 스레드에서 실행되는 Executor를 반환
         }, ContextCompat.getMainExecutor(this))
     }
 
     //대화 종료 처리 함수
     private fun stopConversation() {
+        //대화 종료 전 기록에 쌓인 대화 내용을 저장
+        writeTextFile()
+
         //팝업을 띄운다
         val cForm = CustomForm(this)
         cForm.setOnBtnStoreClickedListener {
