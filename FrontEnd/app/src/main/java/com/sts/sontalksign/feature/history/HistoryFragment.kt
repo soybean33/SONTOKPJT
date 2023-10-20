@@ -33,31 +33,13 @@ class HistoryFragment : Fragment() {
         recyclerViewList.layoutManager = LinearLayoutManager(context, LinearLayoutManager.VERTICAL, false)
         recyclerViewList.setHasFixedSize(false)
 
+        // 더미 데이터 생성
+        val dummyData1 = HistoryListModel("Title 1", "Time 1", ArrayList())
+        val dummyData2 = HistoryListModel("Title 2", "Time 2", ArrayList())
 
-// 더미 데이터 생성
-        val dummyData1 = HistoryListModel(
-            historyTitle = "Title 1",
-            EndedTime = "Time 1",
-            historyitemmodel = arrayListOf(
-                HistoryItemModel(historyItemTag = "1번 태그"),
-                HistoryItemModel(historyItemTag = "2번 태그입니다"),
-                HistoryItemModel(historyItemTag = "강한성구"),
-                HistoryItemModel(historyItemTag = "용우오빠코테홧팅")
-            )
-        )
-
-        val dummyData2 = HistoryListModel(
-            historyTitle = "Title 2",
-            EndedTime = "Time 2",
-            historyitemmodel = arrayListOf(
-                HistoryItemModel(historyItemTag = "동동이언니"),
-                HistoryItemModel(historyItemTag = "할아버지"),
-                HistoryItemModel(historyItemTag = "구텐탁 팀장님")
-            )
-        )
-
-// 더미 데이터를 리스트에 추가
-        val historyList: ArrayList<HistoryListModel> = arrayListOf(dummyData1, dummyData2)
+        // 더미 데이터를 리스트에 추가
+        historyList.add(dummyData1)
+        historyList.add(dummyData2)
 
 
         // 어댑터 설정 (여기서 dataList는 데이터 리스트로 대체해야 합니다)
