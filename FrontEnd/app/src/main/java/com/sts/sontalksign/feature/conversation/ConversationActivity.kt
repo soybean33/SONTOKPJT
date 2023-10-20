@@ -217,21 +217,26 @@ class ConversationActivity : AppCompatActivity() {
         lateinit var cTitle: String
         lateinit var cTags: String
 
-        //팝업을 띄운다
-        val cForm = CustomForm(this)
-        cForm.show()
-        cForm.setOnBtnStoreClickedListener(object: CustomForm.onBtnStoreClickedListener {
-            override fun onBtnStoreClicked(title: String, tags: String) {
-                cTitle = title
-                cTags = tags
+        //녹음하기 선택 시 - 팝업 발생 및 대화 내용 저장
+        if(isNowRecording) {
+            val cForm = CustomForm(this)
+            cForm.show()
+            cForm.setOnBtnStoreClickedListener(object: CustomForm.onBtnStoreClickedListener {
+                override fun onBtnStoreClicked(title: String, tags: String) {
+                    cTitle = title
+                    cTags = tags
 
-                val rConversation = cTitle + "\nTAGS_" + cTags + "\n" + textList
-                //대화 종료 전 기록에 쌓인 대화 내용을 저장
-                writeTextFile(rConversation)
+                    val rConversation = cTitle + "\nTAGS_" + cTags + "\n" + textList
+                    //대화 종료 전 기록에 쌓인 대화 내용을 저장
+                    writeTextFile(rConversation)
 
-                finish()
-            }
-        })
+                    finish()
+                }
+            })
+        }
+        else { //녹음하기 미선택 시 - "대화 종료" 질의 팝업 발생
+            //TODO: "대화를 종료하시겠습니까?" 팝업 생성 및 발생
+        }
     }
 
     private fun allPermissionsGranted() = REQUIRED_PERMISSIONS.all {
