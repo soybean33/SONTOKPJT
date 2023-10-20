@@ -60,10 +60,7 @@ class ConversationActivity : AppCompatActivity() {
     private val dataFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
     private val timeFormat = SimpleDateFormat("HH:mm")
 
-    private lateinit var textList: ArrayList<String>
-    private var addedText: Int = 0
-    private var myTextLine: String? = null
-    private var yourTextLine: String? = null
+    private lateinit var textList: String
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -105,8 +102,7 @@ class ConversationActivity : AppCompatActivity() {
         directory = filesDir.absolutePath //내부경로의 절대 경로
         filename = dataFormat.format(currentTime) + ".txt"
 
-        textList = ArrayList<String> (10)
-        addedText = 0
+        textList = ""
     }
 
     private fun getMyConversation(content:String, time:String) : String {
@@ -129,16 +125,11 @@ class ConversationActivity : AppCompatActivity() {
             false -> bContent = getYourConversation(content, timeFormat.format(currentTime))
         }
 
-        textList?.add(bContent)
-        addedText++
-
-        if(addedText == 10) {
-            writeTextFile()
-        }
+        textList += bContent
     }
 
     //파일 쓰기
-    private fun writeTextFile() {
+    private fun writeTextFile(result: String) {
         val dir = File(directory)
 
         //파일 미존재 시 디렉토리 및 파일 생성
@@ -151,13 +142,8 @@ class ConversationActivity : AppCompatActivity() {
 
         //쓰기 속도 향상
         val buffer = BufferedWriter(writer)
-        for(content in textList) {
-            buffer.write(content)
-        }
+        buffer.write(result)
         buffer.close()
-
-        textList.clear()
-        addedText = 0
     }
 
     //파일 읽기 - ConversationActivity에서는 미사용
@@ -228,16 +214,24 @@ class ConversationActivity : AppCompatActivity() {
 
     //대화 종료 처리 함수
     private fun stopConversation() {
-        //대화 종료 전 기록에 쌓인 대화 내용을 저장
-        writeTextFile()
+        lateinit var cTitle: String
+        lateinit var cTags: String
 
         //팝업을 띄운다
         val cForm = CustomForm(this)
-        cForm.setOnBtnStoreClickedListener {
-        }
+        cForm.show()
+        cForm.setOnBtnStoreClickedListener(object: CustomForm.onBtnStoreClickedListener {
+            override fun onBtnStoreClicked(title: String, tags: String) {
+                cTitle = title
+                cTags = tags
 
-        //팝업 종료시 액티비티 종료
-        cForm.show("저장합니다")
+                val rConversation = cTitle + "\nTAGS_" + cTags + "\n" + textList
+                //대화 종료 전 기록에 쌓인 대화 내용을 저장
+                writeTextFile(rConversation)
+
+                finish()
+            }
+        })
     }
 
     private fun allPermissionsGranted() = REQUIRED_PERMISSIONS.all {
