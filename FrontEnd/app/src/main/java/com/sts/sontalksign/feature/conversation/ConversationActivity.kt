@@ -10,8 +10,13 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.provider.MediaStore
 import android.util.Log
+import android.view.inputmethod.EditorInfo
 import android.widget.ImageView
 import android.widget.Toast
+import androidx.camera.core.CameraControl
+import androidx.camera.core.CameraFilter
+import androidx.camera.core.CameraInfo
+import androidx.camera.core.CameraProvider
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageCapture
 import androidx.camera.core.Preview
@@ -24,6 +29,12 @@ import androidx.core.content.ContextCompat
 import com.sts.sontalksign.R
 import com.sts.sontalksign.databinding.ActivityConversationBinding
 import com.sts.sontalksign.feature.common.CustomForm
+import java.io.BufferedReader
+import java.io.BufferedWriter
+import java.io.File
+import java.io.FileReader
+import java.io.FileWriter
+import java.text.SimpleDateFormat
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 
@@ -40,6 +51,16 @@ class ConversationActivity : AppCompatActivity() {
 
     private lateinit var cameraExecutor: ExecutorService
 
+    //내부저장소 - txt 파일
+    private var directory: String? = null
+    private var filename: String? = null
+    private var currentTime: Long? = null
+    private val dataFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
+    private val timeFormat = SimpleDateFormat("HH:mm")
+
+    private var myTextLine: String? = null
+    private var yourTextLine: String? = null
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
@@ -54,9 +75,72 @@ class ConversationActivity : AppCompatActivity() {
         }
         
         //이벤트 리스너 설정
+        binding.etTextConversation.setOnEditorActionListener { textView, actionId, keyEvent ->
+            var handled = false
+            if(actionId == EditorInfo.IME_ACTION_DONE) {
+                writeTextFile(textView.text.toString())
+                binding.etTextConversation.setText("")
+            }
+            handled
+        }
         binding.btnStopConversation.setOnClickListener { stopConversation() }
 
         cameraExecutor = Executors.newSingleThreadExecutor()
+
+        myTextLine = ">>"
+        yourTextLine = "<<"
+        createTextFile()
+    }
+
+    private fun createTextFile() {
+        //내부 저장소 경로
+        currentTime = System.currentTimeMillis() //ms로 반환
+        directory = filesDir.absolutePath //내부경로의 절대 경로
+        filename = dataFormat.format(currentTime) + ".txt"
+    }
+
+    //파일 쓰기
+    private fun writeTextFile(content:String) {
+        val dir = File(directory)
+
+        //파일 미존재 시 디렉토리 및 파일 생성
+        if(!dir.exists()) {
+            dir.mkdirs()
+        }
+
+        //파일의 full path
+        val writer = FileWriter(directory + "/" + filename, true)
+        currentTime = System.currentTimeMillis()
+
+        val bContent = myTextLine + content + myTextLine + timeFormat.format(currentTime)
+
+        //쓰기 속도 향상
+        val buffer = BufferedWriter(writer)
+        buffer.write(bContent)
+        buffer.close()
+    }
+    
+    //파일 읽기 - ConversationActivity에서는 미사용
+    private fun readTextFile(fullpath: String) : String {
+        val file = File(fullpath)
+
+        //파일 미존재
+        if(!file.exists()) return ""
+
+        val reader = FileReader(file)
+        val buffer = BufferedReader(reader)
+
+        var line:String? = ""
+        var result = StringBuffer()
+
+        while(true) {
+            line = buffer.readLine() //줄단위로 read
+            if(line == null) break
+            else result.append(line).append("\n")
+        }
+
+        buffer.close()
+        return result.toString()
     }
 
     private fun takePhoto() {
