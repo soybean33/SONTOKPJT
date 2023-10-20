@@ -1,15 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
-
     <!-- 카메라 권한 -->
     <uses-feature android:name="android.hardware.camera.any" />
+
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"
-        android:maxSdkVersion="28" />
-
-    <!-- API 통신 인터넷 권한 -->
+    <uses-permission
+        android:name="android.permission.WRITE_EXTERNAL_STORAGE"
+        android:maxSdkVersion="28" /> <!-- API 통신 인터넷 권한 -->
     <uses-permission android:name="android.permission.INTERNET" />
 
     <application
@@ -23,6 +22,9 @@
         android:theme="@style/Theme.SonTalkSign"
         android:usesCleartextTraffic="true"
         tools:targetApi="31">
+        <activity
+            android:name=".feature.history.HistoryDetailActivity"
+            android:exported="false" />
         <activity
             android:name=".feature.conversation.ConversationActivity"
             android:exported="false" />

@@ -7,7 +7,10 @@ import com.sts.sontalksign.databinding.HistoryItemTagBinding
 
 class HistoryItemTagAdapter(private val historyItemList: ArrayList<HistoryItemModel>) : RecyclerView.Adapter<HistoryItemTagAdapter.TagViewHolder>() {
 
+
+
     inner class TagViewHolder(private val binding: HistoryItemTagBinding) : RecyclerView.ViewHolder(binding.root) {
+
         fun bind(item: HistoryItemModel) {
             binding.tvHistoryTagItemShape.text = item.historyItemTag.toString()
         }
