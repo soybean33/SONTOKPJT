@@ -35,7 +35,7 @@
                 android:id="@+id/llv_HistorySmall"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
-                android:layout_weight="80"
+                android:layout_weight="90"
                 android:orientation="vertical">
 
                 <LinearLayout
