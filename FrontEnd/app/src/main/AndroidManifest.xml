@@ -23,11 +23,10 @@
         android:usesCleartextTraffic="true"
         tools:targetApi="31">
         <activity
-<<<<<<< Updated upstream
             android:name=".feature.conversation.ConversationActivity"
-=======
+            android:exported="false" />
+        <activity
             android:name=".feature.history.HistoryDetailActivity"
->>>>>>> Stashed changes
             android:exported="false" />
         <activity
             android:name=".feature.common.MainActivityNavBar"
