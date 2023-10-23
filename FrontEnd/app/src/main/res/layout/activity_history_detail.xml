@@ -16,12 +16,14 @@
         app:layout_constraintTop_toTopOf="parent">
 
         <LinearLayout
+            android:id="@+id/llv_HistoryDetailTitle"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_weight="100"
             android:orientation="horizontal">
 
             <LinearLayout
+                android:id="@+id/llh_HistoryDetailTitle"
                 android:layout_width="match_parent"
                 android:layout_height="100dp"
                 android:background="@color/jaffa500"
@@ -32,6 +34,7 @@
                     android:layout_height="20dp" />
 
                 <LinearLayout
+                    android:id="@+id/llv_HistoryDetailTitleText"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal">
@@ -57,11 +60,13 @@
                     android:layout_height="10dp" />
 
                 <LinearLayout
+                    android:id="@+id/llv_HistoryDetailTag"
                     android:layout_width="match_parent"
                     android:layout_height="40dp"
                     android:orientation="horizontal">
 
                     <androidx.recyclerview.widget.RecyclerView
+                        android:id="@+id/rv_HistoryDetailTag"
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
                         android:paddingStart="20dp" />
@@ -88,25 +93,20 @@
                 android:layout_weight="5" />
 
             <LinearLayout
-                android:id="@+id/llv_HistoryDetailTitle"
+                android:id="@+id/llv_HistoryDetailConversation"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="90"
                 android:orientation="vertical">
 
-                <LinearLayout
+                <Space
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:orientation="vertical">
+                    android:layout_height="20dp" />
 
-                    <Space
-                        android:layout_width="match_parent"
-                        android:layout_height="20dp" />
-
-                    <androidx.recyclerview.widget.RecyclerView
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent" />
-                </LinearLayout>
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/rv_HistoryDetailConversation"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent" />
 
             </LinearLayout>
 
