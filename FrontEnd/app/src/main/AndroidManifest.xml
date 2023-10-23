@@ -24,6 +24,9 @@
         android:usesCleartextTraffic="true"
         tools:targetApi="31">
         <activity
+            android:name=".feature.conversation.ConversationActivity"
+            android:exported="false" />
+        <activity
             android:name=".feature.common.MainActivityNavBar"
             android:exported="true">
             <intent-filter>
