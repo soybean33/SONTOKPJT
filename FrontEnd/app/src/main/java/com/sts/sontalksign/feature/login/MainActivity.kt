@@ -15,11 +15,10 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
 
-        binding.btnGotoMain.setOnClickListener {
+        binding.btnLogin.setOnClickListener {
             val intent = Intent(this, MainActivityNavBar::class.java)  // [이동할 엑티비티 이름]::class.java
             startActivity(intent)
             finish()
         }
-        
     }
 }

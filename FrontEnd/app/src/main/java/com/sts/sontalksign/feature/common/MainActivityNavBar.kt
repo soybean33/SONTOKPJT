@@ -51,11 +51,11 @@ class MainActivityNavBar : AppCompatActivity() {
                     tab.view?.setBackgroundColor(selectBackColor)
                 }
 
-                2 -> {
-                    tab.icon = ContextCompat.getDrawable(this, R.drawable.baseline_settings_24)
-                    val color = ContextCompat.getColor(this, R.color.rectangle500)
-                    tab.icon?.setTint(color)
-                }
+//                2 -> {
+//                    tab.icon = ContextCompat.getDrawable(this, R.drawable.baseline_settings_24)
+//                    val color = ContextCompat.getColor(this, R.color.rectangle500)
+//                    tab.icon?.setTint(color)
+//                }
             }
         }.attach()
 
@@ -77,12 +77,12 @@ class MainActivityNavBar : AppCompatActivity() {
                         tab.view.setBackgroundColor(selectBackColor)
                     }
 
-                    2 -> {
-                        val iconDrawable = ContextCompat.getDrawable(this@MainActivityNavBar, R.drawable.baseline_settings_24)
-                        iconDrawable?.setTint(selectIconColor)
-                        tab.icon = iconDrawable
-                        tab.view.setBackgroundColor(selectBackColor)
-                    }
+//                    2 -> {
+//                        val iconDrawable = ContextCompat.getDrawable(this@MainActivityNavBar, R.drawable.baseline_settings_24)
+//                        iconDrawable?.setTint(selectIconColor)
+//                        tab.icon = iconDrawable
+//                        tab.view.setBackgroundColor(selectBackColor)
+//                    }
                 }
             }
             override fun onTabUnselected(tab: TabLayout.Tab?) {
@@ -100,7 +100,7 @@ class MainActivityNavBar : AppCompatActivity() {
         var viewPager2Adatper = ViewPager2Adapter(this)
         viewPager2Adatper.addFragment(HistoryFragment())
         viewPager2Adatper.addFragment(ConversationFragment())
-        viewPager2Adatper.addFragment(SettingFragment())
+        // viewPager2Adatper.addFragment(SettingFragment())
 
         binding.vpMainViewPager.apply {
             adapter = viewPager2Adatper
