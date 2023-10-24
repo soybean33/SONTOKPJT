@@ -8,6 +8,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.core.content.ContentProviderCompat.requireContext
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.sts.sontalksign.R
 import com.sts.sontalksign.databinding.ActivityConversationBinding
 import com.sts.sontalksign.databinding.ActivityHistoryDetailBinding
@@ -16,7 +17,10 @@ class HistoryDetailActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityHistoryDetailBinding
 
+    private lateinit var recyclerView1: RecyclerView
     private lateinit var historyDetailTagAdapter: HistoryDetailTagAdapter
+
+    private lateinit var recyclerView2: RecyclerView
     private lateinit var historyDetailConversationAdapter: HistoryDetailConversationAdapter
 
 //    private val api = APIS.create();
@@ -26,18 +30,22 @@ class HistoryDetailActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        // 데이터 바인딩 초기화
         binding = ActivityHistoryDetailBinding.inflate(layoutInflater)
         val view = binding.root
         setContentView(view)
 
         // RecyclerView 초기화
-        val recyclerViewTagList = binding.rvHistoryDetailTag
-        recyclerViewTagList.layoutManager = LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false)
-        recyclerViewTagList.setHasFixedSize(false)
+        // 첫 번째 리사이클러뷰 초기화
+        recyclerView1 = binding.rvHistoryDetailTag
+        recyclerView1.layoutManager = LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false)
+        recyclerView1.setHasFixedSize(false)
 
-        val recyclerViewConversationList = binding.rvHistoryDetailConversation
-        recyclerViewConversationList.layoutManager = LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false)
-        recyclerViewConversationList.setHasFixedSize(false)
+        // 두 번째 리사이클러뷰 초기화
+        recyclerView2 = binding.rvHistoryDetailConversation
+        recyclerView2.layoutManager = LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false)
+        recyclerView2.setHasFixedSize(false)
 
 //        val dummyData1 =
 ////            HistoryDetailTagModel  = arrayListOf(
@@ -50,12 +58,13 @@ class HistoryDetailActivity : AppCompatActivity() {
         // 더미 데이터를 리스트에 추가
 //        val historyList: ArrayList<HistoryListModel> = arrayListOf(dummyData1, dummyData2)
 
-        // RecyclerView에 대한 어댑터 생성 및 설정
+        // 첫 번째 리사이클러뷰 어댑터 설정
         historyDetailTagAdapter = HistoryDetailTagAdapter(historyDetailTagList)
-        recyclerViewTagList.adapter = historyDetailTagAdapter
+        recyclerView1.adapter = historyDetailTagAdapter
 
+        // 두 번째 리사이클러뷰 어댑터 설정
         historyDetailConversationAdapter = HistoryDetailConversationAdapter(historyDetailConList)
-        recyclerViewConversationList.adapter = historyDetailConversationAdapter
+        recyclerView2.adapter = historyDetailConversationAdapter
 
         // SharedPreferences에서 액세스 토큰 가져오기
 //        val token = getAccessToken()
