@@ -1,36 +1,30 @@
+
 package com.sts.sontalksign.feature.history
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
-import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.sts.sontalksign.databinding.HistoryItemTagBinding
 
-class HistoryItemTagAdapter (val historyItemList: ArrayList<HistoryItemModel>) : RecyclerView.Adapter<HistoryItemTagAdapter.CustomViewHolder>() {
+class HistoryItemTagAdapter(private val historyItemList: ArrayList<HistoryItemModel>) : RecyclerView.Adapter<HistoryItemTagAdapter.TagViewHolder>() {
 
-    inner class CustomViewHolder(private val binding: HistoryItemTagBinding) : RecyclerView.ViewHolder(binding.root) {
-        val tvHistoryTagItemShape: TextView = binding.tvHistoryTagItemShape
 
-        fun bind(historyItemModel: HistoryItemModel) {
-            tvHistoryTagItemShape.text = historyItemModel.historyItemTag.toString()
 
+    inner class TagViewHolder(private val binding: HistoryItemTagBinding) : RecyclerView.ViewHolder(binding.root) {
+
+        fun bind(item: HistoryItemModel) {
+            binding.tvHistoryTagItemShape.text = item.historyItemTag.toString()
         }
     }
-    override fun onCreateViewHolder(
-        parent: ViewGroup,
-        viewType: Int
-    ): HistoryItemTagAdapter.CustomViewHolder {
+
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): TagViewHolder {
         val binding = HistoryItemTagBinding.inflate(LayoutInflater.from(parent.context), parent, false)
-        return CustomViewHolder(binding)
+        return TagViewHolder(binding)
     }
 
+    override fun getItemCount(): Int = historyItemList.size
 
-    override fun getItemCount(): Int {
-        return historyItemList.size
-    }
-
-    override fun onBindViewHolder(holder: HistoryItemTagAdapter.CustomViewHolder, position: Int) {
-        val historyItemList = historyItemList[position]
-        holder.bind(historyItemList)
+    override fun onBindViewHolder(holder: TagViewHolder, position: Int) {
+        holder.bind(historyItemList[position])
     }
 }

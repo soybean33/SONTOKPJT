@@ -1,59 +1,66 @@
+
 package com.sts.sontalksign.feature.history
 
+import android.content.Intent
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import android.widget.ListView
 import android.widget.TextView
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.sts.sontalksign.databinding.HistoryItemBinding
 
+class HistoryListAdapter(val historyList: ArrayList<HistoryListModel>) : RecyclerView.Adapter<HistoryListAdapter.CustomViewHolder>() {
 
-class HistoryListAdapter (val historyList: ArrayList<HistoryListModel>) : RecyclerView.Adapter<HistoryListAdapter.CustomViewHolder>() {
-//    private lateinit var historyItemTagAdapter: HistoryItemTagAdapter
-//
-//    var historyItemList: ArrayList<HistoryItemModel> = ArrayList()
-    inner class CustomViewHolder(private val binding: HistoryItemBinding) : RecyclerView.ViewHolder(binding.root) {
+    inner class CustomViewHolder(private val binding: HistoryItemBinding) :
+
+        RecyclerView.ViewHolder(binding.root) {
+
         val tvHistoryTitle: TextView = binding.tvHistoryItemTitle
         val tvEndedTime: TextView = binding.tvHistoryItemTime
-        val rvHistoryItemTagCompoenet: RecyclerView = binding.rvHistoryItemTagCompoenet
+        val rvHistoryItemTagComponent: RecyclerView = binding.rvHistoryItemTagCompoenet
 
         fun bind(historyModel: HistoryListModel) {
-            tvHistoryTitle.text = historyModel.historyTitle
-            tvEndedTime.text = historyModel.EndedTime
+            val historyTitle = historyModel.historyTitle
+            val historyEndedTime = historyModel.EndedTime
+
+//            // 리소스 이름을 사용하여 리소스 ID를 가져옵니다.
+//            val imageResourceID = itemView.resources.getIdentifier(
+//                resourceName,
+//                "drawable",
+//                itemView.context.packageName
+//            )
+
+            binding.llvHistoryItem.setOnClickListener{
+                val curPos: Int = adapterPosition
+                val HistoryList: HistoryListModel = historyList[curPos] // myassetItemList로 수정
+
+                if (HistoryList.EndedTime.toLong() != 0L) {
+                    val intent = Intent(binding.root.context,HistoryDetailActivity::class.java)
+                    intent.putExtra("tokenNo", HistoryList.EndedTime)
+                    binding.root.context.startActivity(intent)
+                }
+            }
+
 
         }
     }
 
-    override fun onCreateViewHolder(
-        parent: ViewGroup,
-        viewType: Int
-    ): HistoryListAdapter.CustomViewHolder {
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): CustomViewHolder {
         val binding = HistoryItemBinding.inflate(LayoutInflater.from(parent.context), parent, false)
         return CustomViewHolder(binding)
-
-
-
     }
 
     override fun getItemCount(): Int {
         return historyList.size
     }
 
-    override fun onBindViewHolder(holder: HistoryListAdapter.CustomViewHolder, position: Int) {
-        val historyList = historyList[position]
-        holder.bind(historyList)
+    override fun onBindViewHolder(holder: CustomViewHolder, position: Int) {
+        val historyItem = historyList[position]
+        holder.bind(historyItem)
 
-        // Get the RecyclerView of the inner item.
-        val innerRecyclerView = holder.rvHistoryItemTagCompoenet
-
-        // Create an adapter for the inner RecyclerView and bind data to it.
-        val innerAdapter = HistoryItemTagAdapter(historyList.historyitemmodel)
-        innerRecyclerView.layoutManager = LinearLayoutManager(holder.itemView.context, LinearLayoutManager.VERTICAL, false)
-        innerRecyclerView.adapter = innerAdapter
-
+        val tagAdapter = HistoryItemTagAdapter(historyItem.historyitemmodel)
+        holder.rvHistoryItemTagComponent.adapter = tagAdapter // 변경된 부분
+        holder.rvHistoryItemTagComponent.layoutManager = LinearLayoutManager(holder.itemView.context, LinearLayoutManager.HORIZONTAL, false) // 가로 스크롤을 위한 HORIZONTAL 설정
     }
-
-
-
-
 }

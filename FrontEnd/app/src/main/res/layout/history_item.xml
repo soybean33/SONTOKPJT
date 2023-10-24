@@ -3,21 +3,23 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/cl_HistoryItem"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="wrap_content">
 
     <LinearLayout
         android:id="@+id/llh_HistoryItem"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_horizontal"
         android:orientation="horizontal"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
         <LinearLayout
             android:id="@+id/llv_HistoryItem"
-            android:layout_width="320dp"
+            android:layout_width="350dp"
             android:layout_height="100dp"
             android:background="@drawable/underline"
+            android:gravity="center_vertical"
             android:orientation="vertical">
 
             <Space
@@ -38,7 +40,7 @@
                     android:layout_weight="40"
                     android:fontFamily="@font/line_seed_kr_bd"
                     android:gravity="center_vertical"
-                    android:paddingStart="3dp"
+                    android:paddingStart="5dp"
                     android:text="Title"
                     android:textColor="@color/black"
                     android:textSize="18sp" />
@@ -76,10 +78,11 @@
                     android:layout_height="wrap_content"
                     android:orientation="horizontal">
 
-                    <ListView
-                        android:id="@+id/lv_HistoryItemTagCompoenet"
+                    <androidx.recyclerview.widget.RecyclerView
+                        android:id="@+id/rv_HistoryItemTagCompoenet"
                         android:layout_width="match_parent"
-                        android:layout_height="match_parent" />
+                        android:layout_height="wrap_content"
+                        android:nestedScrollingEnabled="false" />
 
                 </LinearLayout>
 

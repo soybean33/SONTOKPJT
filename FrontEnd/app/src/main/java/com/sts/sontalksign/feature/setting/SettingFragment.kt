@@ -18,11 +18,11 @@ class SettingFragment : Fragment() {
 
         binding = FragmentSettingBinding.bind(view)
 
-        binding.llhEditPassword.setOnClickListener {
-            val ft = requireActivity().supportFragmentManager.beginTransaction()
-            val changeFragment = EditPasswordFragment()
-            ft.replace(R.id.fl_MainFragment, changeFragment).commit()
-        }
+//        binding.llhEditPassword.setOnClickListener {
+//            val ft = requireActivity().supportFragmentManager.beginTransaction()
+//            val changeFragment = EditPasswordFragment()
+//            ft.replace(R.id.fl_MainFragment, changeFragment).commit()
+//        }
 
         return view
     }
