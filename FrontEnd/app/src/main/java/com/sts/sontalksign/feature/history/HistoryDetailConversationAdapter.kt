@@ -4,10 +4,11 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.sts.sontalksign.databinding.ActivityConversationBinding
+import com.sts.sontalksign.databinding.HistoryDetailConversationBinding
 
-class HistoryDetailConversationAdapter (val historyConversationList: ArrayList<HistoryDetailConversationModel>) : RecyclerView.Adapter<HistoryDetailConversationAdapter.CustomViewHolder>() {
+abstract class HistoryDetailConversationAdapter (val historyConversationList: ArrayList<HistoryDetailConversationModel>) : RecyclerView.Adapter<HistoryDetailConversationAdapter.CustomViewHolder>() {
 
-    inner class CustomViewHolder(private val binding: ActivityConversationBinding) :RecyclerView.ViewHolder(binding.root) {
+    inner class CustomViewHolder(private val binding: HistoryDetailConversationBinding) :RecyclerView.ViewHolder(binding.root) {
         fun bind(historyDetailConversation: HistoryDetailConversationModel) {
 
         }
@@ -19,17 +20,13 @@ class HistoryDetailConversationAdapter (val historyConversationList: ArrayList<H
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): CustomViewHolder {
-        val binding = ActivityConversationBinding.inflate(LayoutInflater.from(parent.context), parent, false)
+        val binding = HistoryDetailConversationBinding.inflate(LayoutInflater.from(parent.context), parent, false)
         return CustomViewHolder(binding)
     }
-
     override fun getItemCount(): Int {
         return historyConversationList.size
     }
 
-    override fun onBindViewHolder(holder: CustomViewHolder, position: Int) {
-        val historyDetailConversation = historyConversationList[position]
-        holder.bind(historyDetailConversation)
-    }
+
 }
 
