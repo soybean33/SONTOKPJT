@@ -37,7 +37,7 @@ class HistoryFragment : Fragment() {
 // 더미 데이터 생성
         val dummyData1 = HistoryListModel(
             historyTitle = "Title 1",
-            EndedTime = "Time 1",
+            EndedTime = 1,
             historyitemmodel = arrayListOf(
                 HistoryItemModel(historyItemTag = "1번 태그"),
                 HistoryItemModel(historyItemTag = "2번 태그입니다"),
@@ -48,7 +48,7 @@ class HistoryFragment : Fragment() {
 
         val dummyData2 = HistoryListModel(
             historyTitle = "Title 2",
-            EndedTime = "Time 2",
+            EndedTime = 2,
             historyitemmodel = arrayListOf(
                 HistoryItemModel(historyItemTag = "동동이언니"),
                 HistoryItemModel(historyItemTag = "할아버지"),
@@ -56,8 +56,9 @@ class HistoryFragment : Fragment() {
             )
         )
 
-// 더미 데이터를 리스트에 추가
-        val historyList: ArrayList<HistoryListModel> = arrayListOf(dummyData1, dummyData2)
+        // 더미 데이터를 리스트에 추가
+        historyList.add(dummyData1)
+        historyList.add(dummyData2)
 
 
         // 어댑터 설정 (여기서 dataList는 데이터 리스트로 대체해야 합니다)

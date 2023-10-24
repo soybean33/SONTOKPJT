@@ -4,20 +4,19 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.sts.sontalksign.databinding.ActivityHistoryDetailBinding
+import com.sts.sontalksign.databinding.HistoryDetailTagBinding
 
 class HistoryDetailTagAdapter(private val historyDetailTagList: ArrayList<HistoryDetailTagModel>) : RecyclerView.Adapter<HistoryDetailTagAdapter.DetailTagViewHolder>() {
 
-
-    inner class DetailTagViewHolder(private val binding: ActivityHistoryDetailBinding) : RecyclerView.ViewHolder(binding.root) {
+    inner class DetailTagViewHolder(private val binding: HistoryDetailTagBinding) : RecyclerView.ViewHolder(binding.root) {
 
         fun bind(detailTag: HistoryDetailTagModel) {
-
+            binding.tvHistoryTagItemShape.text = detailTag.historyItemTag
         }
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): DetailTagViewHolder {
-        val binding = ActivityHistoryDetailBinding.inflate(LayoutInflater.from(parent.context), parent, false)
-
+        val binding = HistoryDetailTagBinding.inflate(LayoutInflater.from(parent.context), parent, false)
         return DetailTagViewHolder(binding)
     }
 
@@ -26,8 +25,7 @@ class HistoryDetailTagAdapter(private val historyDetailTagList: ArrayList<Histor
     }
 
     override fun onBindViewHolder(holder: DetailTagViewHolder, position: Int) {
-        val historyDetailTag = historyDetailTagList[position]
-        holder.bind(historyDetailTag)
+        holder.bind(historyDetailTagList[position])
     }
 }
 

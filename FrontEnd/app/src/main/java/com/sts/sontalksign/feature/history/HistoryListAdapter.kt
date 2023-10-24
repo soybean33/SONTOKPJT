@@ -1,6 +1,7 @@
 
 package com.sts.sontalksign.feature.history
 
+import android.content.Intent
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import android.widget.ListView
@@ -11,14 +12,37 @@ import com.sts.sontalksign.databinding.HistoryItemBinding
 
 class HistoryListAdapter(val historyList: ArrayList<HistoryListModel>) : RecyclerView.Adapter<HistoryListAdapter.CustomViewHolder>() {
 
-    inner class CustomViewHolder(private val binding: HistoryItemBinding) : RecyclerView.ViewHolder(binding.root) {
+    inner class CustomViewHolder(private val binding: HistoryItemBinding) :
+
+        RecyclerView.ViewHolder(binding.root) {
+
         val tvHistoryTitle: TextView = binding.tvHistoryItemTitle
         val tvEndedTime: TextView = binding.tvHistoryItemTime
         val rvHistoryItemTagComponent: RecyclerView = binding.rvHistoryItemTagCompoenet
 
         fun bind(historyModel: HistoryListModel) {
-            tvHistoryTitle.text = historyModel.historyTitle
-            tvEndedTime.text = historyModel.EndedTime
+            val historyTitle = historyModel.historyTitle
+            val historyEndedTime = historyModel.EndedTime
+
+//            // 리소스 이름을 사용하여 리소스 ID를 가져옵니다.
+//            val imageResourceID = itemView.resources.getIdentifier(
+//                resourceName,
+//                "drawable",
+//                itemView.context.packageName
+//            )
+
+            binding.llvHistoryItem.setOnClickListener{
+                val curPos: Int = adapterPosition
+                val HistoryList: HistoryListModel = historyList[curPos] // myassetItemList로 수정
+
+                if (HistoryList.EndedTime.toLong() != 0L) {
+                    val intent = Intent(binding.root.context,HistoryDetailActivity::class.java)
+                    intent.putExtra("tokenNo", HistoryList.EndedTime)
+                    binding.root.context.startActivity(intent)
+                }
+            }
+
+
         }
     }
 
