@@ -11,8 +11,9 @@ class HistoryDetailTagAdapter(private val historyDetailTagList: ArrayList<Histor
     inner class DetailTagViewHolder(private val binding: HistoryDetailTagBinding) : RecyclerView.ViewHolder(binding.root) {
 
         fun bind(detailTag: HistoryDetailTagModel) {
-            binding.tvHistoryTagItemShape.text = detailTag.historyItemTag
+            binding.tvHistoryTag.text = detailTag.historyItemTag
         }
+
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): DetailTagViewHolder {
