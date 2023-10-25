@@ -1,22 +1,13 @@
 package com.sts.sontalksign.feature.conversation
 
 import android.Manifest
-import android.app.Activity
-import android.content.Intent
 import android.content.pm.PackageManager
-import android.graphics.Bitmap
 import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.provider.MediaStore
 import android.util.Log
 import android.view.inputmethod.EditorInfo
-import android.widget.ImageView
 import android.widget.Toast
-import androidx.camera.core.CameraControl
-import androidx.camera.core.CameraFilter
-import androidx.camera.core.CameraInfo
-import androidx.camera.core.CameraProvider
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageCapture
 import androidx.camera.core.Preview
@@ -28,7 +19,10 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.sts.sontalksign.R
 import com.sts.sontalksign.databinding.ActivityConversationBinding
+import com.sts.sontalksign.feature.common.CommonTagAdapter
+import com.sts.sontalksign.feature.common.CommonTagItem
 import com.sts.sontalksign.feature.common.CustomForm
+import com.sts.sontalksign.feature.common.TagSingleton
 import java.io.BufferedReader
 import java.io.BufferedWriter
 import java.io.File
@@ -43,6 +37,8 @@ class ConversationActivity : AppCompatActivity() {
     private val binding by lazy {
         ActivityConversationBinding.inflate(layoutInflater)
     }
+
+    private val TAG: String = "ConversationActivity"
 
     private var imageCapture: ImageCapture? = null
 
@@ -90,6 +86,47 @@ class ConversationActivity : AppCompatActivity() {
 
         isNowRecording = intent.getBooleanExtra("isRecord", false)
         createTextFile()
+
+        loadTagList()
+    }
+
+    fun loadTagList() {
+        //tagList는 최초 1회만 로드
+        if(TagSingleton.tagList.size > 0) return
+
+        val file = File(directory)
+
+        Log.d(TAG, "Directory : " + directory)
+
+        //파일 미존재
+        if(!file.exists()) {
+            Log.d(TAG, "TAGS file does not exist!!")
+            file.mkdirs()
+            //return
+        }
+
+        val tagFN = "TAGS.txt"
+        val fPath = directory + "/" + tagFN
+        val writer = FileWriter(fPath, true)
+
+        val reader = FileReader(fPath)
+        val buffer = BufferedReader(reader)
+
+        var line: String? = ""
+//        var result = StringBuffer()
+
+        while(true) {
+            line = buffer.readLine() //줄 단위로 read
+            if(line == null) break
+            else {
+                val (index, text, color) = line.split(" ")
+                TagSingleton.tagList.add(CommonTagItem(index, text, color))
+            }
+        }
+
+        TagSingleton.tagList.add(CommonTagItem("0", "TEST", "#FF00FF"))
+
+        buffer.close()
     }
 
     //대화 내용 기록
