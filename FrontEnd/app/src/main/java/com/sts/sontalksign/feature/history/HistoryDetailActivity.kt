@@ -36,27 +36,33 @@ class HistoryDetailActivity : AppCompatActivity() {
         val view = binding.root
         setContentView(view)
 
+
         // RecyclerView 초기화
         // 첫 번째 리사이클러뷰 초기화
         recyclerView1 = binding.rvHistoryDetailTag
-        recyclerView1.layoutManager = LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false)
+        recyclerView1.layoutManager = LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
         recyclerView1.setHasFixedSize(false)
 
         // 두 번째 리사이클러뷰 초기화
-        recyclerView2 = binding.rvHistoryDetailConversation
+        recyclerView2 = binding.rvMessages
         recyclerView2.layoutManager = LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false)
         recyclerView2.setHasFixedSize(false)
 
-//        val dummyData1 =
-////            HistoryDetailTagModel  = arrayListOf(
-//            HistoryItemModel(historyItemTag = "1번 태그"),
-//            HistoryItemModel(historyItemTag = "2번 태그입니다"),
-//            HistoryItemModel(historyItemTag = "강한성구"),
-//            HistoryItemModel(historyItemTag = "용우오빠코테홧팅")
-//        )
+//      // 더미 데이터 생성 및 추가
+        val dummyTag1 = HistoryDetailTagModel("태그1")
+        val dummyTag2 = HistoryDetailTagModel("태그2")
+        val dummyTag3 = HistoryDetailTagModel("태그3")
+        val dummyTag4 = HistoryDetailTagModel("태그4")
 
-        // 더미 데이터를 리스트에 추가
-//        val historyList: ArrayList<HistoryListModel> = arrayListOf(dummyData1, dummyData2)
+        // 더미 대화 데이터 생성
+        val dummyCon1 = HistoryDetailConversationModel("대화1", "시간1", true)
+        val dummyCon2 = HistoryDetailConversationModel("대화2", "시간2", false)
+        val dummyCon3 = HistoryDetailConversationModel("대화3", "시간3", true)
+        val dummyCon4 = HistoryDetailConversationModel("대화4", "시간4", false)
+
+        // 생성된 더미 데이터를 리스트에 추가
+        historyDetailTagList.addAll(listOf(dummyTag1, dummyTag2, dummyTag3, dummyTag4))
+        historyDetailConList.addAll(listOf(dummyCon1, dummyCon2, dummyCon3, dummyCon4))
 
         // 첫 번째 리사이클러뷰 어댑터 설정
         historyDetailTagAdapter = HistoryDetailTagAdapter(historyDetailTagList)
@@ -74,6 +80,8 @@ class HistoryDetailActivity : AppCompatActivity() {
 
     }
 }
+
+
 
 private fun showNoDataMessage() {
     // 데이터가 없을 때 특정 메시지를 표시하는 로직을 여기에 구현합니다.
