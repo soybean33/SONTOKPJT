@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/custom_input_text_layout"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content">
+
+    <EditText
+        android:id="@+id/et_input_text_content"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="left|top"
+        android:layout_marginTop="11dp"
+        android:paddingLeft="8dp"
+        android:background="@drawable/input_content"
+        android:inputType="text" />
+
+    <TextView
+        android:id="@+id/tv_input_text_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="9dp"
+        android:gravity="center"
+        android:background="@drawable/input_title"
+        android:textSize="13sp"
+        android:textColor="@color/black"
+        android:fontFamily="@font/line_seed_kr_bd"/>
+
+</FrameLayout>
