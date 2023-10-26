@@ -89,27 +89,6 @@ class ConversationActivity : AppCompatActivity() {
 
         directory = filesDir.absolutePath //내부경로의 절대 경로
 
-
-        ///
-        ////
-        val dir = File(directory)
-
-        //파일 미존재 시 디렉토리 및 파일 생성
-        if(!dir.exists()) {
-            dir.mkdirs()
-        }
-
-        //파일의 full path
-        val writer = FileWriter(directory + "/" + "TAGS.txt", true)
-
-        //쓰기 속도 향상
-        val buffer = BufferedWriter(writer)
-        val result = "0 테스트1\n1 테스트2\n2 테스트테스트테스트\n3 TEST\n4 TESTTESTTEST\n5 TEST입니다"
-        buffer.write(result)
-        buffer.close()
-        ////////
-        ////
-
         loadTagList()
     }
 
