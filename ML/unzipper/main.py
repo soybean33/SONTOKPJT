@@ -1,7 +1,10 @@
 import os
 import zipfile
+import sys
 
-path_dir = './data/'
+input = sys.stdin.readline
+
+path_dir = input("경로 입력: (예시- ./data/) ").strip()
 file_list = os.listdir(path_dir)
 
 for zip_file in file_list:
