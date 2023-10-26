@@ -1,10 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!--  EditText   -->
     <declare-styleable name="CustomInput">
         <attr name="inputTitle" format="reference|string" />
-    </declare-styleable>
-
-    <declare-styleable name="CustomTag">
-        <attr name="tagColor" format="reference|string" />
     </declare-styleable>
 </resources>
