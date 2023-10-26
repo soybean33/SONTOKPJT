@@ -1,11 +1,11 @@
 DATASET:
-  DATA_ROOT: "/home/storage/sde_2T"
+  DATA_ROOT: "/ai-data"
   TRAIN:
-    IMG_PREFIX: "NIA_sen"
+    IMG_PREFIX: "NIA_SL"
     ANN_FILE: "KSL_TRAIN_QD_final.csv"
 
   VAL:
-    IMG_PREFIX: "NIA_sen"
+    IMG_PREFIX: "NIA_SL"
     ANN_FILE: "KSL_VAL_QD_final.csv"
 
   WORKER_PER_GPU: 16
@@ -50,9 +50,9 @@ PERIODS:
   EVAL: 1
   CHECKPOINT: 1
   LOG_ITERS: 300
-OUTPUT_DIR: outputs/ksl
+OUTPUT_DIR: outputs
 RESUME: ""
-GPU_ID: 0
+GPU_ID: 7
 NOTE: ""
 
 SEED: 33

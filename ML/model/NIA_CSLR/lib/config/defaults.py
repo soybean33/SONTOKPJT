@@ -77,7 +77,7 @@ _C.PERIODS.CHECKPOINT = 1
 _C.PERIODS.LOG_ITERS = 50
 
 # misc
-_C.OUTPUT_DIR = "outputs/ksl"
+_C.OUTPUT_DIR = "outputs"
 _C.RESUME = ""
 _C.GPU_ID = 0
 _C.RESUME = "" #"/home/PATH_TO/outputs/ksl/model_best.pth.tar"
