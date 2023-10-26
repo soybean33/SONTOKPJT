@@ -87,6 +87,29 @@ class ConversationActivity : AppCompatActivity() {
         isNowRecording = intent.getBooleanExtra("isRecord", false)
         createTextFile()
 
+        directory = filesDir.absolutePath //내부경로의 절대 경로
+
+
+        ///
+        ////
+        val dir = File(directory)
+
+        //파일 미존재 시 디렉토리 및 파일 생성
+        if(!dir.exists()) {
+            dir.mkdirs()
+        }
+
+        //파일의 full path
+        val writer = FileWriter(directory + "/" + "TAGS.txt", true)
+
+        //쓰기 속도 향상
+        val buffer = BufferedWriter(writer)
+        val result = "0 테스트1\n1 테스트2\n2 테스트테스트테스트\n3 TEST\n4 TESTTESTTEST\n5 TEST입니다"
+        buffer.write(result)
+        buffer.close()
+        ////////
+        ////
+
         loadTagList()
     }
 
@@ -94,9 +117,9 @@ class ConversationActivity : AppCompatActivity() {
         //tagList는 최초 1회만 로드
         if(TagSingleton.tagList.size > 0) return
 
+        Log.d(TAG, "Directory : " + directory)
         val file = File(directory)
 
-        Log.d(TAG, "Directory : " + directory)
 
         //파일 미존재
         if(!file.exists()) {
@@ -119,12 +142,16 @@ class ConversationActivity : AppCompatActivity() {
             line = buffer.readLine() //줄 단위로 read
             if(line == null) break
             else {
-                val (index, text, color) = line.split(" ")
-                TagSingleton.tagList.add(CommonTagItem(index, text, color))
+                val (index, text) = line.split(" ")
+                TagSingleton.tagList.add(CommonTagItem(index, text, ))
             }
         }
 
-        TagSingleton.tagList.add(CommonTagItem("0", "TEST", "#FF00FF"))
+        val colorList = resources.getIntArray(R.array.tagColorArr)
+        for(color in colorList) {
+            TagSingleton.colorList.add((color))
+        }
+        TagSingleton.tagList.add(CommonTagItem("0", "TEST"))
 
         buffer.close()
     }
@@ -143,11 +170,11 @@ class ConversationActivity : AppCompatActivity() {
     }
 
     private fun getMyConversation(content:String, time:String) : String {
-        return getString(R.string.my_conversation_tag) + content + getString(R.string.my_conversation_tag) + time
+        return getString(R.string.my_conversation_content) + content + getString(R.string.my_conversation_time) + time
     }
 
     private fun getYourConversation(content:String, time:String) : String {
-        return getString(R.string.your_conversation_tag) + content + getString(R.string.your_conversation_tag) + time
+        return getString(R.string.your_conversation_content) + content + getString(R.string.your_conversation_time) + time
     }
 
     //isMine - 0:나의 대사, 1:상대의 대사
@@ -251,6 +278,8 @@ class ConversationActivity : AppCompatActivity() {
 
     //대화 종료 처리 함수
     private fun stopConversation() {
+        Log.d(TAG, "Stop Button is Clicked!!")
+
         lateinit var cTitle: String
         lateinit var cTags: String
 

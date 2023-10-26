@@ -10,6 +10,8 @@
     <!--  대화 저장  -->
     <string name="input_title">제목</string>
     <string name="input_tag">태그</string>
-    <string name="my_conversation_tag">&gt;&gt;</string> <!-- >> -->
-    <string name="your_conversation_tag">&lt;&lt;</string> <!-- << -->
+    <string name="my_conversation_content">&gt;&gt;</string> <!-- >> -->
+    <string name="my_conversation_time">&gt;</string> <!-- > -->
+    <string name="your_conversation_content">&lt;&lt;</string> <!-- << -->
+    <string name="your_conversation_time">&lt;</string> <!-- < -->
 </resources>
