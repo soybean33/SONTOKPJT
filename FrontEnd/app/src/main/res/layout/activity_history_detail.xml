@@ -4,13 +4,14 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/cl_HistoryDetail"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
+    android:layout_height="match_parent"
     tools:context=".feature.history.HistoryDetailActivity">
 
     <LinearLayout
         android:id="@+id/llh_HistoryDetail"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:weightSum="100"
         android:orientation="vertical"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
@@ -18,9 +19,10 @@
         <LinearLayout
             android:id="@+id/llv_HistoryDetailTitle"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_weight="100"
-            android:orientation="horizontal">
+            android:layout_height="0dp"
+            android:layout_weight="15"
+            android:orientation="horizontal"
+            android:background="@color/jaffa500">
 
             <LinearLayout
                 android:id="@+id/llh_HistoryDetailTitle"
@@ -78,19 +80,17 @@
 
             </LinearLayout>
 
+
         </LinearLayout>
 
         <LinearLayout
             android:id="@+id/llv_HistoryDetail"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_weight="100"
+            android:layout_height="0dp"
+            android:layout_weight="85"
             android:orientation="horizontal">
 
-            <Space
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_weight="5" />
+
 
             <androidx.core.widget.NestedScrollView
                 android:layout_width="match_parent"
@@ -100,29 +100,25 @@
                 <LinearLayout
                     android:id="@+id/llh_HistoryDetailConversation"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
+                    android:layout_height="match_parent"
                     android:layout_weight="90"
                     android:orientation="vertical">
 
                     <Space
                         android:layout_width="match_parent"
-                        android:layout_height="20dp" />
+                        android:layout_height="wrap_content" />
 
                     <androidx.recyclerview.widget.RecyclerView
                         android:id="@+id/rv_Messages"
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
-                        android:layout_marginTop="16dp"
                         app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
 
 
                 </LinearLayout>
             </androidx.core.widget.NestedScrollView>
 
-            <Space
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_weight="5" />
+
 
         </LinearLayout>
 
