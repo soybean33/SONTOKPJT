@@ -13,7 +13,7 @@ class HistoryItemTagAdapter(private val historyItemList: ArrayList<HistoryItemMo
     inner class TagViewHolder(private val binding: HistoryItemTagBinding) : RecyclerView.ViewHolder(binding.root) {
 
         fun bind(item: HistoryItemModel) {
-            binding.tvHistoryTag.text = item.historyItemTag.toString()
+            binding.tvHistoryTag.text = item.historyItemTag
         }
     }
 
