@@ -69,8 +69,8 @@ class HistoryFragment : Fragment() {
 //        historyList.clear()
 
 
-        val pref = PreferenceManager.getDefaultSharedPreferences(requireContext())  // import androidx.preference.PreferenceManager 인지 확인
-        val token = pref.getString("SERVER_ACCESS_TOKEN", "1")
+//        val pref = PreferenceManager.getDefaultSharedPreferences(requireContext())  // import androidx.preference.PreferenceManager 인지 확인
+//        val token = pref.getString("SERVER_ACCESS_TOKEN", "1")
 
 //
 
