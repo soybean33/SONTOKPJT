@@ -88,27 +88,21 @@
                     android:layout_width="match_parent"
                     android:layout_height="10dp" />
 
-                <androidx.core.widget.NestedScrollView
-                    android:id="@+id/nsv_History"
+                <LinearLayout
+                    android:id="@+id/llv_HistoryItem"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="90"
-                    android:background="@color/listtile"
-                    android:fillViewport="true">
+                    android:layout_height="match_parent"
+                    android:orientation="vertical">
 
-                    <LinearLayout
-                        android:id="@+id/llv_HistoryItem"
+                    <androidx.recyclerview.widget.RecyclerView
+                        android:id="@+id/rv_HistoryItem"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:orientation="vertical">
+                        android:background="@drawable/topline"
+                        android:orientation="vertical"
+                        android:padding="10dp" />
+                </LinearLayout>
 
-                        <androidx.recyclerview.widget.RecyclerView
-                            android:id="@+id/rv_HistoryItem"
-                            android:layout_width="match_parent"
-                            android:layout_height="match_parent"
-                            android:background="@drawable/topline" />
-                    </LinearLayout>
-                </androidx.core.widget.NestedScrollView>
             </LinearLayout>
 
             <Space
