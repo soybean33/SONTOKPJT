@@ -20,17 +20,17 @@ class HistoryDetailConversationAdapter(private val historyDetailConList: ArrayLi
 
             // 왼쪽/오른쪽 여부에 따라 메시지 아이템을 조절
             val isLeftMessage = historyDetailConversation.isLeft
-            val layoutParams = binding.flHistoryConversationText.layoutParams as ConstraintLayout.LayoutParams
+            val layoutParams = binding.tvHistoryConversationText.layoutParams as ConstraintLayout.LayoutParams
             if (isLeftMessage) {
                 // 왼쪽 메시지
-                layoutParams.leftMargin = 10
-                layoutParams.leftToLeft = Gravity.LEFT
+                layoutParams.leftMargin = 20
+//                layoutParams.leftToLeft = Gravity.LEFT
 //                layoutParams.marginEnd = 200 // 오른쪽 마진 조절
             } else {
                 // 오른쪽 메시지
 //                layoutParams.marginStart = 200 // 왼쪽 마진 조절
-                layoutParams.rightMargin = 10
-                layoutParams.leftToRight = Gravity.RIGHT
+                layoutParams.rightMargin = 20
+//                layoutParams.leftToRight = Gravity.RIGHT
             }
             binding.llhHistoryConversationText.layoutParams = layoutParams
 

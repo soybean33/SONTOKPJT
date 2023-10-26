@@ -21,8 +21,9 @@ class HistoryListAdapter(val historyList: ArrayList<HistoryListModel>) : Recycle
         val rvHistoryItemTagComponent: RecyclerView = binding.rvHistoryItemTagCompoenet
 
         fun bind(historyModel: HistoryListModel) {
-            val historyTitle = historyModel.historyTitle
-            val historyEndedTime = historyModel.EndedTime
+            tvHistoryTitle.text = historyModel.historyTitle
+            tvEndedTime.text = historyModel.EndedTime.toString() // 형변환을 고려해야 할 수도 있습니다.
+
 
 //            // 리소스 이름을 사용하여 리소스 ID를 가져옵니다.
 //            val imageResourceID = itemView.resources.getIdentifier(
