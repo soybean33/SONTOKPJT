@@ -8,6 +8,7 @@ import android.view.ViewGroup
 import android.widget.BaseAdapter
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.cardview.widget.CardView
 import androidx.core.content.ContextCompat
 import com.sts.sontalksign.R
 
@@ -23,10 +24,11 @@ class CommonTagAdapter(private val tags: MutableList<CommonTagItem>) : BaseAdapt
         if(convertView == null) convertView = LayoutInflater.from(parent?.context).inflate(R.layout.history_tag_item, parent, false)
 
         val item: CommonTagItem = tags[position]
-        val tagView = convertView!!.findViewById<TextView>(R.id.tv_tag)
-//        tagView.background = ContextCompat.getDrawable(tagView.context, Color.parseColor(item.tagColor))
-        tagView.background = ColorDrawable(Color.parseColor(item.tagColor))
-        tagView.text = item.tagText
+        val tagView = convertView!!.findViewById<CardView>(R.id.mcv_tag)
+        val tagContent = convertView.findViewById<TextView>(R.id.tv_tag)
+        tagView.setCardBackgroundColor((TagSingleton.colorList[position % 10]))
+
+        tagContent.text = item.tagText
 
         return convertView
     }
