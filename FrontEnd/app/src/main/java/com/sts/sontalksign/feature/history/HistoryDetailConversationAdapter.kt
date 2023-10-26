@@ -1,5 +1,6 @@
 package com.sts.sontalksign.feature.history
 
+import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.constraintlayout.widget.ConstraintLayout
@@ -19,25 +20,29 @@ class HistoryDetailConversationAdapter(private val historyDetailConList: ArrayLi
 
             // 왼쪽/오른쪽 여부에 따라 메시지 아이템을 조절
             val isLeftMessage = historyDetailConversation.isLeft
-            val layoutParams = binding.llhHistoryConversationText.layoutParams as ViewGroup.MarginLayoutParams
+            val layoutParams = binding.flHistoryConversationText.layoutParams as ConstraintLayout.LayoutParams
             if (isLeftMessage) {
                 // 왼쪽 메시지
-                layoutParams.layoutDirection = ConstraintLayout.LayoutParams.PARENT_ID
-                layoutParams.layoutDirection = ConstraintLayout.LayoutParams.UNSET
+                layoutParams.leftMargin = 10
+                layoutParams.leftToLeft = Gravity.LEFT
+//                layoutParams.marginEnd = 200 // 오른쪽 마진 조절
             } else {
                 // 오른쪽 메시지
-                layoutParams.layoutDirection = ConstraintLayout.LayoutParams.UNSET
-                layoutParams.layoutDirection = ConstraintLayout.LayoutParams.PARENT_ID
+//                layoutParams.marginStart = 200 // 왼쪽 마진 조절
+                layoutParams.rightMargin = 10
+                layoutParams.leftToRight = Gravity.RIGHT
             }
             binding.llhHistoryConversationText.layoutParams = layoutParams
+
+
         }
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): CustomViewHolder {
-        val binding = HistoryConversationBinding.inflate(
-            LayoutInflater.from(parent.context), parent, false
-        )
+        val binding = HistoryConversationBinding.inflate(LayoutInflater.from(parent.context), parent, false)
         return CustomViewHolder(binding)
+
+
     }
 
     override fun getItemCount(): Int {

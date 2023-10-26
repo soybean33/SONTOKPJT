@@ -60,8 +60,12 @@ class HistoryDetailActivity : AppCompatActivity() {
         val dummyCon3 = HistoryDetailConversationModel("대화3", "시간3", true)
         val dummyCon4 = HistoryDetailConversationModel("대화4", "시간4", false)
 
+
+
+
         // 생성된 더미 데이터를 리스트에 추가
         historyDetailTagList.addAll(listOf(dummyTag1, dummyTag2, dummyTag3, dummyTag4))
+        // 생성된 더미 데이터를 리스트에 추가
         historyDetailConList.addAll(listOf(dummyCon1, dummyCon2, dummyCon3, dummyCon4))
 
         // 첫 번째 리사이클러뷰 어댑터 설정
