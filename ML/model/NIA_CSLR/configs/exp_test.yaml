@@ -1,5 +1,5 @@
 DATASET:
-  DATA_ROOT: "/home/storage/sde_2T"
+  DATA_ROOT: "/ai-data"
   TRAIN:
     IMG_PREFIX: "NIA_sen"
     ANN_FILE: "KSL_TRAIN_QD_final.csv"
