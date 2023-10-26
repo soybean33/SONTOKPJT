@@ -3,16 +3,6 @@
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
     <color name="gray">#FFD9D9D9</color>
-    <color name="tag0color">#FF6EAFFB</color>
-    <color name="tag1color">#FFFF9BDD</color>
-    <color name="tag2color">#FFFFE977</color>
-    <color name="tag3color">#FF77DD77</color>
-    <color name="tag4color">#FFADB4FF</color>
-    <color name="tag5color">#FFFF9899</color>
-    <color name="tag6color">#FFFF6961</color>
-    <color name="tag7color">#FFBEFD73</color>
-    <color name="tag8color">#FF89CFF0</color>
-    <color name="tag9color">#FFFF964F</color>
     <color name="jaffa200">#FFFFD5A8</color>
     <color name="jaffa500">#FFFE6B11</color>
     <color name="rectangle100">#FFFFE9D9</color>
@@ -23,4 +13,28 @@
     <color name="maingray">#FF757575</color>
     <color name="subgray">#FFD9D9D9</color>
     <color name="listtile">#FFFFFCF9</color>
+
+    <!--  tag 색상  -->
+    <color name="tag0color">#FF6EAFFB</color>
+    <color name="tag1color">#FFFF9BDD</color>
+    <color name="tag2color">#FFFFE977</color>
+    <color name="tag3color">#FF77DD77</color>
+    <color name="tag4color">#FFADB4FF</color>
+    <color name="tag5color">#FFFF9899</color>
+    <color name="tag6color">#FFFF6961</color>
+    <color name="tag7color">#FFBEFD73</color>
+    <color name="tag8color">#FF89CFF0</color>
+    <color name="tag9color">#FFFF964F</color>
+    <array name="tagColorArr">
+        <item>@color/tag0color</item>
+        <item>@color/tag1color</item>
+        <item>@color/tag2color</item>
+        <item>@color/tag3color</item>
+        <item>@color/tag4color</item>
+        <item>@color/tag5color</item>
+        <item>@color/tag6color</item>
+        <item>@color/tag7color</item>
+        <item>@color/tag8color</item>
+        <item>@color/tag9color</item>
+    </array>
 </resources>
