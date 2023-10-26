@@ -1,22 +1,13 @@
 package com.sts.sontalksign.feature.conversation
 
 import android.Manifest
-import android.app.Activity
-import android.content.Intent
 import android.content.pm.PackageManager
-import android.graphics.Bitmap
 import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.provider.MediaStore
 import android.util.Log
 import android.view.inputmethod.EditorInfo
-import android.widget.ImageView
 import android.widget.Toast
-import androidx.camera.core.CameraControl
-import androidx.camera.core.CameraFilter
-import androidx.camera.core.CameraInfo
-import androidx.camera.core.CameraProvider
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageCapture
 import androidx.camera.core.Preview
@@ -28,7 +19,10 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.sts.sontalksign.R
 import com.sts.sontalksign.databinding.ActivityConversationBinding
+import com.sts.sontalksign.feature.common.CommonTagAdapter
+import com.sts.sontalksign.feature.common.CommonTagItem
 import com.sts.sontalksign.feature.common.CustomForm
+import com.sts.sontalksign.feature.common.TagSingleton
 import java.io.BufferedReader
 import java.io.BufferedWriter
 import java.io.File
@@ -43,6 +37,8 @@ class ConversationActivity : AppCompatActivity() {
     private val binding by lazy {
         ActivityConversationBinding.inflate(layoutInflater)
     }
+
+    private val TAG: String = "ConversationActivity"
 
     private var imageCapture: ImageCapture? = null
 
@@ -90,6 +86,74 @@ class ConversationActivity : AppCompatActivity() {
 
         isNowRecording = intent.getBooleanExtra("isRecord", false)
         createTextFile()
+
+        directory = filesDir.absolutePath //내부경로의 절대 경로
+
+
+        ///
+        ////
+        val dir = File(directory)
+
+        //파일 미존재 시 디렉토리 및 파일 생성
+        if(!dir.exists()) {
+            dir.mkdirs()
+        }
+
+        //파일의 full path
+        val writer = FileWriter(directory + "/" + "TAGS.txt", true)
+
+        //쓰기 속도 향상
+        val buffer = BufferedWriter(writer)
+        val result = "0 테스트1\n1 테스트2\n2 테스트테스트테스트\n3 TEST\n4 TESTTESTTEST\n5 TEST입니다"
+        buffer.write(result)
+        buffer.close()
+        ////////
+        ////
+
+        loadTagList()
+    }
+
+    fun loadTagList() {
+        //tagList는 최초 1회만 로드
+        if(TagSingleton.tagList.size > 0) return
+
+        Log.d(TAG, "Directory : " + directory)
+        val file = File(directory)
+
+
+        //파일 미존재
+        if(!file.exists()) {
+            Log.d(TAG, "TAGS file does not exist!!")
+            file.mkdirs()
+            //return
+        }
+
+        val tagFN = "TAGS.txt"
+        val fPath = directory + "/" + tagFN
+        val writer = FileWriter(fPath, true)
+
+        val reader = FileReader(fPath)
+        val buffer = BufferedReader(reader)
+
+        var line: String? = ""
+//        var result = StringBuffer()
+
+        while(true) {
+            line = buffer.readLine() //줄 단위로 read
+            if(line == null) break
+            else {
+                val (index, text) = line.split(" ")
+                TagSingleton.tagList.add(CommonTagItem(index, text, ))
+            }
+        }
+
+        val colorList = resources.getIntArray(R.array.tagColorArr)
+        for(color in colorList) {
+            TagSingleton.colorList.add((color))
+        }
+        TagSingleton.tagList.add(CommonTagItem("0", "TEST"))
+
+        buffer.close()
     }
 
     //대화 내용 기록
@@ -106,11 +170,11 @@ class ConversationActivity : AppCompatActivity() {
     }
 
     private fun getMyConversation(content:String, time:String) : String {
-        return getString(R.string.my_conversation_tag) + content + getString(R.string.my_conversation_tag) + time
+        return getString(R.string.my_conversation_content) + content + getString(R.string.my_conversation_time) + time
     }
 
     private fun getYourConversation(content:String, time:String) : String {
-        return getString(R.string.your_conversation_tag) + content + getString(R.string.your_conversation_tag) + time
+        return getString(R.string.your_conversation_content) + content + getString(R.string.your_conversation_time) + time
     }
 
     //isMine - 0:나의 대사, 1:상대의 대사
@@ -214,24 +278,31 @@ class ConversationActivity : AppCompatActivity() {
 
     //대화 종료 처리 함수
     private fun stopConversation() {
+        Log.d(TAG, "Stop Button is Clicked!!")
+
         lateinit var cTitle: String
         lateinit var cTags: String
 
-        //팝업을 띄운다
-        val cForm = CustomForm(this)
-        cForm.show()
-        cForm.setOnBtnStoreClickedListener(object: CustomForm.onBtnStoreClickedListener {
-            override fun onBtnStoreClicked(title: String, tags: String) {
-                cTitle = title
-                cTags = tags
+        //녹음하기 선택 시 - 팝업 발생 및 대화 내용 저장
+        if(isNowRecording) {
+            val cForm = CustomForm(this)
+            cForm.show()
+            cForm.setOnBtnStoreClickedListener(object: CustomForm.onBtnStoreClickedListener {
+                override fun onBtnStoreClicked(title: String, tags: String) {
+                    cTitle = title
+                    cTags = tags
 
-                val rConversation = cTitle + "\nTAGS_" + cTags + "\n" + textList
-                //대화 종료 전 기록에 쌓인 대화 내용을 저장
-                writeTextFile(rConversation)
+                    val rConversation = cTitle + "\nTAGS_" + cTags + "\n" + textList
+                    //대화 종료 전 기록에 쌓인 대화 내용을 저장
+                    writeTextFile(rConversation)
 
-                finish()
-            }
-        })
+                    finish()
+                }
+            })
+        }
+        else { //녹음하기 미선택 시 - "대화 종료" 질의 팝업 발생
+            //TODO: "대화를 종료하시겠습니까?" 팝업 생성 및 발생
+        }
     }
 
     private fun allPermissionsGranted() = REQUIRED_PERMISSIONS.all {
