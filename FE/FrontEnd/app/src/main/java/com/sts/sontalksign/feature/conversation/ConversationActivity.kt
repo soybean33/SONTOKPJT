@@ -1,13 +1,19 @@
 package com.sts.sontalksign.feature.conversation
 
+import NaverRecognizer
 import android.Manifest
 import android.content.pm.PackageManager
 import android.os.Build
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.os.Handler
+import android.os.Message
 import android.util.Log
+import android.view.View
 import android.view.inputmethod.EditorInfo
+import android.widget.Button
+import android.widget.TextView
 import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageCapture
 import androidx.camera.core.Preview
@@ -17,21 +23,24 @@ import androidx.camera.video.Recording
 import androidx.camera.video.VideoCapture
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import com.naver.speech.clientapi.SpeechRecognitionResult
 import com.sts.sontalksign.R
 import com.sts.sontalksign.databinding.ActivityConversationBinding
-import com.sts.sontalksign.feature.common.CommonTagAdapter
 import com.sts.sontalksign.feature.common.CommonTagItem
 import com.sts.sontalksign.feature.common.CustomForm
 import com.sts.sontalksign.feature.common.TagSingleton
-import com.sts.sontalksign.global.FileFormats
+import com.sts.sontalksign.feature.login.MainActivity
+import com.sts.sontalksign.feature.utils.AudioWriterPCM
 import java.io.BufferedReader
 import java.io.BufferedWriter
 import java.io.File
 import java.io.FileReader
 import java.io.FileWriter
+import java.lang.ref.WeakReference
 import java.text.SimpleDateFormat
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
+
 
 class ConversationActivity : AppCompatActivity() {
 
@@ -56,6 +65,53 @@ class ConversationActivity : AppCompatActivity() {
 
     private lateinit var textList: String
 
+    // naverspeech-sdk-android
+    private val CLIENT_ID = "89kna7451i"
+    private var handler: RecognitionHandler? = null
+    private var naverRecognizer: NaverRecognizer? = null
+    private var txtResult: TextView? = null
+    private var btnStart: Button? = null
+    private var mResult: String? = null
+    private var audioWriter: AudioWriterPCM? = null
+
+    private fun handleMessage(msg: Message) {
+        when (msg.what) {
+            R.id.clientReady -> {
+                txtResult!!.text = "Connected"
+                audioWriter = AudioWriterPCM(
+                    filesDir.absolutePath + "/NaverSpeechTest")
+                audioWriter!!.open("Test")
+            }
+            R.id.audioRecording -> audioWriter?.write(msg.obj as ShortArray)
+            R.id.partialResult -> {
+                mResult = msg.obj as String
+                txtResult!!.text = mResult
+            }
+            R.id.finalResult -> {
+                val speechRecognitionResult = msg.obj as SpeechRecognitionResult
+                val results = speechRecognitionResult.results
+                val strBuf = StringBuilder()
+                for (result in results) {
+                    strBuf.append(result)
+                    strBuf.append("\n")
+                }
+                mResult = strBuf.toString()
+                txtResult!!.text = mResult
+            }
+            R.id.recognitionError -> {
+                audioWriter?.close()
+                mResult = "Error code : ${msg.obj}"
+                txtResult!!.text = mResult
+                btnStart!!.setText(R.string.str_start)
+                btnStart!!.isEnabled = true
+            }
+            R.id.clientInactive -> {
+                audioWriter?.close()
+                btnStart!!.setText(R.string.str_start)
+                btnStart!!.isEnabled = true
+            }
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -91,10 +147,71 @@ class ConversationActivity : AppCompatActivity() {
         /*대화내용 저장*/
         //내부저장소의 경로 저장
         directory = filesDir.absolutePath //내부경로의 절대 경로
-        createTextFile() //대화 텍스트 파일 생성
+
+        loadTagList()
+
+        txtResult = findViewById<View>(R.id.txt_result) as TextView
+        btnStart = findViewById<View>(R.id.btn_start) as Button
+
+        handler = RecognitionHandler(this)
+        naverRecognizer = NaverRecognizer(this, handler!!, CLIENT_ID)
+
+        btnStart?.setOnClickListener {
+            if (!naverRecognizer?.getSpeechRecognizer()?.isRunning!!) {
+                mResult = ""
+                txtResult?.text = "Connecting..."
+                btnStart!!.setText(R.string.str_stop)
+                naverRecognizer?.recognize()
+            } else {
+                Log.d(TAG, "stop and wait Final Result")
+                btnStart?.isEnabled = false
+                naverRecognizer?.getSpeechRecognizer()?.stop()
+            }
+        }
     }
 
-    
+    fun loadTagList() {
+        //tagList는 최초 1회만 로드
+        if(TagSingleton.tagList.size > 0) return
+
+        Log.d(TAG, "Directory : " + directory)
+        val file = File(directory)
+
+
+        //파일 미존재
+        if(!file.exists()) {
+            Log.d(TAG, "TAGS file does not exist!!")
+            file.mkdirs()
+            //return
+        }
+
+        val tagFN = "TAGS.txt"
+        val fPath = directory + "/" + tagFN
+        val writer = FileWriter(fPath, true)
+
+        val reader = FileReader(fPath)
+        val buffer = BufferedReader(reader)
+
+        var line: String? = ""
+//        var result = StringBuffer()
+
+        while(true) {
+            line = buffer.readLine() //줄 단위로 read
+            if(line == null) break
+            else {
+                val (index, text) = line.split(" ")
+                TagSingleton.tagList.add(CommonTagItem(index, text))
+            }
+        }
+
+        val colorList = resources.getIntArray(R.array.tagColorArr)
+        for(color in colorList) {
+            TagSingleton.colorList.add((color))
+        }
+        TagSingleton.tagList.add(CommonTagItem("0", "TEST"))
+
+        buffer.close()
+    }
 
     //대화 내용 기록
     private fun createTextFile() {
@@ -275,5 +392,33 @@ class ConversationActivity : AppCompatActivity() {
                     add(Manifest.permission.WRITE_EXTERNAL_STORAGE)
                 }
             }.toTypedArray()
+    }
+
+    public override fun onStart() {
+        super.onStart()
+        naverRecognizer?.getSpeechRecognizer()?.initialize()
+    }
+
+    public override fun onResume() {
+        super.onResume()
+        mResult = ""
+        txtResult?.text = ""
+        btnStart?.setText(R.string.str_start)
+        btnStart?.isEnabled = true
+    }
+
+    public override fun onStop() {
+        super.onStop()
+        naverRecognizer?.getSpeechRecognizer()?.release()
+    }
+
+    internal class RecognitionHandler(activity: ConversationActivity) : Handler() {
+        private val mActivity: WeakReference<ConversationActivity>
+
+        init {mActivity = WeakReference(activity)}
+        override fun handleMessage(msg: Message) {
+            val activity = mActivity.get()
+            activity?.handleMessage(msg)
+        }
     }
 }
