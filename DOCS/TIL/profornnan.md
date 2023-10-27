@@ -73,3 +73,17 @@
 - AI 모델 코드 분석
 - ML 이론 학습
 
+## 23.10.27
+
+### Today I Did
+
+- 수어 영상 프레임 단위 추출 코드 구현
+- MediaPipe Output Format 분석
+- MediaPipe Hand Landmark 추출 코드 구현
+
+### KPT
+
+- Keep : ML 관련 작업들을 차근차근 진행하고 있습니다.
+- Problem : 데이터 전처리 방식을 선정하는데 있어서 시간이 많이 걸렸습니다.
+- Try : 모델 테스트 및 학습을 위해 빠르게 데이터 전처리 작업을 마무리 할 생각입니다.
+
