@@ -19,16 +19,25 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.sts.sontalksign.R
 import com.sts.sontalksign.databinding.ActivityConversationBinding
+import com.sts.sontalksign.feature.apis.NaverAPI
 import com.sts.sontalksign.feature.common.CommonTagAdapter
 import com.sts.sontalksign.feature.common.CommonTagItem
 import com.sts.sontalksign.feature.common.CustomForm
 import com.sts.sontalksign.feature.common.TagSingleton
 import com.sts.sontalksign.global.FileFormats
+import okhttp3.ResponseBody
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
+import retrofit2.http.Query
 import java.io.BufferedReader
 import java.io.BufferedWriter
+import java.io.DataOutputStream
 import java.io.File
+import java.io.FileOutputStream
 import java.io.FileReader
 import java.io.FileWriter
+import java.net.URLEncoder
 import java.text.SimpleDateFormat
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
@@ -92,8 +101,48 @@ class ConversationActivity : AppCompatActivity() {
         //내부저장소의 경로 저장
         directory = filesDir.absolutePath //내부경로의 절대 경로
         createTextFile() //대화 텍스트 파일 생성
+
+
+
+        //Naver API TEST용
+        binding.button.setOnClickListener {
+            naverapi()
+        }
     }
 
+    private fun naverapi() {
+        val text = URLEncoder.encode("집가고싶다.", "UTF-8")
+
+        NaverAPI.create().generateSpeech("nara", 0, 0,0, "mp3", text).enqueue(object : Callback<ResponseBody> {
+            override fun onResponse(call: Call<ResponseBody>, response: Response<ResponseBody>) {
+                if(response.isSuccessful) {
+                    val body = response.body()
+                    if (body != null) {
+                        val `is` = body.byteStream()
+                        val bytes = ByteArray(1024)
+                        var read: Int
+                        val tempName = System.currentTimeMillis().toString()
+                        val f = File("$directory/$tempName.mp3")
+                        f.createNewFile()
+                        val outputStream = FileOutputStream(f)
+                        while (`is`.read(bytes).also { read = it } != -1) {
+                            outputStream.write(bytes, 0, read)
+                        }
+                        `is`.close()
+                    }
+                } else {
+                    val errorBody = response.errorBody()
+                    if(errorBody != null) {
+                        Log.d("ConversationgActivity", "Error: " + errorBody.string())
+                    }
+                }
+            }
+
+            override fun onFailure(call: Call<ResponseBody>, t: Throwable) {
+                Log.d("ConversationActivity", t.message!!)
+            }
+        })
+    }
     
 
     //대화 내용 기록
