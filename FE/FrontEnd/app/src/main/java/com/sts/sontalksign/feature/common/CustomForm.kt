@@ -48,20 +48,33 @@ class CustomForm(private val context : AppCompatActivity) {
                 binding.rvTagList.visibility = View.VISIBLE
             }
         }
-
-        val layoutManager = GridLayoutManager(this.context, 2)
-        binding.rvTagList.layoutManager = layoutManager
-        layoutManager.spanSizeLookup = object : GridLayoutManager.SpanSizeLookup() {
-            override fun getSpanSize(position: Int): Int {
-                // 여기에서 각 아이템의 열 수를 결정
-                // 예를 들어, position을 기반으로 열 수를 동적으로 설정할 수 있습니다.
-                return if (position % 2 == 0) 1 else 2 // 예시: 홀수 위치는 2열, 짝수 위치는 1열
-            }
-        }
     }
 
     fun loadTagView() {
+        val layoutManager = GridLayoutManager(this.context, 4)
+        binding.rvTagList.layoutManager = layoutManager
+//        layoutManager.spanSizeLookup = object : GridLayoutManager.SpanSizeLookup() {
+//            var sumLen : Int = 0
+//            var rowPos : Int = 0
+//            override fun getSpanSize(position: Int): Int {
+//                var len : Int = TagSingleton.tagList[position].tagText.length
+//                rowPos++
+//                if(sumLen + len > 22) {
+//                    sumLen = len
+//                    rowPos = 1
+//                    return rowPos
+//                } else {
+//                    sumLen += len
+//                    return rowPos
+//                }
+//                // 여기에서 각 아이템의 열 수를 결정
+//                // 예를 들어, position을 기반으로 열 수를 동적으로 설정할 수 있습니다.
+//                //return if (position % 2 == 0) 1 else 2 // 예시: 홀수 위치는 2열, 짝수 위치는 1열
+//            }
+//        }
+
         binding.rvTagList.adapter = tagAdapter
+
         //TODO: TAG의 클릭 이벤트 처리
 //        binding.lvTagList.setOnClickListener { parent: AdapterView<*>, view: View, position: Int, id: Long ->
 //            val tag = parent.getItemAtPosition(position) as CommonTagItem
