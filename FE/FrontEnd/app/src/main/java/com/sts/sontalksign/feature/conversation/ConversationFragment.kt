@@ -13,8 +13,10 @@ import com.sts.sontalksign.feature.common.CommonTagItem
 import com.sts.sontalksign.feature.common.TagSingleton
 import com.sts.sontalksign.global.FileFormats
 import java.io.BufferedReader
+import java.io.BufferedWriter
 import java.io.File
 import java.io.FileReader
+import java.io.FileWriter
 
 class ConversationFragment : Fragment() {
 
@@ -50,6 +52,16 @@ class ConversationFragment : Fragment() {
         if (!dir.exists()) {
             dir.mkdirs()
         }
+
+        //////지우기
+//        //파일의 full path
+//        val writer = FileWriter(directory + "/" + FileFormats.tagFileName, true)
+//
+//        //쓰기 속도 향상
+//        val Tbuffer = BufferedWriter(writer)
+//        Tbuffer.write("0 테스트\n1 TEST\n2 TEST입니다\n3 TESTTEST\n4 테스트입니다\n5 테스트테스트\n6 TEST테스트\n")
+//        Tbuffer.close()
+        /////////
 
         val fullPath = directory + "/" + FileFormats.tagFileName
         val reader = FileReader(fullPath)
