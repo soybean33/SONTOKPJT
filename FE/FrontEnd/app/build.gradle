@@ -54,6 +54,9 @@ dependencies {
     // 미디어 파이프
     implementation 'com.google.mediapipe:tasks-vision:latest.release'
 
+    // CSR Mobile SDK
+    implementation  'com.naver.speech.clientapi:naverspeech-ncp-sdk-android:1.1.6'
+
     implementation 'androidx.core:core-ktx:1.8.0'
     implementation 'androidx.appcompat:appcompat:1.6.1'
     implementation 'com.google.android.material:material:1.5.0'
