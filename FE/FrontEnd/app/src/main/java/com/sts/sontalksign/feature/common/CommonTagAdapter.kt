@@ -1,35 +1,55 @@
 package com.sts.sontalksign.feature.common
 
-import android.graphics.Color
-import android.graphics.drawable.ColorDrawable
+import android.annotation.SuppressLint
+import android.content.Context
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.BaseAdapter
-import android.widget.ImageView
 import android.widget.TextView
 import androidx.cardview.widget.CardView
-import androidx.core.content.ContextCompat
+import androidx.recyclerview.widget.GridLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.sts.sontalksign.R
+import org.w3c.dom.Text
 
-class CommonTagAdapter(private val tags: MutableList<CommonTagItem>) : BaseAdapter() {
-    override fun getCount(): Int = tags.size
+/**
+ * 대화내용 저장 FORM에서 사용하는 TAG 리스트의 Adapter
+ * tags에는 현재 저장된 개인의 태그 정보가 저장되어 있습니다.
+ */
+class CommonTagAdapter(private val tags: List<CommonTagItem>) : RecyclerView.Adapter<CommonTagAdapter.ViewHolder>() {
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
+        val view = LayoutInflater.from(parent.context).inflate(R.layout.history_tag_item, parent, false)
+        return ViewHolder(view)
+    }
 
-    override fun getItem(position: Int): CommonTagItem = tags[position]
+    override fun onBindViewHolder(holder: ViewHolder, position: Int) {
+        holder.bind(tags[position])
 
-    override fun getItemId(position: Int): Long = position.toLong()
+//        val layoutParams = holder.itemView.layoutParams as GridLayoutManager.LayoutParams
+//        layoutParams.width = if (position % 2 == 0) {
+//            2
+//        } else {
+//            1
+//        }
+//        holder.itemView.layoutParams = layoutParams
+    }
 
-    override fun getView(position: Int, view: View?, parent: ViewGroup?): View {
-        var convertView = view
-        if(convertView == null) convertView = LayoutInflater.from(parent?.context).inflate(R.layout.history_tag_item, parent, false)
+    override fun getItemCount(): Int {
+        return tags.size
+    }
 
-        val item: CommonTagItem = tags[position]
-        val tagView = convertView!!.findViewById<CardView>(R.id.mcv_tag)
-        val tagContent = convertView.findViewById<TextView>(R.id.tv_tag)
-        tagView.setCardBackgroundColor((TagSingleton.colorList[position % 10]))
+    inner class ViewHolder(view : View) : RecyclerView.ViewHolder(view) {
+        private val tagView: CardView = itemView.findViewById(R.id.mcv_tag)
+        private val tagContent: TextView = itemView.findViewById(R.id.tv_tag)
 
-        tagContent.text = item.tagText
+        fun bind(item: CommonTagItem) {
+            //TODO: 색상의 개수 상수화
+            tagView.setCardBackgroundColor(TagSingleton.colorList[item.tagInd.toInt() % 10]) //MaterialCardView의 배경색상 지정
+            tagContent.text = item.tagText //TextView의 텍스트 지정
+        }
 
-        return convertView
+
     }
 }
