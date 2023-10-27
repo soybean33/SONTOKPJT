@@ -14,4 +14,7 @@
     <string name="my_conversation_time">&gt;</string> <!-- > -->
     <string name="your_conversation_content">&lt;&lt;</string> <!-- << -->
     <string name="your_conversation_time">&lt;</string> <!-- < -->
+
+    <string name="str_start">Start</string>
+    <string name="str_stop">Stop</string>
 </resources>
