@@ -8,15 +8,15 @@ _C.MODEL = CN()
 
 # dataset
 _C.DATASET = CN()
-_C.DATASET.DATA_ROOT = "/ai-data"
+_C.DATASET.DATA_ROOT = "/data/"
 
 _C.DATASET.TRAIN = CN()
-_C.DATASET.TRAIN.IMG_PREFIX = "NIA/SEN"
-_C.DATASET.TRAIN.ANN_FILE = "NIA/KSL_sen_train.csv"
+_C.DATASET.TRAIN.IMG_PREFIX = "train/"
+_C.DATASET.TRAIN.ANN_FILE = "train/KSL_sen_train.csv"
 
 _C.DATASET.VAL = CN()
-_C.DATASET.VAL.IMG_PREFIX = "NIA/SEN" 
-_C.DATASET.VAL.ANN_FILE = "NIA/KSL_sen_val.csv"
+_C.DATASET.VAL.IMG_PREFIX = "validate/" 
+_C.DATASET.VAL.ANN_FILE = "validate/KSL_sen_val.csv"
 
 _C.DATASET.WORKER_PER_GPU = 16
 
@@ -77,9 +77,9 @@ _C.PERIODS.CHECKPOINT = 1
 _C.PERIODS.LOG_ITERS = 50
 
 # misc
-_C.OUTPUT_DIR = "outputs"
+_C.OUTPUT_DIR = "output/"
 _C.RESUME = ""
-_C.GPU_ID = 0
+_C.GPU_ID = 7
 _C.RESUME = "" #"/home/PATH_TO/outputs/ksl/model_best.pth.tar"
 _C.NOTE = ""
 

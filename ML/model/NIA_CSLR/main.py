@@ -8,6 +8,8 @@ from torch import from_numpy, tensor
 import numpy as np
 import torch
 import torch.nn as nn
+import onnx
+from onnx_tf.backend import prepare
 from torch.utils.tensorboard import SummaryWriter
 import pdb
 import tensorflow as tf
@@ -20,6 +22,27 @@ from lib.utils import AverageMeter, clean_ksl, wer_list
 #os.environ['CUDA_VISIBLE_DEVICES'] = '0'
 tf.config.set_visible_devices([], "GPU")
 best_wer = 100
+
+# 모델 변환
+def torch_to_tflite(model, sample_input, model_path, save_model_dir):
+    torch.onnx.export(
+    model,                  # PyTorch Model
+    sample_input,                    # Input tensor
+    model_path,        # Output file (eg. 'output_model.onnx')
+    opset_version=12,       # Operator support version
+    input_names=['input'],   # Input tensor name (arbitary)
+    output_names=['output'] # Output tensor name (arbitary)
+    )
+    onnx_model = onnx.load(model_path) 
+    tf_rep = prepare(onnx_model)
+    tf_rep.export_graph(model_path)
+    converter = tf.lite.TFLiteConverter.from_saved_model(model_path)
+    tflite_model = converter.convert()
+
+    # Save the model
+    with open(save_model_dir, 'wb') as f:
+        f.write(tflite_model)
+    return
 
 
 def setup(args):
@@ -81,7 +104,7 @@ def main(args):
         metricss=validate(cfg,model, val_loader, loss_gls)
         print("valildation loss: {metricss[loss]:.3f}  validation WER: {metricss[wer]:.3f}  ".format(metricss=metricss))
         return
-    writer = SummaryWriter(cfg.OUTPUT_DIR)
+    writer = SummaryWriter(cfg.OUTPUT_DIR+'/log')
     data_time_meter = AverageMeter()
     loss_meter = AverageMeter()
     iter_time_meter = AverageMeter()
@@ -190,7 +213,7 @@ def main(args):
                 'best_wer': best_wer,
                 'optimizer': optimizer.state_dict(),
                 'scheduler': scheduler.state_dict(),
-            }, is_best, cfg.OUTPUT_DIR
+            }, is_best, cfg.OUTPUT_DIR+'/model'
         )
 
 
