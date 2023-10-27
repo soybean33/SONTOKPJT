@@ -5,15 +5,16 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.sts.sontalksign.databinding.HistoryItemTagBinding
+import com.sts.sontalksign.feature.common.CommonTagItem
 
-class HistoryItemTagAdapter(private val historyItemList: ArrayList<HistoryItemModel>) : RecyclerView.Adapter<HistoryItemTagAdapter.TagViewHolder>() {
+class HistoryItemTagAdapter(private val historyItemList: ArrayList<CommonTagItem>) : RecyclerView.Adapter<HistoryItemTagAdapter.TagViewHolder>() {
 
 
 
     inner class TagViewHolder(private val binding: HistoryItemTagBinding) : RecyclerView.ViewHolder(binding.root) {
 
-        fun bind(item: HistoryItemModel) {
-            binding.tvHistoryTag.text = item.historyItemTag
+        fun bind(item: CommonTagItem) {
+            binding.tvHistoryTag.text = item.tagText
         }
     }
 
