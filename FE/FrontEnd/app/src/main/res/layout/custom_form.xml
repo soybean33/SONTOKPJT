@@ -43,14 +43,14 @@
         android:layout_marginVertical="30dp"
         android:layout_marginHorizontal="27dp">
 
-        <com.sts.sontalksign.feature.common.CustomInputText
+        <com.sts.sontalksign.feature.common.CustomInput.CustomInputText
             android:id="@+id/ci_title_conversation"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             app:inputTitle="@string/input_title"
             />
 
-        <com.sts.sontalksign.feature.common.CustomInputTag
+        <com.sts.sontalksign.feature.common.CustomInput.CustomInputTag
             android:id="@+id/ci_tag_conversation"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -58,12 +58,13 @@
             app:inputTitle="@string/input_tag"
             />
 
-        <ListView
-            android:id="@+id/lv_tag_list"
+        <androidx.recyclerview.widget.RecyclerView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="5dp"
-            />
+            android:id="@+id/rv_tag_list"
+            app:layoutManager="androidx.recyclerview.widget.GridLayoutManager"
+            android:orientation="horizontal"
+            tools:listitem="@layout/history_tag_item"/>
     </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

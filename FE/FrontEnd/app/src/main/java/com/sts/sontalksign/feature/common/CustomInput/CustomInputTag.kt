@@ -1,4 +1,4 @@
-package com.sts.sontalksign.feature.common
+package com.sts.sontalksign.feature.common.CustomInput
 
 import android.content.Context
 import android.content.res.TypedArray
