@@ -50,21 +50,18 @@ class ConversationActivity : AppCompatActivity() {
 
     private val TAG: String = "ConversationActivity"
 
+    /*CameraX 관련 변수*/
     private var imageCapture: ImageCapture? = null
-
     private var videoCapture: VideoCapture<Recorder>? = null
     private var recording: Recording? = null
-
     private lateinit var cameraExecutor: ExecutorService
 
-    private var isNowRecording: Boolean = false
+    private var isNowRecording: Boolean = false //사용자의 "녹음하기" 선택 여부
 
     //내부저장소 - txt 파일
     private var directory: String? = null
-    private var filename: String? = null
+    private var convFilename: String? = null //대화내용 파일명
     private var currentTime: Long? = null
-    private val dataFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
-    private val timeFormat = SimpleDateFormat("HH:mm")
 
     private lateinit var textList: String
 
@@ -128,23 +125,27 @@ class ConversationActivity : AppCompatActivity() {
                 this, REQUIRED_PERMISSIONS, REQUEST_CODE_PERMISSIONS
             )
         }
-
         cameraExecutor = Executors.newSingleThreadExecutor()
 
-        //이벤트 리스너 설정
+        /*이벤트 리스너 설정*/
+        //텍스트 입력용 EditText 클릭
         binding.etTextConversation.setOnEditorActionListener { textView, actionId, keyEvent ->
             var handled = false
+            //완료버튼 클릭에만 처리
             if(actionId == EditorInfo.IME_ACTION_DONE) {
                 addTextLine(textView.text.toString(), false)
                 binding.etTextConversation.setText("")
             }
             handled
         }
+        //"대화 종료" 버튼 클릭
         binding.btnStopConversation.setOnClickListener { stopConversation() }
 
+        //대화 시작 - "녹음하기" 여부 저장
         isNowRecording = intent.getBooleanExtra("isRecord", false)
-        createTextFile()
-
+        
+        /*대화내용 저장*/
+        //내부저장소의 경로 저장
         directory = filesDir.absolutePath //내부경로의 절대 경로
 
         loadTagList()
@@ -220,7 +221,7 @@ class ConversationActivity : AppCompatActivity() {
         //내부 저장소 경로
         currentTime = System.currentTimeMillis() //ms로 반환
         directory = filesDir.absolutePath //내부경로의 절대 경로
-        filename = dataFormat.format(currentTime) + ".txt"
+        convFilename = FileFormats.dataFormat.format(currentTime) + ".txt"
 
         textList = ""
     }
@@ -241,8 +242,8 @@ class ConversationActivity : AppCompatActivity() {
         var bContent = String()
         currentTime = System.currentTimeMillis()
         when(isMine) {
-            true -> bContent = getMyConversation(content, timeFormat.format(currentTime))
-            false -> bContent = getYourConversation(content, timeFormat.format(currentTime))
+            true -> bContent = getMyConversation(content, FileFormats.timeFormat.format(currentTime))
+            false -> bContent = getYourConversation(content, FileFormats.timeFormat.format(currentTime))
         }
 
         textList += bContent
@@ -258,7 +259,7 @@ class ConversationActivity : AppCompatActivity() {
         }
 
         //파일의 full path
-        val writer = FileWriter(directory + "/" + filename, true)
+        val writer = FileWriter(directory + "/" + convFilename, true)
 
         //쓰기 속도 향상
         val buffer = BufferedWriter(writer)
@@ -266,6 +267,7 @@ class ConversationActivity : AppCompatActivity() {
         buffer.close()
     }
 
+    //TODO: 삭제 예정
     //파일 읽기 - ConversationActivity에서는 미사용
     private fun readTextFile(fullpath: String) : String {
         val file = File(fullpath)
@@ -289,6 +291,28 @@ class ConversationActivity : AppCompatActivity() {
         return result.toString()
     }
 
+    //대화 종료 처리 함수
+    private fun stopConversation() {
+        Log.d(TAG, "stopConversation() START")
+
+        //녹음하기 선택 시 - 팝업 발생 및 대화 내용 저장
+        if(isNowRecording) {
+            val cForm = CustomForm(this)
+            cForm.show()
+            cForm.setOnBtnStoreClickedListener(object: CustomForm.onBtnStoreClickedListener {
+                override fun onBtnStoreClicked(title: String, tags: String) {
+                    val rConversation = title + "\nTAGS_" + tags + "\n" + textList //{제목\n태그인덱스\n대화내용} 형식
+                    writeTextFile(rConversation) //대화 종료 전 기록에 쌓인 대화 내용을 저장
+                    finish()
+                }
+            })
+        }
+        else { //녹음하기 미선택 시 - "대화 종료" 질의 팝업 발생
+            //TODO: : "대화를 종료하시겠습니까?" 팝업 생성 및 발생
+        }
+    }
+
+    /*CameraX 관련 함수*/
     private fun takePhoto() {
 
     }
@@ -297,13 +321,12 @@ class ConversationActivity : AppCompatActivity() {
 
     }
 
+    //카메라 시작
     private fun startCamera() {
-        //Activity와 카메라의 수명 주기를 binding
-        val cameraProviderFuture = ProcessCameraProvider.getInstance(this)
+        val cameraProviderFuture = ProcessCameraProvider.getInstance(this) //Activity와 카메라의 수명 주기를 binding
 
         cameraProviderFuture.addListener({
-            //카메라의 수명 주기를 APP 프로세스 내의 LifecycleOwner에 바인딩
-            val cameraProvider: ProcessCameraProvider = cameraProviderFuture.get()
+            val cameraProvider: ProcessCameraProvider = cameraProviderFuture.get() //카메라의 수명 주기를 APP 프로세스 내의 LifecycleOwner에 바인딩
 
             //카메라 프리뷰 초기화 및 설정
             val preview = Preview.Builder()
@@ -312,60 +335,29 @@ class ConversationActivity : AppCompatActivity() {
                     it.setSurfaceProvider(binding.pvCamera.surfaceProvider)
                 }
 
-            //전면 카메라를 기본으로 선택
-            val cameraSelector = CameraSelector.DEFAULT_FRONT_CAMERA
+            val cameraSelector = CameraSelector.DEFAULT_FRONT_CAMERA //전면 카메라를 기본으로 선택
 
             try {
-                //바인딩된 항목 전체 제거
-                cameraProvider.unbindAll()
+                cameraProvider.unbindAll() //바인딩된 항목 전체 제거
 
                 //카메라 관련 객체 바인딩
                 cameraProvider.bindToLifecycle(
                     this, cameraSelector, preview
                 )
             } catch(exc: Exception) {
-                //앱에 더이상 포커스 없는 경우 등의 실패 케이스 처리
-                Log.e(TAG, "Use case binding failed", exc)
+                Log.e(TAG, "Use case binding failed", exc) //앱에 더이상 포커스 없는 경우 등의 실패 케이스 처리
             }
 
-            //기본 스레드에서 실행되는 Executor를 반환
-        }, ContextCompat.getMainExecutor(this))
+        }, ContextCompat.getMainExecutor(this)) //기본 스레드에서 실행되는 Executor를 반환
     }
 
-    //대화 종료 처리 함수
-    private fun stopConversation() {
-        Log.d(TAG, "Stop Button is Clicked!!")
-
-        lateinit var cTitle: String
-        lateinit var cTags: String
-
-        //녹음하기 선택 시 - 팝업 발생 및 대화 내용 저장
-        if(isNowRecording) {
-            val cForm = CustomForm(this)
-            cForm.show()
-            cForm.setOnBtnStoreClickedListener(object: CustomForm.onBtnStoreClickedListener {
-                override fun onBtnStoreClicked(title: String, tags: String) {
-                    cTitle = title
-                    cTags = tags
-
-                    val rConversation = cTitle + "\nTAGS_" + cTags + "\n" + textList
-                    //대화 종료 전 기록에 쌓인 대화 내용을 저장
-                    writeTextFile(rConversation)
-
-                    finish()
-                }
-            })
-        }
-        else { //녹음하기 미선택 시 - "대화 종료" 질의 팝업 발생
-            //TODO: "대화를 종료하시겠습니까?" 팝업 생성 및 발생
-        }
-    }
-
+    //카메라 권한
     private fun allPermissionsGranted() = REQUIRED_PERMISSIONS.all {
         ContextCompat.checkSelfPermission(
             baseContext, it) == PackageManager.PERMISSION_GRANTED
     }
 
+    //카메라 권한 요청 처리
     override fun onRequestPermissionsResult(
         requestCode: Int, permissions: Array<out String>, grantResults: IntArray
     ) {
@@ -388,7 +380,7 @@ class ConversationActivity : AppCompatActivity() {
     }
 
     companion object {
-        private const val TAG = "CameraX Preview"
+        private const val cTAG = "CameraX Preview"
         private const val FILENAME_FORMAT = "yyyy-MM-dd-HH-mm-ss-SSS"
         private const val REQUEST_CODE_PERMISSIONS = 10
         private val REQUIRED_PERMISSIONS =
