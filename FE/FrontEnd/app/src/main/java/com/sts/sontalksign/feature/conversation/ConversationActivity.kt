@@ -58,6 +58,7 @@ class ConversationActivity : AppCompatActivity() {
 
     private lateinit var textList: String
 
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
