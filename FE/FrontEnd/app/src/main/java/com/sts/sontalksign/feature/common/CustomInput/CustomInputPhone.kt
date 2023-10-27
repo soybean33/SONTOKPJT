@@ -1,4 +1,4 @@
-package com.sts.sontalksign.feature.common
+package com.sts.sontalksign.feature.common.CustomInput
 
 import android.content.Context
 import android.content.res.TypedArray
@@ -9,7 +9,7 @@ import android.widget.FrameLayout
 import android.widget.TextView
 import com.sts.sontalksign.R
 
-class CustomInputPassword : FrameLayout {
+class CustomInputPhone : FrameLayout {
     lateinit var layout: FrameLayout
     lateinit var tvInputTitle: TextView
     lateinit var etInputContent: EditText
@@ -34,12 +34,12 @@ class CustomInputPassword : FrameLayout {
 
     //초기화
     private fun init(context: Context?) {
-        val view = LayoutInflater.from(context).inflate(R.layout.custom_input_password, this, false)
+        val view = LayoutInflater.from(context).inflate(R.layout.custom_input_phone, this, false)
         addView(view)
 
-        layout = findViewById(R.id.custom_input_password_layout)
-        tvInputTitle = findViewById(R.id.tv_input_password_title)
-        etInputContent = findViewById(R.id.et_input_password_content)
+        layout = findViewById(R.id.custom_input_phone_layout)
+        tvInputTitle = findViewById(R.id.tv_input_phone_title)
+        etInputContent = findViewById(R.id.et_input_phone_content)
     }
 
     private fun getAttrs(attrs: AttributeSet?) {
