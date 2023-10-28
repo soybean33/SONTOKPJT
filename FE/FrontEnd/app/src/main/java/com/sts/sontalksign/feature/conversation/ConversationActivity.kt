@@ -1,6 +1,5 @@
 package com.sts.sontalksign.feature.conversation
 
-import NaverRecognizer
 import android.Manifest
 import android.content.pm.PackageManager
 import android.os.Build
@@ -29,15 +28,14 @@ import com.sts.sontalksign.databinding.ActivityConversationBinding
 import com.sts.sontalksign.feature.common.CommonTagItem
 import com.sts.sontalksign.feature.common.CustomForm
 import com.sts.sontalksign.feature.common.TagSingleton
-import com.sts.sontalksign.feature.login.MainActivity
 import com.sts.sontalksign.feature.utils.AudioWriterPCM
+import com.sts.sontalksign.global.FileFormats
 import java.io.BufferedReader
 import java.io.BufferedWriter
 import java.io.File
 import java.io.FileReader
 import java.io.FileWriter
 import java.lang.ref.WeakReference
-import java.text.SimpleDateFormat
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 
