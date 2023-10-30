@@ -201,7 +201,7 @@ class ConversationActivity : AppCompatActivity() {
      * TTS API 요청
      * line: 입력으로 들어온 문장
      */
-    private fun generateTtsApi(line: String) {
+    private fun generateTtsApi(line: String) { 
         //API 요청을 위한 스레드 생성
         GlobalScope.launch(Dispatchers.IO) {
             try {
