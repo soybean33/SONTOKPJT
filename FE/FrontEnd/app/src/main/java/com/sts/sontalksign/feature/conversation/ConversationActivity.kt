@@ -169,7 +169,6 @@ class ConversationActivity : AppCompatActivity() {
                 .build()
         )
 
-        /*STT 초기 설정*/
         handler = RecognitionHandler(this)
         naverRecognizer = NaverRecognizer(this, handler!!, CLIENT_ID)
 
