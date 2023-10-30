@@ -33,10 +33,6 @@ import com.sts.sontalksign.global.FileFormats
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
-import okhttp3.ResponseBody
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
 import java.io.BufferedReader
 import java.io.BufferedWriter
 import java.io.File
@@ -44,7 +40,6 @@ import java.io.FileOutputStream
 import java.io.FileReader
 import java.io.FileWriter
 import java.lang.ref.WeakReference
-import java.net.URLEncoder
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 
@@ -79,6 +74,8 @@ class ConversationActivity : AppCompatActivity() {
     private val CLIENT_ID = "89kna7451i"
     private var handler: RecognitionHandler? = null
     private var naverRecognizer: NaverRecognizer? = null
+    private var txtResult: TextView? = null
+    private var btnStart: Button? = null
     private var mResult: String? = null
     private var audioWriter: AudioWriterPCM? = null
 
@@ -172,11 +169,7 @@ class ConversationActivity : AppCompatActivity() {
                 .build()
         )
 
-        //Naver API TEST용
-        binding.button.setOnClickListener {
-            naverapi()
-        }
-
+        /*STT 초기 설정*/
         handler = RecognitionHandler(this)
         naverRecognizer = NaverRecognizer(this, handler!!, CLIENT_ID)
 
@@ -201,7 +194,7 @@ class ConversationActivity : AppCompatActivity() {
      * TTS API 요청
      * line: 입력으로 들어온 문장
      */
-    private fun generateTtsApi(line: String) { 
+    private fun generateTtsApi(line: String) {
         //API 요청을 위한 스레드 생성
         GlobalScope.launch(Dispatchers.IO) {
             try {
@@ -213,7 +206,7 @@ class ConversationActivity : AppCompatActivity() {
                         //응답 결과를 임시 저장
                         val resFile = File.createTempFile("res", "mp3", cacheDir)
                         val outputStream = FileOutputStream(resFile)
-                        
+
                         val input = body.byteStream()
                         val buffer = ByteArray(1024)
                         var bytesRead: Int
@@ -263,7 +256,7 @@ class ConversationActivity : AppCompatActivity() {
         return getString(R.string.your_conversation_content) + content + getString(R.string.your_conversation_time) + time
     }
 
-    //isbContentMine - 0:나의 대사, 1:상대의 대사
+    //isMine - 0:나의 대사, 1:상대의 대사
     private fun addTextLine(content:String, isMine:Boolean) {
         //녹음하기 미선택의 경우
         if(!isNowRecording) return
