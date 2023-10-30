@@ -2,12 +2,13 @@ package com.sts.sontalksign.feature.conversation
 
 import android.Manifest
 import android.content.pm.PackageManager
+import android.media.AudioAttributes
+import android.media.MediaPlayer
 import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.os.Message
 import android.util.Log
-import android.view.View
 import android.view.inputmethod.EditorInfo
 import android.widget.Button
 import android.widget.TextView
@@ -26,26 +27,18 @@ import com.naver.speech.clientapi.SpeechRecognitionResult
 import com.sts.sontalksign.R
 import com.sts.sontalksign.databinding.ActivityConversationBinding
 import com.sts.sontalksign.feature.apis.NaverAPI
-import com.sts.sontalksign.feature.common.CommonTagAdapter
-import com.sts.sontalksign.feature.common.CommonTagItem
 import com.sts.sontalksign.feature.common.CustomForm
-import com.sts.sontalksign.feature.common.TagSingleton
 import com.sts.sontalksign.feature.utils.AudioWriterPCM
 import com.sts.sontalksign.global.FileFormats
-import okhttp3.ResponseBody
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
-import retrofit2.http.Query
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import java.io.BufferedReader
 import java.io.BufferedWriter
-import java.io.DataOutputStream
 import java.io.File
 import java.io.FileOutputStream
 import java.io.FileReader
 import java.io.FileWriter
-import java.net.URLEncoder
-import java.text.SimpleDateFormat
 import java.lang.ref.WeakReference
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
@@ -67,7 +60,10 @@ class ConversationActivity : AppCompatActivity() {
 
     private var isNowRecording: Boolean = false //사용자의 "녹음하기" 선택 여부
 
-    //내부저장소 - txt 파일
+    /*MediaPlayer 관련 변수(Naver Clova TTS API)*/
+    private lateinit var mediaPlayer: MediaPlayer
+
+    /*내부저장소 - txt 파일*/
     private var directory: String? = null
     private var convFilename: String? = null //대화내용 파일명
     private var currentTime: Long? = null
@@ -142,62 +138,81 @@ class ConversationActivity : AppCompatActivity() {
             var handled = false
             //완료버튼 클릭에만 처리
             if(actionId == EditorInfo.IME_ACTION_DONE) {
-                addTextLine(textView.text.toString(), false)
+                var inpContent= textView.text.toString()
+                addTextLine(inpContent, false)
                 binding.etTextConversation.setText("")
+
+                generateTtsApi(inpContent) //TTS 적용 - 텍스트를 음성 출력
             }
             handled
         }
+
         //"대화 종료" 버튼 클릭
         binding.btnStopConversation.setOnClickListener { stopConversation() }
 
+        /*대화내용 저장*/
         //대화 시작 - "녹음하기" 여부 저장
         isNowRecording = intent.getBooleanExtra("isRecord", false)
-        
-        /*대화내용 저장*/
+
         //내부저장소의 경로 저장
         directory = filesDir.absolutePath //내부경로의 절대 경로
         createTextFile() //대화 텍스트 파일 생성
 
-
-
-        //Naver API TEST용
-        binding.button.setOnClickListener {
-            naverapi()
-        }
+        /*TTS 초기 설정*/
+        //음성 출력을 위한 MediaPlayer 초기 설정
+        mediaPlayer = MediaPlayer()
+        mediaPlayer.setAudioAttributes(
+            AudioAttributes.Builder()
+                .setContentType(AudioAttributes.CONTENT_TYPE_SPEECH)
+                .setUsage(AudioAttributes.USAGE_MEDIA)
+                .build()
+        )
     }
 
-    private fun naverapi() {
-        val text = URLEncoder.encode("집가고싶다.", "UTF-8")
 
-        NaverAPI.create().generateSpeech("nara", 0, 0,0, "mp3", text).enqueue(object : Callback<ResponseBody> {
-            override fun onResponse(call: Call<ResponseBody>, response: Response<ResponseBody>) {
+    /**
+     * TTS API 요청
+     * line: 입력으로 들어온 문장
+     */
+    private fun generateTtsApi(line: String) {
+        //API 요청을 위한 스레드 생성
+        GlobalScope.launch(Dispatchers.IO) {
+            try {
+                val response = NaverAPI.create().generateSpeech("nsujin", 0, 0,0, "mp3", line).execute() //API 요청
+
                 if(response.isSuccessful) {
                     val body = response.body()
                     if (body != null) {
-                        val `is` = body.byteStream()
-                        val bytes = ByteArray(1024)
-                        var read: Int
-                        val tempName = System.currentTimeMillis().toString()
-                        val f = File("$directory/$tempName.mp3")
-                        f.createNewFile()
-                        val outputStream = FileOutputStream(f)
-                        while (`is`.read(bytes).also { read = it } != -1) {
-                            outputStream.write(bytes, 0, read)
+                        //응답 결과를 임시 저장
+                        val resFile = File.createTempFile("res", "mp3", cacheDir)
+                        val outputStream = FileOutputStream(resFile)
+                        
+                        val input = body.byteStream()
+                        val buffer = ByteArray(1024)
+                        var bytesRead: Int
+
+                        while(input.read(buffer).also { bytesRead = it } != -1) {
+                            outputStream.write(buffer, 0, bytesRead)
                         }
-                        `is`.close()
+
+                        outputStream.close()
+
+                        //MediaPlayer로 음성 출력
+                        mediaPlayer.reset()
+                        mediaPlayer.setDataSource(resFile.path)
+                        mediaPlayer.prepare()
+                        mediaPlayer.start()
                     }
                 } else {
                     val errorBody = response.errorBody()
                     if(errorBody != null) {
-                        Log.d("ConversationgActivity", "Error: " + errorBody.string())
+                        Log.d(TAG, "Error: " + errorBody.string())
                     }
                 }
+            } catch(e : java.lang.Exception) {
+                Log.d(TAG, e.toString())
             }
-
-            override fun onFailure(call: Call<ResponseBody>, t: Throwable) {
-                Log.d("ConversationActivity", t.message!!)
-            }
-        })
+        }
     }
 
     //대화 내용 기록
@@ -364,6 +379,7 @@ class ConversationActivity : AppCompatActivity() {
     override fun onDestroy() {
         super.onDestroy()
         cameraExecutor.shutdown()
+        mediaPlayer.release()
     }
 
     companion object {
