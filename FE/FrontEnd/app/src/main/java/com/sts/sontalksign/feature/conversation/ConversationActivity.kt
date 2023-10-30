@@ -72,8 +72,6 @@ class ConversationActivity : AppCompatActivity() {
     private val CLIENT_ID = "89kna7451i"
     private var handler: RecognitionHandler? = null
     private var naverRecognizer: NaverRecognizer? = null
-    private var txtResult: TextView? = null
-    private var btnStart: Button? = null
     private var mResult: String? = null
     private var audioWriter: AudioWriterPCM? = null
 
@@ -404,9 +402,9 @@ class ConversationActivity : AppCompatActivity() {
     public override fun onResume() {
         super.onResume()
         mResult = ""
-        txtResult?.text = ""
-        btnStart?.setText(R.string.str_start)
-        btnStart?.isEnabled = true
+        binding.tvCRS.text = ""
+        binding.btnCRS.setText(R.string.str_start)
+        binding.btnCRS.isEnabled = true
     }
 
     public override fun onStop() {
