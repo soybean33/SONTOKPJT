@@ -34,8 +34,6 @@ class HistoryDetailActivity : AppCompatActivity() {
 
     private val TAG: String = "HistoryDetailActivity"
 
-    //내부저장소 - txt 파일
-    private val timeFormat = SimpleDateFormat("HH:mm")
 
     private var directory: String? = null
 
@@ -63,7 +61,6 @@ class HistoryDetailActivity : AppCompatActivity() {
         }
 
 
-        loadTagList()
 
         // Safe call for directory
         val dirPath = directory
@@ -73,46 +70,6 @@ class HistoryDetailActivity : AppCompatActivity() {
             historyDetailConversationAdapter.notifyDataSetChanged()
         }
 
-    }
-
-    private fun loadTagList() {
-        // tagList는 최초 1회만 로드
-        if (TagSingleton.tagList.size > 0) return
-
-        Log.d(TAG, "Directory : $directory")
-        val file = File(directory.toString())
-
-        // 파일 미존재
-        if (!file.exists()) {
-            Log.d(TAG, "TAGS file does not exist!!")
-            file.mkdirs()
-        }
-
-        directory = filesDir.absolutePath //내부경로의 절대 경로
-
-        val tagFN = "TAGS.txt"
-        val fPath = "$directory/$tagFN"
-        val reader = FileReader(fPath)
-        val buffer = BufferedReader(reader)
-
-        var line: String?
-
-        while (true) {
-            line = buffer.readLine() // 줄 단위로 read
-            if (line == null) break
-            else {
-                val (idx, name) = line.split(" ")
-                TagSingleton.tagList.add(CommonTagItem(idx, name))
-            }
-        }
-
-        val colorList = resources.getIntArray(R.array.tagColorArr)
-        for (color in colorList) {
-            TagSingleton.colorList.add(color)
-        }
-        TagSingleton.tagList.add(CommonTagItem("0", "TEST"))
-
-        buffer.close()
     }
 
     private fun getMyConversation(input: String): Pair<String, String> {
@@ -157,31 +114,68 @@ class HistoryDetailActivity : AppCompatActivity() {
     }
 
     private fun readTextFile(directoryPath: String) {
+
+        directory = filesDir.absolutePath //내부경로의 절대 경로
+        Log.d("디렉토리확인", directory.toString())
+
+
+        if (directory != null) {
         val formatter = SimpleDateFormat("yyyyMMddHHmmss", Locale.getDefault())
-        val files = File(directoryPath).listFiles()
+        val files = File(directory).listFiles()
 
         files?.forEach { file ->
-            if (file.isFile && file.name.endsWith(".txt") && file.name != "TAGS.txt") {
-                val fileContents = readFileContents(file.absolutePath)
-                val lines = fileContents.lines()
+            if (file.isFile && file.name.endsWith(".txt")) {
+                if (file.name != "TAGS.txt"){
+                    val fileContents = readFileContents(file.absolutePath)
+                    Log.d("sspspsp무어머야러ㅐㅑ너래냐", fileContents)
+                    val lines = fileContents.lines()
 
-                if (lines.size >= 3) {
-                    val sentTime = lines[1]
+                    if (lines.size >= 3) {
+                        val title = lines[0]
+
+                        val tagsLine = lines[1]
+                        val tagsList = tagsLine.substringAfter("TAGS_").trim().split("_")
+                        val tagItems = ArrayList<CommonTagItem>()
+                        tagsList.forEach { tagId ->
+                            val tagIdInt = tagId.toIntOrNull() // tagId를 안전하게 정수로 변환
+                            if (tagIdInt != null && tagIdInt >= 0 && tagIdInt < TagSingleton.tagList.size) {
+                                // 유효한 인덱스 범위 내에 있는 경우에만 처리
+                                tagItems.add(CommonTagItem(tagId, TagSingleton.tagList[tagIdInt].tagText))
+                            } else {
+                                // 유효하지 않은 tagId에 대한 처리 (예: 로깅)
+                                Log.e("태그ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ", "태그아이디 아닙니다: $tagId")
+                            }
+                        }
+
+
+
                     val content = lines[2]
 
                     val (messageContent, messageTime) = if (content.contains("<<")) {
                         getMyConversation(content)
+
                     } else {
                         getYourConversation(content)
                     }
 
                     val isMine = content.contains("<<")
-                    val date = formatter.parse(file.nameWithoutExtension)
-                    val endedTime = date?.time ?: 0L
+                    val date = formatter.parse(file.name.split(".")[0])
 
-                    historyDetailConList.add(HistoryDetailConversationModel(messageContent, messageTime, isMine))
-                }
-            }
+                    // 원하는 출력 형식으로 SimpleDateFormat을 다시 사용하여 포맷
+                    val outputFormat = SimpleDateFormat("hh시 MM분", Locale.getDefault())
+                    val formattedDate = outputFormat.format(date)
+
+                    historyDetailConList.add(
+                        HistoryDetailConversationModel(
+                            messageContent,
+                            messageTime,
+                            isMine
+                             )
+                          )
+                       }
+                  }
+              }
+          }
         }
     }
 
