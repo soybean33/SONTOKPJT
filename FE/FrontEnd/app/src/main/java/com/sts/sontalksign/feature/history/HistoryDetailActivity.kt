@@ -1,17 +1,20 @@
 package com.sts.sontalksign.feature.history
 
+import android.annotation.SuppressLint
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.preference.PreferenceManager
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
-import androidx.core.content.ContentProviderCompat.requireContext
+import android.util.Log
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.sts.sontalksign.R
-import com.sts.sontalksign.databinding.ActivityConversationBinding
 import com.sts.sontalksign.databinding.ActivityHistoryDetailBinding
+import com.sts.sontalksign.feature.common.CommonTagItem
+import com.sts.sontalksign.feature.common.TagSingleton
+import java.io.BufferedReader
+import java.io.File
+import java.io.FileReader
+import java.text.SimpleDateFormat
+import java.util.Locale
 
 class HistoryDetailActivity : AppCompatActivity() {
 
@@ -28,74 +31,165 @@ class HistoryDetailActivity : AppCompatActivity() {
     var historyDetailTagList: ArrayList<HistoryDetailTagModel> = ArrayList()
     var historyDetailConList: ArrayList<HistoryDetailConversationModel> = ArrayList()
 
+
+    private val TAG: String = "HistoryDetailActivity"
+
+    //내부저장소 - txt 파일
+    private val timeFormat = SimpleDateFormat("HH:mm")
+
+    private var directory: String? = null
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        directory = filesDir.absolutePath
+
         // 데이터 바인딩 초기화
         binding = ActivityHistoryDetailBinding.inflate(layoutInflater)
-        val view = binding.root
-        setContentView(view)
-
-
-        // RecyclerView 초기화
-        // 첫 번째 리사이클러뷰 초기화
-        recyclerView1 = binding.rvHistoryDetailTag
-        recyclerView1.layoutManager = LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
-        recyclerView1.setHasFixedSize(false)
-
-        // 두 번째 리사이클러뷰 초기화
-        recyclerView2 = binding.rvMessages
-        recyclerView2.layoutManager = LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false)
-        recyclerView2.setHasFixedSize(false)
-
-//      // 더미 데이터 생성 및 추가
-        val dummyTag1 = HistoryDetailTagModel("태그1")
-        val dummyTag2 = HistoryDetailTagModel("태그2")
-        val dummyTag3 = HistoryDetailTagModel("태그3")
-        val dummyTag4 = HistoryDetailTagModel("태그4")
-
-        // 더미 대화 데이터 생성
-        val dummyCon1 = HistoryDetailConversationModel("대화1", "시간1", true)
-        val dummyCon2 = HistoryDetailConversationModel("대화2", "시간2", false)
-        val dummyCon3 = HistoryDetailConversationModel("대화3", "시간3", true)
-        val dummyCon4 = HistoryDetailConversationModel("대화4", "시간4", false)
-
-
-
-
-        // 생성된 더미 데이터를 리스트에 추가
-        historyDetailTagList.addAll(listOf(dummyTag1, dummyTag2, dummyTag3, dummyTag4))
-        // 생성된 더미 데이터를 리스트에 추가
-        historyDetailConList.addAll(listOf(dummyCon1, dummyCon2, dummyCon3, dummyCon4))
-
-        // 첫 번째 리사이클러뷰 어댑터 설정
-        historyDetailTagAdapter = HistoryDetailTagAdapter(historyDetailTagList)
-        recyclerView1.adapter = historyDetailTagAdapter
-
-        // 두 번째 리사이클러뷰 어댑터 설정
-        historyDetailConversationAdapter = HistoryDetailConversationAdapter(historyDetailConList)
-        recyclerView2.adapter = historyDetailConversationAdapter
-
-        // SharedPreferences에서 액세스 토큰 가져오기
-//        val token = getAccessToken()
-
-//
-
+        setContentView(binding.root)
 
     }
+
+    @SuppressLint("NotifyDataSetChanged")
+    override fun onStart() {
+        super.onStart()
+
+        directory = filesDir.absolutePath
+
+        historyDetailConversationAdapter = HistoryDetailConversationAdapter(historyDetailConList)
+        binding.rvMessages.apply {
+            layoutManager = LinearLayoutManager(context)
+            adapter = historyDetailConversationAdapter
+        }
+
+
+        loadTagList()
+
+        // Safe call for directory
+        val dirPath = directory
+        if (dirPath != null) {
+            // 대화 내용 로드 및 어댑터에 바인딩
+            readTextFile(dirPath)
+            historyDetailConversationAdapter.notifyDataSetChanged()
+        }
+
+    }
+
+    private fun loadTagList() {
+        // tagList는 최초 1회만 로드
+        if (TagSingleton.tagList.size > 0) return
+
+        Log.d(TAG, "Directory : $directory")
+        val file = File(directory.toString())
+
+        // 파일 미존재
+        if (!file.exists()) {
+            Log.d(TAG, "TAGS file does not exist!!")
+            file.mkdirs()
+        }
+
+        directory = filesDir.absolutePath //내부경로의 절대 경로
+
+        val tagFN = "TAGS.txt"
+        val fPath = "$directory/$tagFN"
+        val reader = FileReader(fPath)
+        val buffer = BufferedReader(reader)
+
+        var line: String?
+
+        while (true) {
+            line = buffer.readLine() // 줄 단위로 read
+            if (line == null) break
+            else {
+                val (idx, name) = line.split(" ")
+                TagSingleton.tagList.add(CommonTagItem(idx, name))
+            }
+        }
+
+        val colorList = resources.getIntArray(R.array.tagColorArr)
+        for (color in colorList) {
+            TagSingleton.colorList.add(color)
+        }
+        TagSingleton.tagList.add(CommonTagItem("0", "TEST"))
+
+        buffer.close()
+    }
+
+    private fun getMyConversation(input: String): Pair<String, String> {
+
+        val parts = input.split("<<")
+        val isMine = true
+
+        if (parts.size == 2) {
+            // 내용(content)과 시간(time) 추출
+            val content = parts[0]
+            val time = parts[1]
+
+            return Pair(content, time)
+        } else {
+
+            return Pair("", "")
+        }
+    }
+
+    private fun getYourConversation(input: String): Pair<String, String> {
+        val parts = input.split(">>")
+        val isMine = false
+
+        if (parts.size == 2) {
+            // 내용(content)과 시간(time) 추출
+            val content = parts[0]
+            val time = parts[1]
+
+            return Pair(content, time)
+        } else {
+
+            return Pair("", "")
+        }
+    }
+
+
+    private fun readFileContents(filePath: String): String {
+        val file = File(filePath)
+        if (!file.exists()) return ""
+
+        return file.bufferedReader().use { it.readText() }
+    }
+
+    private fun readTextFile(directoryPath: String) {
+        val formatter = SimpleDateFormat("yyyyMMddHHmmss", Locale.getDefault())
+        val files = File(directoryPath).listFiles()
+
+        files?.forEach { file ->
+            if (file.isFile && file.name.endsWith(".txt") && file.name != "TAGS.txt") {
+                val fileContents = readFileContents(file.absolutePath)
+                val lines = fileContents.lines()
+
+                if (lines.size >= 3) {
+                    val sentTime = lines[1]
+                    val content = lines[2]
+
+                    val (messageContent, messageTime) = if (content.contains("<<")) {
+                        getMyConversation(content)
+                    } else {
+                        getYourConversation(content)
+                    }
+
+                    val isMine = content.contains("<<")
+                    val date = formatter.parse(file.nameWithoutExtension)
+                    val endedTime = date?.time ?: 0L
+
+                    historyDetailConList.add(HistoryDetailConversationModel(messageContent, messageTime, isMine))
+                }
+            }
+        }
+    }
+
 }
 
 
 
-private fun showNoDataMessage() {
-    // 데이터가 없을 때 특정 메시지를 표시하는 로직을 여기에 구현합니다.
-    // 예를 들어, TextView에 메시지를 설정하거나 다이얼로그를 표시할 수 있습니다.
-    // 예제로 TextView에 메시지 설정하는 방법을 보여드리겠습니다.
 
-    val noDataMessage = "대화한 내역이 없습니다." // 표시할 메시지를 지정
-//        binding.tvViewNoData.text = noDataMessage
-//        binding.tvViewNoData.visibility = View.VISIBLE // TextView를 화면에 표시
-}
 
 
 
