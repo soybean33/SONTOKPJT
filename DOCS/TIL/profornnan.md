@@ -87,3 +87,11 @@
 - Problem : 데이터 전처리 방식을 선정하는데 있어서 시간이 많이 걸렸습니다.
 - Try : 모델 테스트 및 학습을 위해 빠르게 데이터 전처리 작업을 마무리 할 생각입니다.
 
+## 23.10.30
+
+### Today I Did
+
+- MediaPipe Face Landmark 추출
+- MediaPipe Pose Landmark 추출
+- MediaPipe Output Json 파일 생성
+
