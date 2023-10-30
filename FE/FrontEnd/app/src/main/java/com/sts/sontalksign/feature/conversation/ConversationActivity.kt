@@ -172,11 +172,6 @@ class ConversationActivity : AppCompatActivity() {
                 .build()
         )
 
-        //Naver API TEST용
-        binding.button.setOnClickListener {
-            naverapi()
-        }
-
         handler = RecognitionHandler(this)
         naverRecognizer = NaverRecognizer(this, handler!!, CLIENT_ID)
 
