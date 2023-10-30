@@ -12,6 +12,12 @@ import com.sts.sontalksign.databinding.ActivityMainNavBarBinding
 import com.sts.sontalksign.feature.conversation.ConversationFragment
 import com.sts.sontalksign.feature.history.HistoryFragment
 import com.sts.sontalksign.feature.setting.SettingFragment
+import com.sts.sontalksign.global.FileFormats
+import java.io.BufferedReader
+import java.io.BufferedWriter
+import java.io.File
+import java.io.FileReader
+import java.io.FileWriter
 
 class MainActivityNavBar : AppCompatActivity() {
 
@@ -24,6 +30,8 @@ class MainActivityNavBar : AppCompatActivity() {
     private var unSelectIconColor = 0
     private var unSelectBackColor = 0
 
+    private var tagFileDirectory: String? = null
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
@@ -32,7 +40,6 @@ class MainActivityNavBar : AppCompatActivity() {
         selectBackColor = ContextCompat.getColor(this, R.color.rectangle500)
         unSelectIconColor = ContextCompat.getColor(this, R.color.rectangle500)
         unSelectBackColor = ContextCompat.getColor(this, R.color.base)
-
 
         initViewPager()
 
@@ -94,6 +101,48 @@ class MainActivityNavBar : AppCompatActivity() {
             override fun onTabReselected(tab: TabLayout.Tab?) {
             }
         })
+
+        //사용자의 커스텀 TAG 파일 초기 설정 (absolutePath/TAGS.txt)
+        tagFileDirectory = filesDir.absolutePath //내부경로의 절대 경로
+        initTagFile()
+    }
+
+    //개인의 TAG 정보 초기 설정
+    fun initTagFile() {
+        //경로 미존재 예외처리(생성)
+        val prTagDir = File(tagFileDirectory)
+        if (!prTagDir.exists()) {
+            prTagDir.mkdirs()
+        }
+
+        //파일 미존재 예외처리(생성)
+        val prTagFile = File(tagFileDirectory, FileFormats.tagFileName)
+        if(!prTagFile.exists()) {
+            prTagFile.createNewFile()
+        }
+
+        //파일 읽기 - 한줄씩 읽어서 TAG 정보 저장
+        val reader = FileReader(prTagFile)
+        val buffer = BufferedReader(reader)
+
+        var line: String? = ""
+        while(true) {
+            line = buffer.readLine() //줄 단위로 read
+            if(line == null) break
+            else {
+                val (index, text) = line.split(" ")
+                TagSingleton.tagList.add(CommonTagItem(index, text))
+            }
+        }
+        buffer.close()
+        reader.close()
+
+
+        //시스템 TAG 색상 초기 설정(SET)
+        val cList = resources.getIntArray(R.array.tagColorArr)
+        for(color in cList) {
+            TagSingleton.colorList.add((color))
+        }
     }
 
     private fun initViewPager() {
