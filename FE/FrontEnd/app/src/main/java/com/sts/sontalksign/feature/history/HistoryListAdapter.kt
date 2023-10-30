@@ -36,11 +36,10 @@ class HistoryListAdapter(val historyList: ArrayList<HistoryListModel>) : Recycle
                 val curPos: Int = adapterPosition
                 val HistoryList: HistoryListModel = historyList[curPos] // myassetItemList로 수정
 
-                if (HistoryList.EndedTime.toLong() != 0L) {
-                    val intent = Intent(binding.root.context,HistoryDetailActivity::class.java)
-                    intent.putExtra("tokenNo", HistoryList.EndedTime)
-                    binding.root.context.startActivity(intent)
-                }
+                val intent = Intent(binding.root.context,HistoryDetailActivity::class.java)
+                intent.putExtra("historyTitle", HistoryList.historyTitle)
+                binding.root.context.startActivity(intent)
+
             }
 
 
