@@ -26,27 +26,21 @@ import com.naver.speech.clientapi.SpeechRecognitionResult
 import com.sts.sontalksign.R
 import com.sts.sontalksign.databinding.ActivityConversationBinding
 import com.sts.sontalksign.feature.apis.NaverAPI
-import com.sts.sontalksign.feature.common.CommonTagAdapter
-import com.sts.sontalksign.feature.common.CommonTagItem
 import com.sts.sontalksign.feature.common.CustomForm
-import com.sts.sontalksign.feature.common.TagSingleton
 import com.sts.sontalksign.feature.utils.AudioWriterPCM
 import com.sts.sontalksign.global.FileFormats
 import okhttp3.ResponseBody
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
-import retrofit2.http.Query
 import java.io.BufferedReader
 import java.io.BufferedWriter
-import java.io.DataOutputStream
 import java.io.File
 import java.io.FileOutputStream
 import java.io.FileReader
 import java.io.FileWriter
-import java.net.URLEncoder
-import java.text.SimpleDateFormat
 import java.lang.ref.WeakReference
+import java.net.URLEncoder
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 
@@ -85,18 +79,18 @@ class ConversationActivity : AppCompatActivity() {
 
     private fun handleMessage(msg: Message) {
         when (msg.what) {
-            R.id.clientReady -> {
+            com.sts.sontalksign.R.id.clientReady -> {
                 txtResult!!.text = "Connected"
                 audioWriter = AudioWriterPCM(
                     filesDir.absolutePath + "/NaverSpeechTest")
                 audioWriter!!.open("Test")
             }
-            R.id.audioRecording -> audioWriter?.write(msg.obj as ShortArray)
-            R.id.partialResult -> {
+            com.sts.sontalksign.R.id.audioRecording -> audioWriter?.write(msg.obj as ShortArray)
+            com.sts.sontalksign.R.id.partialResult -> {
                 mResult = msg.obj as String
                 txtResult!!.text = mResult
             }
-            R.id.finalResult -> {
+            com.sts.sontalksign.R.id.finalResult -> {
                 val speechRecognitionResult = msg.obj as SpeechRecognitionResult
                 val results = speechRecognitionResult.results
                 val strBuf = StringBuilder()
@@ -107,16 +101,16 @@ class ConversationActivity : AppCompatActivity() {
                 mResult = strBuf.toString()
                 txtResult!!.text = mResult
             }
-            R.id.recognitionError -> {
+            com.sts.sontalksign.R.id.recognitionError -> {
                 audioWriter?.close()
                 mResult = "Error code : ${msg.obj}"
                 txtResult!!.text = mResult
-                btnStart!!.setText(R.string.str_start)
+                btnStart!!.setText(com.sts.sontalksign.R.string.str_start)
                 btnStart!!.isEnabled = true
             }
-            R.id.clientInactive -> {
+            com.sts.sontalksign.R.id.clientInactive -> {
                 audioWriter?.close()
-                btnStart!!.setText(R.string.str_start)
+                btnStart!!.setText(com.sts.sontalksign.R.string.str_start)
                 btnStart!!.isEnabled = true
             }
         }
@@ -164,6 +158,28 @@ class ConversationActivity : AppCompatActivity() {
         binding.button.setOnClickListener {
             naverapi()
         }
+
+        txtResult = findViewById<View>(com.sts.sontalksign.R.id.tv_CRS) as TextView
+        btnStart = findViewById<View>(com.sts.sontalksign.R.id.btn_CRS) as Button
+
+        handler = RecognitionHandler(this)
+        naverRecognizer = NaverRecognizer(this, handler!!, CLIENT_ID)
+
+        btnStart!!.setOnClickListener {
+            if (!naverRecognizer!!.getSpeechRecognizer().isRunning) {
+                // Start button is pushed when SpeechRecognizer's state is inactive.
+                // Run SpeechRecongizer by calling recognize().
+                mResult = ""
+                txtResult!!.text = "Connecting..."
+                btnStart?.setText(com.sts.sontalksign.R.string.str_stop)
+                naverRecognizer!!.recognize()
+            } else {
+                Log.d(TAG, "stop and wait Final Result")
+                btnStart!!.isEnabled = false
+                naverRecognizer!!.getSpeechRecognizer().stop()
+            }
+        }
+
     }
 
     private fun naverapi() {
