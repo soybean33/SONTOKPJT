@@ -157,7 +157,7 @@ class ConversationActivity : AppCompatActivity() {
         return getString(R.string.your_conversation_content) + content + getString(R.string.your_conversation_time) + time
     }
 
-    //isMine - 0:나의 대사, 1:상대의 대사
+    //isbContentMine - 0:나의 대사, 1:상대의 대사
     private fun addTextLine(content:String, isMine:Boolean) {
         //녹음하기 미선택의 경우
         if(!isNowRecording) return

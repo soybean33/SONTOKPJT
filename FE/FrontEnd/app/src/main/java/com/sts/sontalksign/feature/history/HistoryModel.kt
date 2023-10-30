@@ -15,6 +15,6 @@ data class HistoryDetailTagModel(
 
 data class HistoryDetailConversationModel(
     val historyText: String, // 기록 대화 텍스트
-    val SendedTime: String, // 대화한 시간
+    val sendedTime: String, // 대화한 시간
     val isLeft: Boolean // 왼쪽 메시지 여부 (true: 왼쪽, false: 오른쪽)
 )
