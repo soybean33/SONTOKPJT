@@ -25,16 +25,27 @@ import androidx.core.content.ContextCompat
 import com.naver.speech.clientapi.SpeechRecognitionResult
 import com.sts.sontalksign.R
 import com.sts.sontalksign.databinding.ActivityConversationBinding
+import com.sts.sontalksign.feature.apis.NaverAPI
+import com.sts.sontalksign.feature.common.CommonTagAdapter
 import com.sts.sontalksign.feature.common.CommonTagItem
 import com.sts.sontalksign.feature.common.CustomForm
 import com.sts.sontalksign.feature.common.TagSingleton
 import com.sts.sontalksign.feature.utils.AudioWriterPCM
 import com.sts.sontalksign.global.FileFormats
+import okhttp3.ResponseBody
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
+import retrofit2.http.Query
 import java.io.BufferedReader
 import java.io.BufferedWriter
+import java.io.DataOutputStream
 import java.io.File
+import java.io.FileOutputStream
 import java.io.FileReader
 import java.io.FileWriter
+import java.net.URLEncoder
+import java.text.SimpleDateFormat
 import java.lang.ref.WeakReference
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
@@ -145,70 +156,48 @@ class ConversationActivity : AppCompatActivity() {
         /*대화내용 저장*/
         //내부저장소의 경로 저장
         directory = filesDir.absolutePath //내부경로의 절대 경로
+        createTextFile() //대화 텍스트 파일 생성
 
-        loadTagList()
 
-        txtResult = findViewById<View>(R.id.txt_result) as TextView
-        btnStart = findViewById<View>(R.id.btn_start) as Button
 
-        handler = RecognitionHandler(this)
-        naverRecognizer = NaverRecognizer(this, handler!!, CLIENT_ID)
-
-        btnStart?.setOnClickListener {
-            if (!naverRecognizer?.getSpeechRecognizer()?.isRunning!!) {
-                mResult = ""
-                txtResult?.text = "Connecting..."
-                btnStart!!.setText(R.string.str_stop)
-                naverRecognizer?.recognize()
-            } else {
-                Log.d(TAG, "stop and wait Final Result")
-                btnStart?.isEnabled = false
-                naverRecognizer?.getSpeechRecognizer()?.stop()
-            }
+        //Naver API TEST용
+        binding.button.setOnClickListener {
+            naverapi()
         }
     }
 
-    fun loadTagList() {
-        //tagList는 최초 1회만 로드
-        if(TagSingleton.tagList.size > 0) return
+    private fun naverapi() {
+        val text = URLEncoder.encode("집가고싶다.", "UTF-8")
 
-        Log.d(TAG, "Directory : " + directory)
-        val file = File(directory)
-
-
-        //파일 미존재
-        if(!file.exists()) {
-            Log.d(TAG, "TAGS file does not exist!!")
-            file.mkdirs()
-            //return
-        }
-
-        val tagFN = "TAGS.txt"
-        val fPath = directory + "/" + tagFN
-        val writer = FileWriter(fPath, true)
-
-        val reader = FileReader(fPath)
-        val buffer = BufferedReader(reader)
-
-        var line: String? = ""
-//        var result = StringBuffer()
-
-        while(true) {
-            line = buffer.readLine() //줄 단위로 read
-            if(line == null) break
-            else {
-                val (index, text) = line.split(" ")
-                TagSingleton.tagList.add(CommonTagItem(index, text))
+        NaverAPI.create().generateSpeech("nara", 0, 0,0, "mp3", text).enqueue(object : Callback<ResponseBody> {
+            override fun onResponse(call: Call<ResponseBody>, response: Response<ResponseBody>) {
+                if(response.isSuccessful) {
+                    val body = response.body()
+                    if (body != null) {
+                        val `is` = body.byteStream()
+                        val bytes = ByteArray(1024)
+                        var read: Int
+                        val tempName = System.currentTimeMillis().toString()
+                        val f = File("$directory/$tempName.mp3")
+                        f.createNewFile()
+                        val outputStream = FileOutputStream(f)
+                        while (`is`.read(bytes).also { read = it } != -1) {
+                            outputStream.write(bytes, 0, read)
+                        }
+                        `is`.close()
+                    }
+                } else {
+                    val errorBody = response.errorBody()
+                    if(errorBody != null) {
+                        Log.d("ConversationgActivity", "Error: " + errorBody.string())
+                    }
+                }
             }
-        }
 
-        val colorList = resources.getIntArray(R.array.tagColorArr)
-        for(color in colorList) {
-            TagSingleton.colorList.add((color))
-        }
-        TagSingleton.tagList.add(CommonTagItem("0", "TEST"))
-
-        buffer.close()
+            override fun onFailure(call: Call<ResponseBody>, t: Throwable) {
+                Log.d("ConversationActivity", t.message!!)
+            }
+        })
     }
 
     //대화 내용 기록
