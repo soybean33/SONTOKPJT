@@ -79,39 +79,40 @@ class ConversationActivity : AppCompatActivity() {
 
     private fun handleMessage(msg: Message) {
         when (msg.what) {
-            com.sts.sontalksign.R.id.clientReady -> {
-                txtResult!!.text = "Connected"
+            R.id.clientReady -> {
+                binding.tvCRS.text = "Connected"
                 audioWriter = AudioWriterPCM(
                     filesDir.absolutePath + "/NaverSpeechTest")
                 audioWriter!!.open("Test")
             }
-            com.sts.sontalksign.R.id.audioRecording -> audioWriter?.write(msg.obj as ShortArray)
-            com.sts.sontalksign.R.id.partialResult -> {
+            R.id.audioRecording -> audioWriter?.write(msg.obj as ShortArray)
+            R.id.partialResult -> {
                 mResult = msg.obj as String
-                txtResult!!.text = mResult
+                binding.tvCRS.text = mResult
             }
-            com.sts.sontalksign.R.id.finalResult -> {
+            R.id.finalResult -> {
                 val speechRecognitionResult = msg.obj as SpeechRecognitionResult
                 val results = speechRecognitionResult.results
-                val strBuf = StringBuilder()
-                for (result in results) {
-                    strBuf.append(result)
-                    strBuf.append("\n")
-                }
-                mResult = strBuf.toString()
-                txtResult!!.text = mResult
+//                val strBuf = StringBuilder()
+//                for (result in results) {
+//                    strBuf.append(result)
+//                    strBuf.append("\n")
+//                }
+//                mResult = strBuf.toString()
+//                binding.tvCRS.text = mResult
+                binding.tvCRS.text = results[0].toString()
             }
-            com.sts.sontalksign.R.id.recognitionError -> {
+            R.id.recognitionError -> {
                 audioWriter?.close()
                 mResult = "Error code : ${msg.obj}"
-                txtResult!!.text = mResult
-                btnStart!!.setText(com.sts.sontalksign.R.string.str_start)
-                btnStart!!.isEnabled = true
+                binding.tvCRS.text = mResult
+                binding.btnCRS.setText(R.string.str_start)
+                binding.btnCRS.isEnabled = true
             }
-            com.sts.sontalksign.R.id.clientInactive -> {
+            R.id.clientInactive -> {
                 audioWriter?.close()
-                btnStart!!.setText(com.sts.sontalksign.R.string.str_start)
-                btnStart!!.isEnabled = true
+                binding.btnCRS.setText(R.string.str_start)
+                binding.btnCRS.isEnabled = true
             }
         }
     }
@@ -159,26 +160,24 @@ class ConversationActivity : AppCompatActivity() {
             naverapi()
         }
 
-        txtResult = findViewById<View>(com.sts.sontalksign.R.id.tv_CRS) as TextView
-        btnStart = findViewById<View>(com.sts.sontalksign.R.id.btn_CRS) as Button
-
         handler = RecognitionHandler(this)
         naverRecognizer = NaverRecognizer(this, handler!!, CLIENT_ID)
 
-        btnStart!!.setOnClickListener {
+        binding.btnCRS.setOnClickListener {
             if (!naverRecognizer!!.getSpeechRecognizer().isRunning) {
                 // Start button is pushed when SpeechRecognizer's state is inactive.
                 // Run SpeechRecongizer by calling recognize().
                 mResult = ""
-                txtResult!!.text = "Connecting..."
-                btnStart?.setText(com.sts.sontalksign.R.string.str_stop)
+                binding.tvCRS.text = "Connecting..."
+                binding.btnCRS.setText(R.string.str_stop)
                 naverRecognizer!!.recognize()
             } else {
                 Log.d(TAG, "stop and wait Final Result")
-                btnStart!!.isEnabled = false
+                binding.tvCRS.isEnabled = false
                 naverRecognizer!!.getSpeechRecognizer().stop()
             }
         }
+
 
     }
 
