@@ -1,7 +1,9 @@
 package com.sts.sontalksign.feature.conversation
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.content.pm.PackageManager
+import android.content.res.Configuration
 import android.media.AudioAttributes
 import android.media.MediaPlayer
 import android.os.Build
@@ -9,13 +11,19 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.Message
 import android.util.Log
+import android.view.View
 import android.view.inputmethod.EditorInfo
+import android.widget.AdapterView
 import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.camera.core.AspectRatio
+import androidx.camera.core.Camera
 import androidx.camera.core.CameraSelector
+import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.ImageCapture
+import androidx.camera.core.ImageProxy
 import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.video.Recorder
@@ -23,6 +31,9 @@ import androidx.camera.video.Recording
 import androidx.camera.video.VideoCapture
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
+import com.google.mediapipe.tasks.vision.core.RunningMode
 import com.naver.speech.clientapi.SpeechRecognitionResult
 import com.sts.sontalksign.R
 import com.sts.sontalksign.databinding.ActivityConversationBinding
@@ -39,12 +50,15 @@ import java.io.File
 import java.io.FileOutputStream
 import java.io.FileReader
 import java.io.FileWriter
+import java.lang.IllegalStateException
 import java.lang.ref.WeakReference
+import java.util.Locale
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
+import java.util.concurrent.TimeUnit
 
 
-class ConversationActivity : AppCompatActivity() {
+class ConversationActivity : AppCompatActivity(), HandLandmarkerHelper.LandmarkerListener {
 
     private val binding by lazy {
         ActivityConversationBinding.inflate(layoutInflater)
@@ -52,11 +66,25 @@ class ConversationActivity : AppCompatActivity() {
 
     private val TAG: String = "ConversationActivity"
 
+    /*MediaPipe 관련 변수*/
+    private lateinit var handLandmarkerHelper: HandLandmarkerHelper
+    private val viewModel by lazy {
+        ViewModelProvider(this@ConversationActivity).get(MainViewModel::class.java)
+    }
+    private var preview: Preview? = null
+    private var imageAnalyzer: ImageAnalysis? = null
+    private var camera: Camera? = null
+    private var cameraProvider: ProcessCameraProvider? = null
+    private var cameraFacing = CameraSelector.LENS_FACING_FRONT
+
+    /** Blocking ML operations are performed using this executor */
+    private lateinit var backgroundExecutor: ExecutorService
+
     /*CameraX 관련 변수*/
     private var imageCapture: ImageCapture? = null
     private var videoCapture: VideoCapture<Recorder>? = null
     private var recording: Recording? = null
-    private lateinit var cameraExecutor: ExecutorService
+//    private lateinit var cameraExecutor: ExecutorService
 
     private var isNowRecording: Boolean = false //사용자의 "녹음하기" 선택 여부
 
@@ -121,16 +149,6 @@ class ConversationActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
 
-        //카메라 권한 요청
-        if(allPermissionsGranted()) {
-            startCamera()
-        } else {
-            ActivityCompat.requestPermissions(
-                this, REQUIRED_PERMISSIONS, REQUEST_CODE_PERMISSIONS
-            )
-        }
-        cameraExecutor = Executors.newSingleThreadExecutor()
-
         /*이벤트 리스너 설정*/
         //텍스트 입력용 EditText 클릭
         binding.etTextConversation.setOnEditorActionListener { textView, actionId, keyEvent ->
@@ -184,8 +202,41 @@ class ConversationActivity : AppCompatActivity() {
                 naverRecognizer!!.getSpeechRecognizer().stop()
             }
         }
-    }
 
+
+        //카메라 권한 요청
+        if(allPermissionsGranted()) {
+
+        } else {
+            ActivityCompat.requestPermissions(
+                this, REQUIRED_PERMISSIONS, REQUEST_CODE_PERMISSIONS
+            )
+        }
+
+//        cameraExecutor = Executors.newSingleThreadExecutor()
+
+        /*MediaPipe 관련 초기 설정*/
+        // Initialize our background executor
+        backgroundExecutor = Executors.newSingleThreadExecutor()
+
+        binding.pvCamera.post {
+            setUpCamera()
+        }
+
+        // Create the HandLandmarkerHelper that will handle the inference
+        backgroundExecutor.execute {
+            handLandmarkerHelper = HandLandmarkerHelper(
+                context = this,
+                runningMode = RunningMode.LIVE_STREAM,
+                minHandDetectionConfidence = viewModel.currentMinHandDetectionConfidence,
+                minHandTrackingConfidence = viewModel.currentMinHandTrackingConfidence,
+                minHandPresenceConfidence = viewModel.currentMinHandPresenceConfidence,
+                maxNumHands = viewModel.currentMaxHands,
+                currentDelegate = viewModel.currentDelegate,
+                handLandmarkerHelperListener = this
+            )
+        }
+    }
 
     /**
      * TTS API 요청
@@ -341,33 +392,120 @@ class ConversationActivity : AppCompatActivity() {
     }
 
     //카메라 시작
-    private fun startCamera() {
-        val cameraProviderFuture = ProcessCameraProvider.getInstance(this) //Activity와 카메라의 수명 주기를 binding
+    private fun setUpCamera() {
+        val cameraProviderFuture =
+            ProcessCameraProvider.getInstance(this@ConversationActivity) //Activity와 카메라의 수명 주기를 binding
 
         cameraProviderFuture.addListener({
-            val cameraProvider: ProcessCameraProvider = cameraProviderFuture.get() //카메라의 수명 주기를 APP 프로세스 내의 LifecycleOwner에 바인딩
+            cameraProvider = cameraProviderFuture.get() //카메라의 수명 주기를 APP 프로세스 내의 LifecycleOwner에 바인딩
 
-            //카메라 프리뷰 초기화 및 설정
-            val preview = Preview.Builder()
+            bindCameraUseCases() //Camera Use Cases 빌드 및 바인딩
+        }, ContextCompat.getMainExecutor(this)) //기본 스레드에서 실행되는 Executor를 반환
+    }
+
+    @SuppressLint("UnsafeOptInUsageError")
+    private fun bindCameraUseCases() {
+        //카메라 프리뷰 초기화 및 설정
+        //CameraProvider
+        val cameraProvider = cameraProvider ?: throw IllegalStateException("Camera initialization failed.")
+
+        val cameraSelector =
+            CameraSelector.Builder().requireLensFacing(cameraFacing).build() //전면 카메라를 기본으로 선택
+
+        preview = Preview.Builder().setTargetAspectRatio(AspectRatio.RATIO_4_3)
+            .setTargetRotation(binding.pvCamera.display.rotation)
+            .build()
+//            .also {
+//                it.setSurfaceProvider(binding.pvCamera.surfaceProvider)
+//            }
+
+//        val cameraSelector = CameraSelector.DEFAULT_FRONT_CAMERA
+
+        // ImageAnalysis. Using RGBA 8888 to match how our models work
+        imageAnalyzer =
+            ImageAnalysis.Builder().setTargetAspectRatio(AspectRatio.RATIO_4_3)
+                .setTargetRotation(binding.pvCamera.display.rotation)
+                .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
+                .setOutputImageFormat(ImageAnalysis.OUTPUT_IMAGE_FORMAT_RGBA_8888)
                 .build()
+                // The analyzer can then be assigned to the instance
                 .also {
-                    it.setSurfaceProvider(binding.pvCamera.surfaceProvider)
+                    it.setAnalyzer(backgroundExecutor) { image ->
+                        detectHand(image)
+                    }
                 }
 
-            val cameraSelector = CameraSelector.DEFAULT_FRONT_CAMERA //전면 카메라를 기본으로 선택
+        cameraProvider.unbindAll()
 
-            try {
-                cameraProvider.unbindAll() //바인딩된 항목 전체 제거
+        try {
+            //카메라 관련 객체 바인딩
+            camera = cameraProvider.bindToLifecycle(
+                this, cameraSelector, preview, imageAnalyzer
+            )
 
-                //카메라 관련 객체 바인딩
-                cameraProvider.bindToLifecycle(
-                    this, cameraSelector, preview
-                )
-            } catch(exc: Exception) {
-                Log.e(TAG, "Use case binding failed", exc) //앱에 더이상 포커스 없는 경우 등의 실패 케이스 처리
+            preview?.setSurfaceProvider(binding.pvCamera.surfaceProvider)
+
+//            cameraProvider!!.unbindAll() //바인딩된 항목 전체 제거
+
+
+//            cameraProvider!!.bindToLifecycle(
+//                this, cameraSelector, preview
+//            )
+        } catch(exc: Exception) {
+            Log.e(TAG, "Use case binding failed", exc) //앱에 더이상 포커스 없는 경우 등의 실패 케이스 처리
+        }
+    }
+
+    private fun detectHand(imageProxy: ImageProxy) {
+        handLandmarkerHelper.detectLiveStream(
+            imageProxy = imageProxy,
+            isFrontCamera = cameraFacing == CameraSelector.LENS_FACING_FRONT
+        )
+    }
+
+    override fun onConfigurationChanged(newConfig: Configuration) {
+        super.onConfigurationChanged(newConfig)
+        imageAnalyzer?.targetRotation =
+            binding.pvCamera.display.rotation
+    }
+
+    // Update UI after hand have been detected. Extracts original
+    // image height/width to scale and place the landmarks properly through
+    // OverlayView
+    override fun onResults(
+        resultBundle: HandLandmarkerHelper.ResultBundle
+    ) {
+        this.runOnUiThread {
+            if (binding != null) {
+                Log.d("TEST", resultBundle.results.first().toString())
+                Log.d("TEST-", resultBundle.results.first().handednesses().toString())
+
+//                binding.bottomSheetLayout.inferenceTimeVal.text =
+//                    String.format("%d ms", resultBundle.inferenceTime)
+
+                // Pass necessary information to OverlayView for drawing on the canvas
+//                binding.overlay.setResults(
+//                    resultBundle.results.first(),
+//                    resultBundle.inputImageHeight,
+//                    resultBundle.inputImageWidth,
+//                    RunningMode.LIVE_STREAM
+//                )
+//
+//                // Force a redraw
+//                binding.overlay.invalidate()
             }
+        }
+    }
 
-        }, ContextCompat.getMainExecutor(this)) //기본 스레드에서 실행되는 Executor를 반환
+    override fun onError(error: String, errorCode: Int) {
+        this.runOnUiThread {
+            Toast.makeText(this, error, Toast.LENGTH_SHORT).show()
+            if (errorCode == HandLandmarkerHelper.GPU_ERROR) {
+//                binding.pvCamera.spinnerDelegate.setSelection(
+//                    HandLandmarkerHelper.DELEGATE_CPU, false
+//                )
+            }
+        }
     }
 
     //카메라 권한
@@ -383,7 +521,7 @@ class ConversationActivity : AppCompatActivity() {
 
         if(requestCode == REQUEST_CODE_PERMISSIONS) {
             if(allPermissionsGranted()) {
-                startCamera()
+                setUpCamera()
             } else {
                 Toast.makeText(this, "Permissions not granted by the user.", Toast.LENGTH_SHORT).show()
                 finish()
@@ -395,12 +533,19 @@ class ConversationActivity : AppCompatActivity() {
 
     override fun onDestroy() {
         super.onDestroy()
-        cameraExecutor.shutdown()
+//        cameraExecutor.shutdown()
         mediaPlayer.release()
+
+        // Shut down our background executor
+        backgroundExecutor.shutdown()
+        backgroundExecutor.awaitTermination(
+            Long.MAX_VALUE, TimeUnit.NANOSECONDS
+        )
     }
 
     companion object {
         private const val cTAG = "CameraX Preview"
+        private const val hlTAG = "Hand Landmarker"
         private const val FILENAME_FORMAT = "yyyy-MM-dd-HH-mm-ss-SSS"
         private const val REQUEST_CODE_PERMISSIONS = 10
         private val REQUIRED_PERMISSIONS =
@@ -419,12 +564,35 @@ class ConversationActivity : AppCompatActivity() {
         naverRecognizer?.getSpeechRecognizer()?.initialize()
     }
 
-    public override fun onResume() {
+    override fun onResume() {
         super.onResume()
+        
+        //MediaPipe 초기 설정
+        backgroundExecutor.execute {
+            if (handLandmarkerHelper.isClose()) {
+                handLandmarkerHelper.setupHandLandmarker()
+            }
+        }
+        
+        //STT 초기 설정
         mResult = ""
         binding.tvCRS.text = ""
         binding.btnCRS.setText(R.string.str_start)
         binding.btnCRS.isEnabled = true
+    }
+
+    override fun onPause() {
+        super.onPause()
+        if(this::handLandmarkerHelper.isInitialized) {
+            viewModel.setMaxHands(handLandmarkerHelper.maxNumHands)
+            viewModel.setMinHandDetectionConfidence(handLandmarkerHelper.minHandDetectionConfidence)
+            viewModel.setMinHandTrackingConfidence(handLandmarkerHelper.minHandTrackingConfidence)
+            viewModel.setMinHandPresenceConfidence(handLandmarkerHelper.minHandPresenceConfidence)
+            viewModel.setDelegate(handLandmarkerHelper.currentDelegate)
+
+            // Close the HandLandmarkerHelper and release resources
+            backgroundExecutor.execute { handLandmarkerHelper.clearHandLandmarker() }
+        }
     }
 
     public override fun onStop() {
