@@ -1,7 +1,6 @@
 package com.sts.sontalksign.feature.history
 
 import com.sts.sontalksign.feature.common.CommonTagItem
-import java.util.Date
 
 data class HistoryListModel(
     val historyTitle: String, // 기록 제목
