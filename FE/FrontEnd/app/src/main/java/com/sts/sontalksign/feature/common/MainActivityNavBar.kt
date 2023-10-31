@@ -121,6 +121,12 @@ class MainActivityNavBar : AppCompatActivity() {
             prTagFile.createNewFile()
         }
 
+//        val writer = FileWriter(prTagFile)
+//        //쓰기 속도 향상
+//        val tbuffer = BufferedWriter(writer)
+//        tbuffer.write("0 TEST\n1 테스트\n2 테스트입니다\n3 TESTTEST\n4 TEST일걸")
+//        tbuffer.close()
+
         //파일 읽기 - 한줄씩 읽어서 TAG 정보 저장
         val reader = FileReader(prTagFile)
         val buffer = BufferedReader(reader)

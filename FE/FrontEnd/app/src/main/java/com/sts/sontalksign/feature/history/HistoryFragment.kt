@@ -65,7 +65,7 @@ class HistoryFragment : Fragment() {
 
         directory = requireActivity().filesDir.absolutePath //내부경로의 절대 경로
 
-        Log.d("디렉토리확인", directory.toString())
+
         if (directory != null) {
             val formatter = SimpleDateFormat("yyyyMMddHHmmss", Locale.getDefault())
             val files = File(directory).listFiles() // Using local val here
@@ -74,7 +74,6 @@ class HistoryFragment : Fragment() {
                 if (file.isFile && file.name.endsWith(".txt")) {
                     if (file.name != "TAGS.txt"){
                         val fileContents = readFileContents(file.absolutePath)
-                        Log.d("무어머야러ㅐㅑ너래냐", fileContents)
                         val lines = fileContents.lines()
 
                         if (lines.size >= 3) {
@@ -90,9 +89,7 @@ class HistoryFragment : Fragment() {
                                 if (tagIdInt != null && tagIdInt >= 0 && tagIdInt < TagSingleton.tagList.size) {
                                     // 유효한 인덱스 범위 내에 있는 경우에만 처리
                                     tagItems.add(CommonTagItem(tagId, TagSingleton.tagList[tagIdInt].tagText))
-                                } else {
-                                    // 유효하지 않은 tagId에 대한 처리 (예: 로깅)
-                                    Log.e("태그ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ", "태그아이디 아닙니다: $tagId")
+
                                 }
                             }
 
@@ -107,9 +104,7 @@ class HistoryFragment : Fragment() {
                     }
                 }
             }
-
         }
-
     }
 }
 
