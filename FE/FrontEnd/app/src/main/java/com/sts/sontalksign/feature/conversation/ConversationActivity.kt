@@ -74,8 +74,6 @@ class ConversationActivity : AppCompatActivity() {
     private val CLIENT_ID = "89kna7451i"
     private var handler: RecognitionHandler? = null
     private var naverRecognizer: NaverRecognizer? = null
-    private var txtResult: TextView? = null
-    private var btnStart: Button? = null
     private var mResult: String? = null
     private var audioWriter: AudioWriterPCM? = null
 
