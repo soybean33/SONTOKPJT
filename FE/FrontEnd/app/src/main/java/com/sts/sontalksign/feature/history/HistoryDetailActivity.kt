@@ -10,25 +10,21 @@ import com.sts.sontalksign.databinding.ActivityHistoryDetailBinding
 import com.sts.sontalksign.feature.common.CommonTagItem
 import com.sts.sontalksign.feature.common.TagSingleton
 import java.io.File
-import java.text.SimpleDateFormat
-import java.util.Locale
+
 
 class HistoryDetailActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityHistoryDetailBinding
-
-    private lateinit var recyclerView1: RecyclerView
     private lateinit var historyDetailTagAdapter: HistoryItemTagAdapter
-
-    private lateinit var recyclerView2: RecyclerView
     private lateinit var historyDetailConversationAdapter: HistoryDetailConversationAdapter
 
     var historyDetailTagList: ArrayList<CommonTagItem> = ArrayList()
     var historyDetailConList: ArrayList<HistoryDetailConversationModel> = ArrayList()
 
     private val TAG: String = "HistoryDetailActivity"
-
     private var directory: String? = null
+
+    private var historyTitle: String? = null // historyTitle 추가
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -39,16 +35,14 @@ class HistoryDetailActivity : AppCompatActivity() {
         binding = ActivityHistoryDetailBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        recyclerView1 = binding.rvHistoryDetailTag
-        historyDetailTagAdapter = HistoryItemTagAdapter(historyDetailTagList)
-        recyclerView1.layoutManager = LinearLayoutManager(this)
-        recyclerView1.adapter = historyDetailTagAdapter
+        // Intent에서 "historyTitle"을 가져옵니다.
+        historyTitle = intent.getStringExtra("historyTitle")
 
-        recyclerView2 = binding.rvMessages
-        historyDetailConversationAdapter = HistoryDetailConversationAdapter(historyDetailConList)
-        recyclerView2.layoutManager = LinearLayoutManager(this)
-        recyclerView2.adapter = historyDetailConversationAdapter
+        // 가져온 historyTitle을 TextView에 설정
+        binding.tvHistoryDetailTitle.text = historyTitle
+
     }
+
 
     @SuppressLint("NotifyDataSetChanged")
     override fun onStart() {
@@ -62,33 +56,37 @@ class HistoryDetailActivity : AppCompatActivity() {
             adapter = historyDetailConversationAdapter
         }
 
+        // RecyclerView 어댑터 초기화
+        historyDetailTagAdapter = HistoryItemTagAdapter(historyDetailTagList)
+        binding.rvHistoryDetailTag.apply {
+            layoutManager = LinearLayoutManager(context, RecyclerView.HORIZONTAL, false)
+            adapter = historyDetailTagAdapter
+        }
+
+
         // Safe call for directory
         val dirPath = directory
         if (dirPath != null) {
-            // 대화 내용 로드 및 어댑터에 바인딩
-            // 중복된 어댑터 생성을 제거합니다.
-            readTextFile(directory ?: filesDir.absolutePath)
+
+            readTextFile(directory ?: filesDir.absolutePath, historyTitle ?: "")
         }
     }
 
-    private fun parseLine(line: String): Triple<String, String, Boolean>? {
+    private fun parseLine(line: String): HistoryDetailConversationModel? {
         val isLeft = line.contains("<<") // Check if it's a left message
-        val parts = line.split("<") // Split the line at '<'
+        val parts = line.split("<", ">") // Split the line at '<'
 
         // Check if we have at least 3 parts (<<, Message, Time)
-        if (parts.size < 3) return null
-
-        // Assuming the first part is empty for left messages, and the second part is the message
-        val messageContent = parts[2].trim()
-        val messageTime = parts[3].trim() // The third part is the time
+        if (parts.size == 0) return null
 
 
-        Log.d("메세지컨텐트", messageContent)
-        Log.d("메세지타임", messageTime)
+        val messageContent = parts[0]
+        val messageTime = parts[1]
 
-        return Triple(messageContent, messageTime, isLeft)
+
+
+        return HistoryDetailConversationModel(messageContent, messageTime, isLeft)
     }
-
 
     private fun readFileContents(filePath: String): String {
         val file = File(filePath)
@@ -98,8 +96,7 @@ class HistoryDetailActivity : AppCompatActivity() {
     }
 
     @SuppressLint("NotifyDataSetChanged")
-    private fun readTextFile(directoryPath: String) {
-        val formatter = SimpleDateFormat("HH:mm", Locale.getDefault())
+    private fun readTextFile(directoryPath: String, historyTitle: String) {
 
         val files = File(directoryPath).listFiles()
 
@@ -109,48 +106,35 @@ class HistoryDetailActivity : AppCompatActivity() {
                     val fileContents = readFileContents(file.absolutePath)
                     val lines = fileContents.lines()
 
-                    if (lines.size >= 3) {
-                        binding.tvHistoryDetailTitle.text = lines[0]
-                        processTags(lines[1])
+                    if (lines.size >= 3 && lines[0] == historyTitle) {
+//                        binding.tvHistoryDetailTitle.text = lines[0]
+                        val tagsLine = lines[1]
 
-                        Log.d("라인222222드롭",lines.drop(2).toString() )
+                        val tagsList = tagsLine.substringAfter("TAGS_").trim().split("_")
+                        val tagItems = ArrayList<CommonTagItem>()
 
-                        // 메시지 줄들 처리
-                        lines.drop(2).forEach { line ->
-                            if (line.isNotBlank()) {
-                                parseLine(line)?.let { (messageContent, messageTime, isLeft) ->
-                                    formatter.parse(messageTime)?.let { time ->
-                                        historyDetailConList.add(HistoryDetailConversationModel(messageContent, messageTime, isLeft))
-                                        Log.d("히스토리디테일컨리스트", historyDetailConList.toString())
-                                        }
-                                } ?: run {
-                                    Log.d("Debug", "Line could not be parsed: $line")
-                                }
+                        tagsList.forEach { tagId ->
+                            val tagIdInt = tagId.toIntOrNull() // tagId를 안전하게 정수로 변환
+                            if (tagIdInt != null && tagIdInt >= 0 && tagIdInt < TagSingleton.tagList.size) {
+                                // 유효한 인덱스 범위 내에 있는 경우에만 처리
+                                historyDetailTagList.add(CommonTagItem(tagId, TagSingleton.tagList[tagIdInt].tagText))
                             }
                         }
+
+                        var splited = lines[2].split("<<", ">>")
+
+                        for (line in splited) {
+                            if (line.equals("")) continue
+                            historyDetailConList.add(parseLine(line)!!)
+                        }
+
                     }
                 } catch (e: Exception) {
                     Log.e(TAG, "파일 읽기 중 오류 발생: ${e.message}")
                 }
             }
         }
-        // 한 번에 변경 사항을 반영합니다.
-        historyDetailTagAdapter.notifyDataSetChanged()
+
         historyDetailConversationAdapter.notifyDataSetChanged()
-    }
-
-    private fun processTags(tagsLine: String) {
-        val tagsList = tagsLine.substringAfter("TAGS_").trim().split("_")
-
-        historyDetailTagList.clear()
-
-        tagsList.forEach { tagId ->
-            val tagIdInt = tagId.toIntOrNull()
-            if (tagIdInt != null && tagIdInt >= 0 && tagIdInt < TagSingleton.tagList.size) {
-                historyDetailTagList.add(CommonTagItem(tagId, TagSingleton.tagList[tagIdInt].tagText))
-            } else {
-                Log.e(TAG, "유효하지 않은 태그 ID: $tagId")
-            }
-        }
     }
 }
