@@ -9,10 +9,6 @@ data class HistoryListModel(
 )
 
 
-data class HistoryDetailTagModel(
-    val historyItemTag: String,
-)
-
 data class HistoryDetailConversationModel(
     val historyText: String, // 기록 대화 텍스트
     val sendedTime: String, // 대화한 시간
