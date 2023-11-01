@@ -111,7 +111,6 @@ class HistoryDetailActivity : AppCompatActivity() {
                         val tagsLine = lines[1]
 
                         val tagsList = tagsLine.substringAfter("TAGS_").trim().split("_")
-                        val tagItems = ArrayList<CommonTagItem>()
 
                         tagsList.forEach { tagId ->
                             val tagIdInt = tagId.toIntOrNull() // tagId를 안전하게 정수로 변환
@@ -121,7 +120,7 @@ class HistoryDetailActivity : AppCompatActivity() {
                             }
                         }
 
-                        var splited = lines[2].split("<<", ">>")
+                            var splited = lines[2].split("<<", ">>")
 
                         for (line in splited) {
                             if (line.equals("")) continue

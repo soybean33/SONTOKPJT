@@ -33,6 +33,8 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.google.mediapipe.tasks.vision.core.RunningMode
 import com.naver.speech.clientapi.SpeechRecognitionResult
 import com.sts.sontalksign.R
@@ -60,9 +62,12 @@ import java.util.concurrent.TimeUnit
 
 class ConversationActivity : AppCompatActivity(), HandLandmarkerHelper.LandmarkerListener {
 
+    // ActivityConversationBinding 초기화 (이미 있는 코드)
     private val binding by lazy {
         ActivityConversationBinding.inflate(layoutInflater)
     }
+
+
 
     private val TAG: String = "ConversationActivity"
 
@@ -104,6 +109,12 @@ class ConversationActivity : AppCompatActivity(), HandLandmarkerHelper.Landmarke
     private var naverRecognizer: NaverRecognizer? = null
     private var mResult: String? = null
     private var audioWriter: AudioWriterPCM? = null
+
+
+
+    private lateinit var conversationCameraAdapter: ConversationCameraAdapter
+    private val conversationCamera: ArrayList<ConversationCameraModel> = ArrayList()
+    private lateinit var recyclerView: RecyclerView // RecyclerView 선언
 
     private fun handleMessage(msg: Message) {
         when (msg.what) {
@@ -148,6 +159,14 @@ class ConversationActivity : AppCompatActivity(), HandLandmarkerHelper.Landmarke
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
+
+
+        // RecyclerView 초기화
+        recyclerView = binding.rvCameraConversation
+        recyclerView.layoutManager = LinearLayoutManager(this)
+        conversationCameraAdapter = ConversationCameraAdapter(conversationCamera)
+        recyclerView.adapter = conversationCameraAdapter
+        (recyclerView.layoutManager as LinearLayoutManager).scrollToPosition(conversationCameraAdapter.itemCount - 1)
 
         /*이벤트 리스너 설정*/
         //텍스트 입력용 EditText 클릭
@@ -317,7 +336,71 @@ class ConversationActivity : AppCompatActivity(), HandLandmarkerHelper.Landmarke
         }
 
         textList += bContent
+
+        handleSTTResult(bContent)
     }
+
+
+    // STT 결과 생성 시 호출되는 메서드
+    fun handleSTTResult(sttResult: String) {
+        // conversationCamera에 새 아이템 추가
+        val isLeftMessage = true // 또는 false, STT 결과가 사용자의 것이면 true, 상대방 것이면 false
+        val currentTime = System.currentTimeMillis()
+        conversationCamera.add(
+            ConversationCameraModel(
+                ConversationText = sttResult,
+                ConversationTime = FileFormats.timeFormat.format(currentTime),
+                isLeft = isLeftMessage
+            )
+        )
+
+        // 어댑터 갱신
+        conversationCameraAdapter.notifyDataSetChanged()
+
+        // RecyclerView를 스크롤하여 가장 최근 아이템을 보여줍니다.
+        recyclerView.smoothScrollToPosition(conversationCameraAdapter.itemCount - 1)
+    }
+
+
+    // RecyclerView를 스크롤하는 코드
+    // RecyclerView를 스크롤하는 코드
+    fun scrollToLatestItem() {
+        val itemCount = conversationCameraAdapter.itemCount
+        if (itemCount > 0) {
+            val targetPosition = itemCount - 1
+            if (targetPosition >= 0) {
+                recyclerView.post {
+                    try {
+                        recyclerView.smoothScrollToPosition(targetPosition)
+                    } catch (e: IllegalArgumentException) {
+                        showErrorMessage("Scroll error: $e")
+                    }
+                }
+            } else {
+                // 대상 위치가 유효하지 않을 때는 대신 스크롤하지 않음
+                showErrorMessage("Invalid target position")
+            }
+        } else {
+            // 아무 아이템도 없을 때는 대신 스크롤하지 않음
+            showErrorMessage("No items in the RecyclerView")
+        }
+    }
+
+    // 오류 메시지를 표시하는 메서드
+    fun showErrorMessage(message: String) {
+        // 오류 메시지를 사용자에게 표시하거나 다른 조치를 취하십시오.
+        // 예를 들어, Toast 메시지를 표시할 수 있습니다.
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
+    }
+
+    // 스크롤 대상 위치가 업데이트될 때 RecyclerView를 스크롤
+    fun updateAndScrollToLatestItem() {
+        conversationCameraAdapter.notifyDataSetChanged()
+        scrollToLatestItem()
+    }
+
+
+
 
     //파일 쓰기
     private fun writeTextFile(result: String) {
