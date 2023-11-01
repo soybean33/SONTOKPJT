@@ -23,14 +23,14 @@ class HistoryDetailConversationAdapter(private val historyDetailConList: ArrayLi
             if (isLeftMessage) {
                 // 왼쪽 메시지
 
-                binding.llhHistoryConversationText.gravity = Gravity.END
+                binding.llhHistoryConversationText.gravity = Gravity.START
 //                layoutParams.leftToLeft = Gravity.LEFT
 //                layoutParams.marginEnd = 200 // 오른쪽 마진 조절
             } else {
                 // 오른쪽 메시지
 //                layoutParams.marginStart = 200 // 왼쪽 마진 조절
 
-                binding.llhHistoryConversationText.gravity = Gravity.START
+                binding.llhHistoryConversationText.gravity = Gravity.END
 //                layoutParams.leftToRight = Gravity.RIGHT
             }
 
