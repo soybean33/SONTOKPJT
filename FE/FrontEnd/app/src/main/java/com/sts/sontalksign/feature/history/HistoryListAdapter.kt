@@ -36,12 +36,16 @@ class HistoryListAdapter(val historyList: ArrayList<HistoryListModel>) : Recycle
                 val curPos: Int = adapterPosition
                 val HistoryList: HistoryListModel = historyList[curPos] // myassetItemList로 수정
 
-                val intent = Intent(binding.root.context,HistoryDetailActivity::class.java)
-                intent.putExtra("historyTitle", HistoryList.historyTitle)
-                binding.root.context.startActivity(intent)
+                if (HistoryList.historyTitle != null ) {
+                    val intent = Intent(binding.root.context,HistoryDetailActivity::class.java)
+                    intent.putExtra("historyTitle", HistoryList.historyTitle)
 
+                    binding.root.context.startActivity(intent)
+                }
             }
 
+            binding.tvHistoryItemTitle.text = historyModel.historyTitle
+            binding.tvHistoryItemTime.text = historyModel.EndedTime
 
         }
     }
