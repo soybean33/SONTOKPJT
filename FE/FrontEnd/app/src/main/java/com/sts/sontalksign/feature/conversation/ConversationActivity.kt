@@ -34,6 +34,8 @@ import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.google.mediapipe.tasks.vision.core.RunningMode
+import com.google.mediapipe.tasks.vision.handlandmarker.HandLandmark
+import com.google.mediapipe.tasks.vision.handlandmarker.HandLandmarker
 import com.naver.speech.clientapi.SpeechRecognitionResult
 import com.sts.sontalksign.R
 import com.sts.sontalksign.databinding.ActivityConversationBinding
@@ -58,7 +60,23 @@ import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 
 
-class ConversationActivity : AppCompatActivity(), HandLandmarkerHelper.LandmarkerListener {
+class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.LandmarkerListener, HandLandmarkerHelper.LandmarkerListener {
+    companion object {
+        private const val cTAG = "CameraX Preview"
+        private const val hlTAG = "Hand Landmarker"
+        private const val pTAG = "Pose Landmarker"
+        private const val FILENAME_FORMAT = "yyyy-MM-dd-HH-mm-ss-SSS"
+        private const val REQUEST_CODE_PERMISSIONS = 10
+        private val REQUIRED_PERMISSIONS =
+            mutableListOf(
+                Manifest.permission.CAMERA,
+                Manifest.permission.RECORD_AUDIO
+            ).apply {
+                if(Build.VERSION.SDK_INT <= Build.VERSION_CODES.P) {
+                    add(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                }
+            }.toTypedArray()
+    }
 
     private val binding by lazy {
         ActivityConversationBinding.inflate(layoutInflater)
@@ -66,19 +84,22 @@ class ConversationActivity : AppCompatActivity(), HandLandmarkerHelper.Landmarke
 
     private val TAG: String = "ConversationActivity"
 
-    /*MediaPipe 관련 변수*/
+    /*MediaPipe 관련 변수 - PoseLandmarker, HandLandmarker*/
+    private lateinit var poseLandmarkerHelper: PoseLandmarkerHelper
     private lateinit var handLandmarkerHelper: HandLandmarkerHelper
     private val viewModel by lazy {
         ViewModelProvider(this@ConversationActivity).get(MainViewModel::class.java)
     }
     private var preview: Preview? = null
-    private var imageAnalyzer: ImageAnalysis? = null
+    private var imagePoseAnalyzer: ImageAnalysis? = null
+    private var imageHandAnalyzer: ImageAnalysis? = null
     private var camera: Camera? = null
     private var cameraProvider: ProcessCameraProvider? = null
     private var cameraFacing = CameraSelector.LENS_FACING_FRONT
 
     /** Blocking ML operations are performed using this executor */
-    private lateinit var backgroundExecutor: ExecutorService
+    private lateinit var backgroundPoseExecutor: ExecutorService
+    private lateinit var backgroundHandExecutor: ExecutorService
 
     /*CameraX 관련 변수*/
     private var imageCapture: ImageCapture? = null
@@ -213,18 +234,29 @@ class ConversationActivity : AppCompatActivity(), HandLandmarkerHelper.Landmarke
             )
         }
 
-//        cameraExecutor = Executors.newSingleThreadExecutor()
-
         /*MediaPipe 관련 초기 설정*/
         // Initialize our background executor
-        backgroundExecutor = Executors.newSingleThreadExecutor()
+        backgroundPoseExecutor = Executors.newSingleThreadExecutor()
+        backgroundHandExecutor = Executors.newSingleThreadExecutor()
 
         binding.pvCamera.post {
             setUpCamera()
         }
 
-        // Create the HandLandmarkerHelper that will handle the inference
-        backgroundExecutor.execute {
+        /* Create the PoseLandmarkerHelper, HandLandmarkerHelper that will handle the inference*/
+        backgroundPoseExecutor.execute {
+            poseLandmarkerHelper = PoseLandmarkerHelper(
+                context = this,
+                runningMode = RunningMode.LIVE_STREAM,
+                minPoseDetectionConfidence = viewModel.currentMinPoseDetectionConfidence,
+                minPoseTrackingConfidence = viewModel.currentMinPoseTrackingConfidence,
+                minPosePresenceConfidence = viewModel.currentMinPosePresenceConfidence,
+                currentDelegate = viewModel.currentPoseDelegate,
+                poseLandmarkerHelperListener = this
+            )
+        }
+
+        backgroundHandExecutor.execute {
             handLandmarkerHelper = HandLandmarkerHelper(
                 context = this,
                 runningMode = RunningMode.LIVE_STREAM,
@@ -232,7 +264,7 @@ class ConversationActivity : AppCompatActivity(), HandLandmarkerHelper.Landmarke
                 minHandTrackingConfidence = viewModel.currentMinHandTrackingConfidence,
                 minHandPresenceConfidence = viewModel.currentMinHandPresenceConfidence,
                 maxNumHands = viewModel.currentMaxHands,
-                currentDelegate = viewModel.currentDelegate,
+                currentDelegate = viewModel.currentHandDelegate,
                 handLandmarkerHelperListener = this
             )
         }
@@ -422,7 +454,7 @@ class ConversationActivity : AppCompatActivity(), HandLandmarkerHelper.Landmarke
 //        val cameraSelector = CameraSelector.DEFAULT_FRONT_CAMERA
 
         // ImageAnalysis. Using RGBA 8888 to match how our models work
-        imageAnalyzer =
+        imagePoseAnalyzer =
             ImageAnalysis.Builder().setTargetAspectRatio(AspectRatio.RATIO_4_3)
                 .setTargetRotation(binding.pvCamera.display.rotation)
                 .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
@@ -430,7 +462,20 @@ class ConversationActivity : AppCompatActivity(), HandLandmarkerHelper.Landmarke
                 .build()
                 // The analyzer can then be assigned to the instance
                 .also {
-                    it.setAnalyzer(backgroundExecutor) { image ->
+                    it.setAnalyzer(backgroundPoseExecutor) {image ->
+                        detectPose(image)
+                    }
+                }
+
+        imageHandAnalyzer =
+            ImageAnalysis.Builder().setTargetAspectRatio(AspectRatio.RATIO_4_3)
+                .setTargetRotation(binding.pvCamera.display.rotation)
+                .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
+                .setOutputImageFormat(ImageAnalysis.OUTPUT_IMAGE_FORMAT_RGBA_8888)
+                .build()
+                // The analyzer can then be assigned to the instance
+                .also {
+                    it.setAnalyzer(backgroundHandExecutor) { image ->
                         detectHand(image)
                     }
                 }
@@ -440,7 +485,7 @@ class ConversationActivity : AppCompatActivity(), HandLandmarkerHelper.Landmarke
         try {
             //카메라 관련 객체 바인딩
             camera = cameraProvider.bindToLifecycle(
-                this, cameraSelector, preview, imageAnalyzer
+                this, cameraSelector, preview, imagePoseAnalyzer, imageHandAnalyzer
             )
 
             preview?.setSurfaceProvider(binding.pvCamera.surfaceProvider)
@@ -456,6 +501,15 @@ class ConversationActivity : AppCompatActivity(), HandLandmarkerHelper.Landmarke
         }
     }
 
+    private fun detectPose(imageProxy: ImageProxy) {
+        if(this::poseLandmarkerHelper.isInitialized) {
+            poseLandmarkerHelper.detectLiveStream(
+                imageProxy = imageProxy,
+                isFrontCamera = cameraFacing == CameraSelector.LENS_FACING_FRONT
+            )
+        }
+    }
+
     private fun detectHand(imageProxy: ImageProxy) {
         handLandmarkerHelper.detectLiveStream(
             imageProxy = imageProxy,
@@ -465,20 +519,61 @@ class ConversationActivity : AppCompatActivity(), HandLandmarkerHelper.Landmarke
 
     override fun onConfigurationChanged(newConfig: Configuration) {
         super.onConfigurationChanged(newConfig)
-        imageAnalyzer?.targetRotation =
+        imagePoseAnalyzer?.targetRotation =
             binding.pvCamera.display.rotation
+
+        imageHandAnalyzer?.targetRotation =
+            binding.pvCamera.display.rotation
+    }
+
+    // Update UI after pose have been detected. Extracts original
+    // image height/width to scale and place the landmarks properly through
+    // OverlayView
+    override fun onPoseResults(
+        resultBundle: PoseLandmarkerHelper.ResultBundle
+    ) {
+        this?.runOnUiThread {
+            if (binding != null) {
+                Log.d("TEST-Pose", resultBundle.results.first().toString())
+//                Log.d("TEST-", resultBundle.results.first().handednesses().toString())
+//                binding.bottomSheetLayout.inferenceTimeVal.text =
+//                    String.format("%d ms", resultBundle.inferenceTime)
+//
+//                // Pass necessary information to OverlayView for drawing on the canvas
+//                binding.overlay.setResults(
+//                    resultBundle.results.first(),
+//                    resultBundle.inputImageHeight,
+//                    resultBundle.inputImageWidth,
+//                    RunningMode.LIVE_STREAM
+//                )
+//
+//                // Force a redraw
+//                binding.overlay.invalidate()
+            }
+        }
+    }
+
+    override fun onPoseError(error: String, errorCode: Int) {
+        this?.runOnUiThread {
+            Toast.makeText(this, error, Toast.LENGTH_SHORT).show()
+            if (errorCode == PoseLandmarkerHelper.GPU_ERROR) {
+//                binding.bottomSheetLayout.spinnerDelegate.setSelection(
+//                    PoseLandmarkerHelper.DELEGATE_CPU, false
+//                )
+            }
+        }
     }
 
     // Update UI after hand have been detected. Extracts original
     // image height/width to scale and place the landmarks properly through
     // OverlayView
-    override fun onResults(
+    override fun onHandResults(
         resultBundle: HandLandmarkerHelper.ResultBundle
     ) {
         this.runOnUiThread {
             if (binding != null) {
-                Log.d("TEST", resultBundle.results.first().toString())
-                Log.d("TEST-", resultBundle.results.first().handednesses().toString())
+                Log.d("TEST-Hand", resultBundle.results.first().toString())
+                Log.d("TEST-Hand-handed", resultBundle.results.first().handednesses().toString())
 
 //                binding.bottomSheetLayout.inferenceTimeVal.text =
 //                    String.format("%d ms", resultBundle.inferenceTime)
@@ -497,7 +592,7 @@ class ConversationActivity : AppCompatActivity(), HandLandmarkerHelper.Landmarke
         }
     }
 
-    override fun onError(error: String, errorCode: Int) {
+    override fun onHandError(error: String, errorCode: Int) {
         this.runOnUiThread {
             Toast.makeText(this, error, Toast.LENGTH_SHORT).show()
             if (errorCode == HandLandmarkerHelper.GPU_ERROR) {
@@ -507,6 +602,8 @@ class ConversationActivity : AppCompatActivity(), HandLandmarkerHelper.Landmarke
             }
         }
     }
+
+
 
     //카메라 권한
     private fun allPermissionsGranted() = REQUIRED_PERMISSIONS.all {
@@ -537,26 +634,15 @@ class ConversationActivity : AppCompatActivity(), HandLandmarkerHelper.Landmarke
         mediaPlayer.release()
 
         // Shut down our background executor
-        backgroundExecutor.shutdown()
-        backgroundExecutor.awaitTermination(
+        backgroundPoseExecutor.shutdown()
+        backgroundPoseExecutor.awaitTermination(
             Long.MAX_VALUE, TimeUnit.NANOSECONDS
         )
-    }
 
-    companion object {
-        private const val cTAG = "CameraX Preview"
-        private const val hlTAG = "Hand Landmarker"
-        private const val FILENAME_FORMAT = "yyyy-MM-dd-HH-mm-ss-SSS"
-        private const val REQUEST_CODE_PERMISSIONS = 10
-        private val REQUIRED_PERMISSIONS =
-            mutableListOf(
-                Manifest.permission.CAMERA,
-                Manifest.permission.RECORD_AUDIO
-            ).apply {
-                if(Build.VERSION.SDK_INT <= Build.VERSION_CODES.P) {
-                    add(Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                }
-            }.toTypedArray()
+        backgroundHandExecutor.shutdown()
+        backgroundHandExecutor.awaitTermination(
+            Long.MAX_VALUE, TimeUnit.NANOSECONDS
+        )
     }
 
     public override fun onStart() {
@@ -568,9 +654,19 @@ class ConversationActivity : AppCompatActivity(), HandLandmarkerHelper.Landmarke
         super.onResume()
         
         //MediaPipe 초기 설정
-        backgroundExecutor.execute {
-            if (handLandmarkerHelper.isClose()) {
-                handLandmarkerHelper.setupHandLandmarker()
+        backgroundPoseExecutor.execute {
+            if(this::poseLandmarkerHelper.isInitialized) {
+                if(poseLandmarkerHelper.isClose()) {
+                    poseLandmarkerHelper.setupPoseLandmarker()
+                }
+            }
+        }
+
+        backgroundHandExecutor.execute {
+            if(this::handLandmarkerHelper.isInitialized) {
+                if (handLandmarkerHelper.isClose()) {
+                    handLandmarkerHelper.setupHandLandmarker()
+                }
             }
         }
         
@@ -583,6 +679,16 @@ class ConversationActivity : AppCompatActivity(), HandLandmarkerHelper.Landmarke
 
     override fun onPause() {
         super.onPause()
+        if(this::poseLandmarkerHelper.isInitialized) {
+            viewModel.setMinPoseDetectionConfidence(poseLandmarkerHelper.minPoseDetectionConfidence)
+            viewModel.setMinPoseTrackingConfidence(poseLandmarkerHelper.minPoseTrackingConfidence)
+            viewModel.setMinPosePresenceConfidence(poseLandmarkerHelper.minPosePresenceConfidence)
+            viewModel.setDelegate(poseLandmarkerHelper.currentDelegate)
+
+            // Close the PoseLandmarkerHelper and release resources
+            backgroundPoseExecutor.execute { poseLandmarkerHelper.clearPoseLandmarker() }
+        }
+
         if(this::handLandmarkerHelper.isInitialized) {
             viewModel.setMaxHands(handLandmarkerHelper.maxNumHands)
             viewModel.setMinHandDetectionConfidence(handLandmarkerHelper.minHandDetectionConfidence)
@@ -591,7 +697,7 @@ class ConversationActivity : AppCompatActivity(), HandLandmarkerHelper.Landmarke
             viewModel.setDelegate(handLandmarkerHelper.currentDelegate)
 
             // Close the HandLandmarkerHelper and release resources
-            backgroundExecutor.execute { handLandmarkerHelper.clearHandLandmarker() }
+            backgroundHandExecutor.execute { handLandmarkerHelper.clearHandLandmarker() }
         }
     }
 

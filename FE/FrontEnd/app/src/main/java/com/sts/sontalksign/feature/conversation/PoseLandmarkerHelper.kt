@@ -113,7 +113,7 @@ class PoseLandmarkerHelper(
             poseLandmarker =
                 PoseLandmarker.createFromOptions(context, options)
         } catch (e: IllegalStateException) {
-            poseLandmarkerHelperListener?.onError(
+            poseLandmarkerHelperListener?.onPoseError(
                 "Pose Landmarker failed to initialize. See error logs for " +
                         "details"
             )
@@ -123,7 +123,7 @@ class PoseLandmarkerHelper(
             )
         } catch (e: RuntimeException) {
             // This occurs if the model being used does not support GPU
-            poseLandmarkerHelperListener?.onError(
+            poseLandmarkerHelperListener?.onPoseError(
                 "Pose Landmarker failed to initialize. See error logs for " +
                         "details", GPU_ERROR
             )
@@ -256,7 +256,7 @@ class PoseLandmarkerHelper(
                             resultList.add(detectionResult)
                         } ?: {
                         didErrorOccurred = true
-                        poseLandmarkerHelperListener?.onError(
+                        poseLandmarkerHelperListener?.onPoseError(
                             "ResultBundle could not be returned" +
                                     " in detectVideoFile"
                         )
@@ -264,7 +264,7 @@ class PoseLandmarkerHelper(
                 }
                 ?: run {
                     didErrorOccurred = true
-                    poseLandmarkerHelperListener?.onError(
+                    poseLandmarkerHelperListener?.onPoseError(
                         "Frame at specified time could not be" +
                                 " retrieved when detecting in video."
                     )
@@ -314,7 +314,7 @@ class PoseLandmarkerHelper(
 
         // If poseLandmarker?.detect() returns null, this is likely an error. Returning null
         // to indicate this.
-        poseLandmarkerHelperListener?.onError(
+        poseLandmarkerHelperListener?.onPoseError(
             "Pose Landmarker failed to detect."
         )
         return null
@@ -328,7 +328,7 @@ class PoseLandmarkerHelper(
         val finishTimeMs = SystemClock.uptimeMillis()
         val inferenceTime = finishTimeMs - result.timestampMs()
 
-        poseLandmarkerHelperListener?.onResults(
+        poseLandmarkerHelperListener?.onPoseResults(
             ResultBundle(
                 listOf(result),
                 inferenceTime,
@@ -341,7 +341,7 @@ class PoseLandmarkerHelper(
     // Return errors thrown during detection to this PoseLandmarkerHelper's
     // caller
     private fun returnLivestreamError(error: RuntimeException) {
-        poseLandmarkerHelperListener?.onError(
+        poseLandmarkerHelperListener?.onPoseError(
             error.message ?: "An unknown error has occurred"
         )
     }
@@ -370,7 +370,7 @@ class PoseLandmarkerHelper(
     )
 
     interface LandmarkerListener {
-        fun onError(error: String, errorCode: Int = OTHER_ERROR)
-        fun onResults(resultBundle: ResultBundle)
+        fun onPoseError(error: String, errorCode: Int = OTHER_ERROR)
+        fun onPoseResults(resultBundle: ResultBundle)
     }
 }
