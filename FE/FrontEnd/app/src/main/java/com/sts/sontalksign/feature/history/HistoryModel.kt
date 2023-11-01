@@ -4,7 +4,7 @@ import com.sts.sontalksign.feature.common.CommonTagItem
 
 data class HistoryListModel(
     val historyTitle: String, // 기록 제목
-    val EndedTime: Long, // 첫 기록 시간
+    val EndedTime: String, // 첫 기록 시간
     val historyitemmodel: ArrayList<CommonTagItem>,
 )
 
