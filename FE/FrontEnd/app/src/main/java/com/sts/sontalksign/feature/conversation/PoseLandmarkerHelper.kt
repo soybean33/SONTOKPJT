@@ -137,6 +137,7 @@ class PoseLandmarkerHelper(
     // Convert the ImageProxy to MP Image and feed it to PoselandmakerHelper.
     fun detectLiveStream(
         imageProxy: ImageProxy,
+        bitmapBuffer: Bitmap,
         isFrontCamera: Boolean
     ) {
         if (runningMode != RunningMode.LIVE_STREAM) {
@@ -148,15 +149,16 @@ class PoseLandmarkerHelper(
         val frameTime = SystemClock.uptimeMillis()
 
         // Copy out RGB bits from the frame to a bitmap buffer
-        val bitmapBuffer =
-            Bitmap.createBitmap(
-                imageProxy.width,
-                imageProxy.height,
-                Bitmap.Config.ARGB_8888
-            )
-
-        imageProxy.use { bitmapBuffer.copyPixelsFromBuffer(imageProxy.planes[0].buffer) }
-        imageProxy.close()
+//        val bitmapBuffer =
+//            Bitmap.createBitmap(
+//                imageProxy.width,
+//                imageProxy.height,
+//                Bitmap.Config.ARGB_8888
+//            )
+//
+//        bitmapBuffer.copyPixelsFromBuffer(imageProxy.planes[0].buffer)
+//        imageProxy.use { bitmapBuffer.copyPixelsFromBuffer(imageProxy.planes[0].buffer) }
+//        imageProxy.close()
 
         val matrix = Matrix().apply {
             // Rotate the frame received from the camera to be in the same direction as it'll be shown

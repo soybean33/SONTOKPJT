@@ -4,6 +4,7 @@ import android.Manifest
 import android.annotation.SuppressLint
 import android.content.pm.PackageManager
 import android.content.res.Configuration
+import android.graphics.Bitmap
 import android.media.AudioAttributes
 import android.media.MediaPlayer
 import android.os.Build
@@ -91,15 +92,17 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
         ViewModelProvider(this@ConversationActivity).get(MainViewModel::class.java)
     }
     private var preview: Preview? = null
-    private var imagePoseAnalyzer: ImageAnalysis? = null
-    private var imageHandAnalyzer: ImageAnalysis? = null
+    private var imageAnalyzer: ImageAnalysis? = null
+//    private var imagePoseAnalyzer: ImageAnalysis? = null
+//    private var imageHandAnalyzer: ImageAnalysis? = null
     private var camera: Camera? = null
     private var cameraProvider: ProcessCameraProvider? = null
     private var cameraFacing = CameraSelector.LENS_FACING_FRONT
 
     /** Blocking ML operations are performed using this executor */
-    private lateinit var backgroundPoseExecutor: ExecutorService
-    private lateinit var backgroundHandExecutor: ExecutorService
+    private lateinit var backgroundBothExecutor: ExecutorService
+//    private lateinit var backgroundPoseExecutor: ExecutorService
+//    private lateinit var backgroundHandExecutor: ExecutorService
 
     /*CameraX 관련 변수*/
     private var imageCapture: ImageCapture? = null
@@ -236,15 +239,15 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
 
         /*MediaPipe 관련 초기 설정*/
         // Initialize our background executor
-        backgroundPoseExecutor = Executors.newSingleThreadExecutor()
-        backgroundHandExecutor = Executors.newSingleThreadExecutor()
+        backgroundBothExecutor = Executors.newFixedThreadPool(2)
+//        backgroundPoseExecutor = Executors.newSingleThreadExecutor()
+//        backgroundHandExecutor = Executors.newSingleThreadExecutor()
 
         binding.pvCamera.post {
             setUpCamera()
         }
 
-        /* Create the PoseLandmarkerHelper, HandLandmarkerHelper that will handle the inference*/
-        backgroundPoseExecutor.execute {
+        backgroundBothExecutor.execute {
             poseLandmarkerHelper = PoseLandmarkerHelper(
                 context = this,
                 runningMode = RunningMode.LIVE_STREAM,
@@ -256,7 +259,7 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
             )
         }
 
-        backgroundHandExecutor.execute {
+        backgroundBothExecutor.execute {
             handLandmarkerHelper = HandLandmarkerHelper(
                 context = this,
                 runningMode = RunningMode.LIVE_STREAM,
@@ -268,6 +271,32 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
                 handLandmarkerHelperListener = this
             )
         }
+
+        /* Create the PoseLandmarkerHelper, HandLandmarkerHelper that will handle the inference*/
+//        backgroundPoseExecutor.execute {
+//            poseLandmarkerHelper = PoseLandmarkerHelper(
+//                context = this,
+//                runningMode = RunningMode.LIVE_STREAM,
+//                minPoseDetectionConfidence = viewModel.currentMinPoseDetectionConfidence,
+//                minPoseTrackingConfidence = viewModel.currentMinPoseTrackingConfidence,
+//                minPosePresenceConfidence = viewModel.currentMinPosePresenceConfidence,
+//                currentDelegate = viewModel.currentPoseDelegate,
+//                poseLandmarkerHelperListener = this
+//            )
+//        }
+//
+//        backgroundHandExecutor.execute {
+//            handLandmarkerHelper = HandLandmarkerHelper(
+//                context = this,
+//                runningMode = RunningMode.LIVE_STREAM,
+//                minHandDetectionConfidence = viewModel.currentMinHandDetectionConfidence,
+//                minHandTrackingConfidence = viewModel.currentMinHandTrackingConfidence,
+//                minHandPresenceConfidence = viewModel.currentMinHandPresenceConfidence,
+//                maxNumHands = viewModel.currentMaxHands,
+//                currentDelegate = viewModel.currentHandDelegate,
+//                handLandmarkerHelperListener = this
+//            )
+//        }
     }
 
     /**
@@ -454,7 +483,7 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
 //        val cameraSelector = CameraSelector.DEFAULT_FRONT_CAMERA
 
         // ImageAnalysis. Using RGBA 8888 to match how our models work
-        imagePoseAnalyzer =
+        imageAnalyzer =
             ImageAnalysis.Builder().setTargetAspectRatio(AspectRatio.RATIO_4_3)
                 .setTargetRotation(binding.pvCamera.display.rotation)
                 .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
@@ -462,30 +491,45 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
                 .build()
                 // The analyzer can then be assigned to the instance
                 .also {
-                    it.setAnalyzer(backgroundPoseExecutor) {image ->
-                        detectPose(image)
+                    it.setAnalyzer(backgroundBothExecutor) {image ->
+                        detectBoth(image)
+//                        detectPose(image)
+//                        detectHand(image)
                     }
                 }
 
-        imageHandAnalyzer =
-            ImageAnalysis.Builder().setTargetAspectRatio(AspectRatio.RATIO_4_3)
-                .setTargetRotation(binding.pvCamera.display.rotation)
-                .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
-                .setOutputImageFormat(ImageAnalysis.OUTPUT_IMAGE_FORMAT_RGBA_8888)
-                .build()
-                // The analyzer can then be assigned to the instance
-                .also {
-                    it.setAnalyzer(backgroundHandExecutor) { image ->
-                        detectHand(image)
-                    }
-                }
+//        imagePoseAnalyzer =
+//            ImageAnalysis.Builder().setTargetAspectRatio(AspectRatio.RATIO_4_3)
+//                .setTargetRotation(binding.pvCamera.display.rotation)
+//                .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
+//                .setOutputImageFormat(ImageAnalysis.OUTPUT_IMAGE_FORMAT_RGBA_8888)
+//                .build()
+//                // The analyzer can then be assigned to the instance
+//                .also {
+//                    it.setAnalyzer(backgroundPoseExecutor) {image ->
+//                        detectPose(image)
+//                    }
+//                }
+//
+//        imageHandAnalyzer =
+//            ImageAnalysis.Builder().setTargetAspectRatio(AspectRatio.RATIO_4_3)
+//                .setTargetRotation(binding.pvCamera.display.rotation)
+//                .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
+//                .setOutputImageFormat(ImageAnalysis.OUTPUT_IMAGE_FORMAT_RGBA_8888)
+//                .build()
+//                // The analyzer can then be assigned to the instance
+//                .also {
+//                    it.setAnalyzer(backgroundHandExecutor) { image ->
+//                        detectHand(image)
+//                    }
+//                }
 
         cameraProvider.unbindAll()
 
         try {
             //카메라 관련 객체 바인딩
             camera = cameraProvider.bindToLifecycle(
-                this, cameraSelector, preview, imagePoseAnalyzer, imageHandAnalyzer
+                this, cameraSelector, preview, imageAnalyzer
             )
 
             preview?.setSurfaceProvider(binding.pvCamera.surfaceProvider)
@@ -501,29 +545,74 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
         }
     }
 
-    private fun detectPose(imageProxy: ImageProxy) {
+    private fun detectBoth(imageProxy: ImageProxy) {
+        val bitmapBuffer =
+            Bitmap.createBitmap(
+                imageProxy.width,
+                imageProxy.height,
+                Bitmap.Config.ARGB_8888
+            )
+
+        imageProxy.use { bitmapBuffer.copyPixelsFromBuffer(imageProxy.planes[0].buffer) }
+        imageProxy.close()
+
         if(this::poseLandmarkerHelper.isInitialized) {
             poseLandmarkerHelper.detectLiveStream(
                 imageProxy = imageProxy,
+                bitmapBuffer = bitmapBuffer,
                 isFrontCamera = cameraFacing == CameraSelector.LENS_FACING_FRONT
             )
         }
+
+        if(this::handLandmarkerHelper.isInitialized) {
+            handLandmarkerHelper.detectLiveStream(
+                imageProxy = imageProxy,
+                bitmapBuffer = bitmapBuffer,
+                isFrontCamera = cameraFacing == CameraSelector.LENS_FACING_FRONT
+            )
+        }
+
+//        if(this::poseLandmarkerHelper.isInitialized) {
+//            poseLandmarkerHelper.detectLiveStream(
+//                imageProxy = imageProxy,
+//                isFrontCamera = cameraFacing == CameraSelector.LENS_FACING_FRONT
+//            )
+//        }
+//
+//        if(this::handLandmarkerHelper.isInitialized) {
+//            handLandmarkerHelper.detectLiveStream(
+//                imageProxy = imageProxy,
+//                isFrontCamera = cameraFacing == CameraSelector.LENS_FACING_FRONT
+//            )
+//        }
     }
 
-    private fun detectHand(imageProxy: ImageProxy) {
-        handLandmarkerHelper.detectLiveStream(
-            imageProxy = imageProxy,
-            isFrontCamera = cameraFacing == CameraSelector.LENS_FACING_FRONT
-        )
-    }
+//    private fun detectPose(imageProxy: ImageProxy) {
+//        if(this::poseLandmarkerHelper.isInitialized) {
+//            poseLandmarkerHelper.detectLiveStream(
+//                imageProxy = imageProxy,
+//                isFrontCamera = cameraFacing == CameraSelector.LENS_FACING_FRONT
+//            )
+//        }
+//    }
+//
+//    private fun detectHand(imageProxy: ImageProxy) {
+//        handLandmarkerHelper.detectLiveStream(
+//            imageProxy = imageProxy,
+//            isFrontCamera = cameraFacing == CameraSelector.LENS_FACING_FRONT
+//        )
+//    }
 
     override fun onConfigurationChanged(newConfig: Configuration) {
         super.onConfigurationChanged(newConfig)
-        imagePoseAnalyzer?.targetRotation =
+        imageAnalyzer?.targetRotation =
             binding.pvCamera.display.rotation
 
-        imageHandAnalyzer?.targetRotation =
-            binding.pvCamera.display.rotation
+//        imagePoseAnalyzer?.targetRotation =
+//            binding.pvCamera.display.rotation
+//
+//        imageHandAnalyzer?.targetRotation =
+//            binding.pvCamera.display.rotation
     }
 
     // Update UI after pose have been detected. Extracts original
@@ -535,6 +624,11 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
         this?.runOnUiThread {
             if (binding != null) {
                 Log.d("TEST-Pose", resultBundle.results.first().toString())
+
+                if(resultBundle.results.first().landmarks()[0].size >= 1) {
+                    Log.d("TEST-Pose-", resultBundle.results.first().landmarks()[0].size.toString())
+                }
+
 //                Log.d("TEST-", resultBundle.results.first().handednesses().toString())
 //                binding.bottomSheetLayout.inferenceTimeVal.text =
 //                    String.format("%d ms", resultBundle.inferenceTime)
@@ -634,15 +728,20 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
         mediaPlayer.release()
 
         // Shut down our background executor
-        backgroundPoseExecutor.shutdown()
-        backgroundPoseExecutor.awaitTermination(
+        backgroundBothExecutor.shutdown()
+        backgroundBothExecutor.awaitTermination(
             Long.MAX_VALUE, TimeUnit.NANOSECONDS
         )
 
-        backgroundHandExecutor.shutdown()
-        backgroundHandExecutor.awaitTermination(
-            Long.MAX_VALUE, TimeUnit.NANOSECONDS
-        )
+//        backgroundPoseExecutor.shutdown()
+//        backgroundPoseExecutor.awaitTermination(
+//            Long.MAX_VALUE, TimeUnit.NANOSECONDS
+//        )
+//
+//        backgroundHandExecutor.shutdown()
+//        backgroundHandExecutor.awaitTermination(
+//            Long.MAX_VALUE, TimeUnit.NANOSECONDS
+//        )
     }
 
     public override fun onStart() {
@@ -654,21 +753,35 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
         super.onResume()
         
         //MediaPipe 초기 설정
-        backgroundPoseExecutor.execute {
+        backgroundBothExecutor.execute {
             if(this::poseLandmarkerHelper.isInitialized) {
                 if(poseLandmarkerHelper.isClose()) {
                     poseLandmarkerHelper.setupPoseLandmarker()
                 }
             }
-        }
 
-        backgroundHandExecutor.execute {
             if(this::handLandmarkerHelper.isInitialized) {
                 if (handLandmarkerHelper.isClose()) {
                     handLandmarkerHelper.setupHandLandmarker()
                 }
             }
         }
+
+//        backgroundPoseExecutor.execute {
+//            if(this::poseLandmarkerHelper.isInitialized) {
+//                if(poseLandmarkerHelper.isClose()) {
+//                    poseLandmarkerHelper.setupPoseLandmarker()
+//                }
+//            }
+//        }
+//
+//        backgroundHandExecutor.execute {
+//            if(this::handLandmarkerHelper.isInitialized) {
+//                if (handLandmarkerHelper.isClose()) {
+//                    handLandmarkerHelper.setupHandLandmarker()
+//                }
+//            }
+//        }
         
         //STT 초기 설정
         mResult = ""
@@ -686,7 +799,8 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
             viewModel.setDelegate(poseLandmarkerHelper.currentDelegate)
 
             // Close the PoseLandmarkerHelper and release resources
-            backgroundPoseExecutor.execute { poseLandmarkerHelper.clearPoseLandmarker() }
+            backgroundBothExecutor.execute { poseLandmarkerHelper.clearPoseLandmarker() }
+//            backgroundPoseExecutor.execute { poseLandmarkerHelper.clearPoseLandmarker() }
         }
 
         if(this::handLandmarkerHelper.isInitialized) {
@@ -697,7 +811,8 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
             viewModel.setDelegate(handLandmarkerHelper.currentDelegate)
 
             // Close the HandLandmarkerHelper and release resources
-            backgroundHandExecutor.execute { handLandmarkerHelper.clearHandLandmarker() }
+            backgroundBothExecutor.execute { handLandmarkerHelper.clearHandLandmarker() }
+//            backgroundHandExecutor.execute { handLandmarkerHelper.clearHandLandmarker() }
         }
     }
 
