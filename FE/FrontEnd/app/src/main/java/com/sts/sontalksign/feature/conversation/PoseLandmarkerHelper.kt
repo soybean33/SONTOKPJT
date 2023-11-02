@@ -138,7 +138,8 @@ class PoseLandmarkerHelper(
     fun detectLiveStream(
         imageProxy: ImageProxy,
         bitmapBuffer: Bitmap,
-        isFrontCamera: Boolean
+        isFrontCamera: Boolean,
+        frameTime: Long
     ) {
         if (runningMode != RunningMode.LIVE_STREAM) {
             throw IllegalArgumentException(
@@ -146,7 +147,7 @@ class PoseLandmarkerHelper(
                         " while not using RunningMode.LIVE_STREAM"
             )
         }
-        val frameTime = SystemClock.uptimeMillis()
+//        val frameTime = SystemClock.uptimeMillis()
 
         // Copy out RGB bits from the frame to a bitmap buffer
 //        val bitmapBuffer =
