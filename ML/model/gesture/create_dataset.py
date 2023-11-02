@@ -18,8 +18,8 @@ file_root = "data/"
 file_list = os.listdir(file_root)
 
 actions = []
-seq_length = 30
-secs_for_action = 4
+# seq_length = 30
+# secs_for_action = 4
 
 action_idx = 0
 
@@ -64,7 +64,7 @@ print(f"videos: {videos}")
 print(f"actions: {actions}")
 
 
-def make_hand_angle(res, action_idx):
+def make_hand_angle(res):
     joint = np.zeros((21, 4))
     for j, lm in enumerate(res):
         joint[j] = [lm.x, lm.y, lm.z, lm.visibility]
@@ -83,10 +83,11 @@ def make_hand_angle(res, action_idx):
 
     angle = np.degrees(angle) # Convert radian to degree
 
-    angle_label = np.array([angle], dtype=np.float16)
-    angle_label = np.append(angle_label, action_idx)
-    print(np.shape(angle_label))
-    print(angle_label)
+    # angle_label = np.array([angle], dtype=np.float16)
+    angle_label = np.array(angle, dtype=np.float16)
+    # angle_label = np.append(angle_label, action_idx)
+    # print(np.shape(angle_label))
+    # print(angle_label)
     d = np.concatenate([joint.flatten(), angle_label])
     return d
 
@@ -95,14 +96,11 @@ os.makedirs('dataset', exist_ok=True)
 
 for video in videos:
     cap = cv2.VideoCapture(file_root + video)
-
-    left_hand_data = []
-    right_hand_data = []
-    pose_data = []
-    face_data = []
-    print(f"file name : {video}")
+    video_data = []
+    print(f"action: {actions[action_idx]}, file name : {video}")
     while cap.isOpened():
         # for idx, action in enumerate(actions):
+        frame_data = []
 
         ret, img = cap.read()
         if not ret:
@@ -139,41 +137,52 @@ for video in videos:
                 res = hand_result.hand_landmarks[hand_idx]
                 if len(hand_result.hand_landmarks) == 1:
                     default = np.zeros(15)
-                    default = np.append(default, action_idx)
+                    # default = np.append(default, action_idx)
                     aa = np.concatenate([np.zeros((21,4)).flatten(), default])
                     # ★★★★ 다시보기
                     if hand_result.handedness[0][0].category_name == 'Left':
-                        left_hand_data.append(make_hand_angle(res, action_idx))
+                        # left_hand_data.append(make_hand_angle(res))
+                        # frame_data += make_hand_angle(res)
+                        frame_data = np.append(frame_data,make_hand_angle(res))
                         # right_hand_data.append(aa)
                         left_check += 1
                     else:
-                        right_hand_data.append(make_hand_angle(res, action_idx))
+                        # right_hand_data += make_hand_angle(res)
+                        frame_data = np.append(frame_data,make_hand_angle(res))
+                        # frame_data += make_hand_angle(res)
                         right_check += 1
                         # left_hand_data.append(aa)
                 else:
-                    print(hand_result.handedness[hand_idx][0].category_name,"12")
-                    print(hand_result.handedness[hand_idx][0].score,"34")
+                    # print(hand_result.handedness[hand_idx][0].category_name,"12")
+                    # print(hand_result.handedness[hand_idx][0].score,"34")
                     
                     if hand_result.handedness[hand_idx][0].category_name == 'Left' and hand_result.handedness[hand_idx][0].score >= 0.8:
-                        left_hand_data.append(make_hand_angle(res, action_idx))
+                        # left_hand_data.append(make_hand_angle(res))
+                        frame_data = np.append(frame_data,make_hand_angle(res))
+                        # frame_data += make_hand_angle(res)
                         left_check += 1
                     elif hand_result.handedness[hand_idx][0].category_name == 'Right' and hand_result.handedness[hand_idx][0].score >= 0.8:
-                        right_hand_data.append(make_hand_angle(res, action_idx))
+                        # right_hand_data.append(make_hand_angle(res))
+                        frame_data = np.append(frame_data,make_hand_angle(res))
+                        # frame_data += make_hand_angle(res)
                         right_check += 1
-                    print(f'left_check: {left_check}, right_check: {right_check}')
+                    # print(f'left_check: {left_check}, right_check: {right_check}')
             if left_check == 0:
                 default = np.zeros(15)
-                default = np.append(default, action_idx)
+                # default = np.append(default, action_idx)
                 aa = np.concatenate([np.zeros((21,4)).flatten(), default])
-                left_hand_data.append(aa)
+                # left_hand_data.append(aa)
+                # frame_data += aa
+                frame_data = np.append(frame_data, aa)
             if right_check == 0:
                 default = np.zeros(15)
-                default = np.append(default, action_idx)
+                # default = np.append(default, action_idx)
                 aa = np.concatenate([np.zeros((21,4)).flatten(), default])
-                right_hand_data.append(aa)
+                frame_data = np.append(frame_data, aa)
+                # frame_data += aa
+                # right_hand_data.append(aa)
 
-        # pose
-        # if pose_result.pose_landmarks is not None:
+# pose
             for res in pose_result.pose_landmarks:
                 joint = np.zeros((33, 4))
                 for j, lm in enumerate(res):
@@ -193,12 +202,13 @@ for video in videos:
 
                 pose_angle = np.degrees(pose_angle) # Convert radian to degree
 
-                pose_angle_label = np.array([pose_angle], dtype=np.float16)
-                pose_angle_label = np.append(pose_angle_label, action_idx)
+                # pose_angle_label = np.array([pose_angle], dtype=np.float16)
+                pose_angle_label = np.array(pose_angle, dtype=np.float16)
+                # pose_angle_label = np.append(pose_angle_label, action_idx)
 
                 d = np.concatenate([joint.flatten(), pose_angle_label])
-                # print("pose",d)
-                pose_data.append(d)
+
+                frame_data = np.append(frame_data, d)
 
                 # face
                 face_joint = np.zeros((33, 4))
@@ -220,63 +230,20 @@ for video in videos:
                 face_angle = np.degrees(face_angle) # Convert radian to degree
 
                 face_angle_label = np.array([face_angle], dtype=np.float16)
+                # face_angle_label = np.array(face_angle, dtype=np.float16)
                 face_angle_label = np.append(face_angle_label, action_idx)
 
                 d = np.concatenate([face_joint.flatten(), face_angle_label])
                 # print("face",d)
-                face_data.append(d)
-                
-            # print(np.shape(hand_data))
-            print(np.shape(left_hand_data))
-            print(np.shape(right_hand_data))
-            print(np.shape(pose_data))
-            print(np.shape(face_data))
-            print()
-        # else:
-        #     face_data.append()
-                # mp_drawing.draw_landmarks(img, res, mp_hands.HAND_CONNECTIONS)
-    # print(f'hand_data: {hand_data}')
-    # print(f'left_hand_data: {left_hand_data}')
-    # print(f'right_hand_data: {right_hand_data}')
-    # print(f'pose_data: {pose_data}')
-    # print(f'face_data: {face_data}')
-        
-    # cv2.imshow('img', img)
-    # hand_data = np.array(hand_data)
-    left_hand_data = np.array(left_hand_data)
-    right_hand_data = np.array(right_hand_data)
-    pose_data = np.array(pose_data)
-    face_data = np.array(face_data)
-    # print(actions[action_idx], hand_data.shape)
-    print(actions[action_idx], left_hand_data.shape)
-    print(actions[action_idx], right_hand_data.shape)
-    print(actions[action_idx], pose_data.shape)
-    print(actions[action_idx], face_data.shape)
-    # np.save(os.path.join('dataset', f'raw_{actions[action_idx]}_{str(index).rjust(5, "0")}'), hand_data)
-    # np.save(os.path.join('dataset', f'raw_{actions[action_idx]}_{str(index).rjust(5, "0")}'), pose_data)
-    # np.save(os.path.join('dataset', f'raw_{actions[action_idx]}_{str(index).rjust(5, "0")}'), face_data)
+                # face_data.append(d)
+                frame_data = np.append(frame_data,d) 
 
-    left_hand_full_seq_data = []
-    right_hand_full_seq_data = []
-    pose_full_seq_data = []
-    face_full_seq_data = []
-    for seq in range(len(left_hand_data) - seq_length):
-        left_hand_full_seq_data.append(left_hand_data[seq:seq + seq_length])
-    for seq in range(len(right_hand_data) - seq_length):
-        right_hand_full_seq_data.append(left_hand_data[seq:seq + seq_length])
-    for seq in range(len(pose_data) - seq_length):
-        pose_full_seq_data.append(pose_data[seq:seq + seq_length])
-    for seq in range(len(face_data) - seq_length):
-        face_full_seq_data.append(face_data[seq:seq + seq_length])
+            video_data.append(frame_data)
 
-    # print(hand_full_seq_data.shape())
-    # print(pose_full_seq_data.shape())
-    # print(face_full_seq_data.shape())
-    full_seq_data = np.c_[left_hand_full_seq_data, right_hand_full_seq_data, pose_full_seq_data, face_full_seq_data]
-
-    full_seq_data = np.array(full_seq_data)
-    # print(actions[action_idx], full_seq_data.shape)
-
-    np.save(os.path.join('dataset', f'seq_{actions[action_idx]}'), full_seq_data)
-    # np.save(os.path.join('dataset', f'seq_{actions[action_idx]}_{str(index).rjust(5, "0")}'), full_seq_data)
+    video_data = np.array(video_data)
+    
+    if video_data.size != 0:
+        print("save!")
+        np.save(os.path.join('dataset', f'seq_{actions[action_idx]}'), video_data)
+        # np.save(os.path.join('dataset', f'seq_{actions[action_idx]}_{str(index).rjust(5, "0")}'), full_seq_data)
     action_idx += 1
