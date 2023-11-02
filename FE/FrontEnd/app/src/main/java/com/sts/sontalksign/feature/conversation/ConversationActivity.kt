@@ -1,5 +1,6 @@
 package com.sts.sontalksign.feature.conversation
 
+import ConversationCameraAdapter
 import android.Manifest
 import android.annotation.SuppressLint
 import android.content.pm.PackageManager
@@ -153,10 +154,14 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
             R.id.partialResult -> {
                 mResult = msg.obj as String
                 binding.tvCRS.text = mResult
+                Log.d("김용우바보차우차우1111111111", "김용우바보차우차우")
+
             }
             R.id.finalResult -> {
                 val speechRecognitionResult = msg.obj as SpeechRecognitionResult
                 val results = speechRecognitionResult.results
+
+
 //                val strBuf = StringBuilder()
 //                for (result in results) {
 //                    strBuf.append(result)
@@ -164,6 +169,9 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
 //                }
 //                mResult = strBuf.toString()
 //                binding.tvCRS.text = mResult
+
+                handleSTTResult(results[0].toString(), true) // STT 결과를 RecyclerView에 추가
+
                 binding.tvCRS.text = results[0].toString()
             }
             R.id.recognitionError -> {
@@ -193,9 +201,8 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
         recyclerView.adapter = conversationCameraAdapter
         (recyclerView.layoutManager as LinearLayoutManager).scrollToPosition(conversationCameraAdapter.itemCount - 1)
 
-        /*이벤트 리스너 설정*/
-        //텍스트 입력용 EditText 클릭
-        binding.etTextConversation.setOnEditorActionListener { textView, actionId, keyEvent ->
+        // 텍스트 입력 이벤트 처리
+        binding.etTextConversation.setOnEditorActionListener { textView, actionId, _ ->
             var handled = false
             //완료버튼 클릭에만 처리
             if(actionId == EditorInfo.IME_ACTION_DONE) {
@@ -207,6 +214,8 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
             }
             handled
         }
+
+
 
         //"대화 종료" 버튼 클릭
         binding.btnStopConversation.setOnClickListener { stopConversation() }
@@ -240,6 +249,8 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
                 binding.tvCRS.text = "Connecting..."
                 binding.btnCRS.setText(R.string.str_stop)
                 naverRecognizer!!.recognize()
+
+
             } else {
                 Log.d(TAG, "stop and wait Final Result")
                 binding.tvCRS.isEnabled = false
@@ -324,6 +335,7 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
      * line: 입력으로 들어온 문장
      */
     private fun generateTtsApi(line: String) {
+
         //API 요청을 위한 스레드 생성
         GlobalScope.launch(Dispatchers.IO) {
             try {
@@ -399,32 +411,22 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
 
         textList += bContent
 
-        handleSTTResult(bContent)
     }
 
 
     // STT 결과 생성 시 호출되는 메서드
-    fun handleSTTResult(sttResult: String) {
-        // conversationCamera에 새 아이템 추가
-        val isLeftMessage = true // 또는 false, STT 결과가 사용자의 것이면 true, 상대방 것이면 false
+    fun handleSTTResult(sttResult: String, isMine: Boolean) {
+
         val currentTime = System.currentTimeMillis()
-        conversationCamera.add(
-            ConversationCameraModel(
-                ConversationText = sttResult,
-                ConversationTime = FileFormats.timeFormat.format(currentTime),
-                isLeft = isLeftMessage
-            )
+        val conversationCameraModel = ConversationCameraModel(
+            ConversationText = sttResult,
+            ConversationTime = FileFormats.timeFormat.format(currentTime),
+            isLeft = isMine
         )
-
-        // 어댑터 갱신
-        conversationCameraAdapter.notifyDataSetChanged()
-
-        // RecyclerView를 스크롤하여 가장 최근 아이템을 보여줍니다.
-        recyclerView.smoothScrollToPosition(conversationCameraAdapter.itemCount - 1)
+        conversationCameraAdapter.addItemAndScroll(conversationCameraModel, recyclerView)
     }
 
 
-    // RecyclerView를 스크롤하는 코드
     // RecyclerView를 스크롤하는 코드
     fun scrollToLatestItem() {
         val itemCount = conversationCameraAdapter.itemCount
@@ -448,20 +450,17 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
         }
     }
 
+    // 스크롤 대상 위치가 업데이트될 때 RecyclerView를 스크롤
+    fun updateAndScrollToLatestItem() {
+        conversationCameraAdapter.notifyDataSetChanged()
+        scrollToLatestItem()
+    }
     // 오류 메시지를 표시하는 메서드
     fun showErrorMessage(message: String) {
         // 오류 메시지를 사용자에게 표시하거나 다른 조치를 취하십시오.
         // 예를 들어, Toast 메시지를 표시할 수 있습니다.
         Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
     }
-
-    // 스크롤 대상 위치가 업데이트될 때 RecyclerView를 스크롤
-    fun updateAndScrollToLatestItem() {
-        conversationCameraAdapter.notifyDataSetChanged()
-        scrollToLatestItem()
-    }
-
-
 
 
     //파일 쓰기
@@ -915,6 +914,7 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
 
         init {mActivity = WeakReference(activity)}
         override fun handleMessage(msg: Message) {
+
             val activity = mActivity.get()
             activity?.handleMessage(msg)
         }

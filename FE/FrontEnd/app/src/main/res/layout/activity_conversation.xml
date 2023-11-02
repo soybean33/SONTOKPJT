@@ -15,6 +15,11 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
+        <androidx.camera.view.PreviewView
+            android:id="@+id/pv_camera"
+            android:layout_width="match_parent"
+            android:layout_height="400dp" />
+
         <LinearLayout
             android:id="@+id/llv_CameraConversation"
             android:layout_width="match_parent"
@@ -29,32 +34,6 @@
 
     </FrameLayout>
 
-    <androidx.coordinatorlayout.widget.CoordinatorLayout
-        android:id="@+id/camera_container"
-        android:layout_width="match_parent"
-        android:layout_height="400dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
-
-        <androidx.camera.view.PreviewView
-            android:id="@+id/pv_camera"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            app:scaleType="fillStart"/>
-
-        <com.sts.sontalksign.feature.conversation.HandOverlayView
-            android:id="@+id/hand_overlay"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"/>
-
-        <com.sts.sontalksign.feature.conversation.PoseOverlayView
-            android:id="@+id/pose_overlay"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"/>
-
-    </androidx.coordinatorlayout.widget.CoordinatorLayout>
-
     <EditText
         android:id="@+id/et_text_conversation"
         android:layout_width="match_parent"
@@ -64,7 +43,7 @@
         android:hint="텍스트를 입력하세요"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/camera_container" />
+        app:layout_constraintTop_toBottomOf="@+id/fl_camera" />
 
     <Button
         android:id="@+id/btn_stop_conversation"
