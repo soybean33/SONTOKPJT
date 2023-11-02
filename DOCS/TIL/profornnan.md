@@ -95,3 +95,10 @@
 - MediaPipe Pose Landmark 추출
 - MediaPipe Output Json 파일 생성
 
+## 23.11.01
+
+### Today I Did
+
+- MediaPipe Hand 각도 데이터 추출
+- MediaPipe Pose 각도 데이터 추출
+
