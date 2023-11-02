@@ -15,6 +15,11 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
+        <androidx.camera.view.PreviewView
+            android:id="@+id/pv_camera"
+            android:layout_width="match_parent"
+            android:layout_height="400dp" />
+
         <LinearLayout
             android:id="@+id/llv_CameraConversation"
             android:layout_width="match_parent"
@@ -29,15 +34,6 @@
 
     </FrameLayout>
 
-    <androidx.camera.view.PreviewView
-        android:id="@+id/pv_camera"
-        android:layout_width="match_parent"
-        android:layout_height="400dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
     <EditText
         android:id="@+id/et_text_conversation"
         android:layout_width="match_parent"
@@ -47,7 +43,7 @@
         android:hint="텍스트를 입력하세요"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/pv_camera" />
+        app:layout_constraintTop_toBottomOf="@+id/fl_camera" />
 
     <Button
         android:id="@+id/btn_stop_conversation"
