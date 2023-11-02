@@ -5,20 +5,22 @@ from mediapipe.tasks.python import vision
 import numpy as np
 import os
 
-file_root = "data/"
+file_root = "../data/"
 file_list = os.listdir(file_root)
 actions = []
 action_idx = 0
+label_idx = 0
 
 # hand
-hand_model_path = "../../preprocessing/models/hand_landmarker.task"
+hand_model_path = "../mediapipe_models/hand_landmarker.task"
 hand_base_options = python.BaseOptions(model_asset_path=hand_model_path)
 hand_options = vision.HandLandmarkerOptions(base_options=hand_base_options,
                                        num_hands=2)
 mp_hands = vision.HandLandmarker.create_from_options(hand_options)
 
+
 # pose
-pose_model_path = "../../preprocessing/models/pose_landmarker_lite.task"
+pose_model_path = "../mediapipe_models/pose_landmarker_lite.task"
 pose_base_options = python.BaseOptions(model_asset_path=pose_model_path)
 pose_options = vision.PoseLandmarkerOptions(
     base_options=pose_base_options,
@@ -66,7 +68,9 @@ def make_hand_angle(res):
     d = np.concatenate([joint.flatten(), angle_label])
     return d
 
-os.makedirs('dataset', exist_ok=True)
+os.makedirs('../dataset', exist_ok=True)
+actions_save = []
+
 
 for video in videos:
     cap = cv2.VideoCapture(file_root + video)
@@ -151,5 +155,11 @@ for video in videos:
     
     if video_data.size != 0:
         print("save!")
-        np.save(os.path.join('dataset', f'seq_{actions[action_idx]}'), video_data)
+        np.save(os.path.join('../dataset', f'seq_{actions[action_idx]}'), video_data)
+        actions_save.append(actions[action_idx])
+        label_idx += 1
+        print(f'next label is :{label_idx}')
+        # np.save(os.path.join('../dataset', f'seq_{actions[action_idx]}_{str(index).rjust(5, "0")}'), full_seq_data)
     action_idx += 1
+    
+np.save(os.path.join('../dataset', f'labels'), actions_save)
