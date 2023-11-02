@@ -11,6 +11,7 @@ import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.os.Message
+import android.os.SystemClock
 import android.util.Log
 import android.view.View
 import android.view.inputmethod.EditorInfo
@@ -629,6 +630,8 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
     }
 
     private fun detectBoth(imageProxy: ImageProxy) {
+        val frameTime = SystemClock.uptimeMillis()
+
         val bitmapBuffer =
             Bitmap.createBitmap(
                 imageProxy.width,
@@ -643,7 +646,8 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
             poseLandmarkerHelper.detectLiveStream(
                 imageProxy = imageProxy,
                 bitmapBuffer = bitmapBuffer,
-                isFrontCamera = cameraFacing == CameraSelector.LENS_FACING_FRONT
+                isFrontCamera = cameraFacing == CameraSelector.LENS_FACING_FRONT,
+                frameTime = frameTime
             )
         }
 
@@ -651,7 +655,8 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
             handLandmarkerHelper.detectLiveStream(
                 imageProxy = imageProxy,
                 bitmapBuffer = bitmapBuffer,
-                isFrontCamera = cameraFacing == CameraSelector.LENS_FACING_FRONT
+                isFrontCamera = cameraFacing == CameraSelector.LENS_FACING_FRONT,
+                frameTime = frameTime
             )
         }
 
@@ -708,24 +713,25 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
             if (binding != null) {
                 Log.d("TEST-Pose", resultBundle.results.first().toString())
 
-                if(resultBundle.results.first().landmarks()[0].size >= 1) {
-                    Log.d("TEST-Pose-", resultBundle.results.first().landmarks()[0].size.toString())
-                }
+                //TODO: landmarks().size() 가 1이상인지 조건 확인 필요
+//                if(resultBundle.results.first().landmarks()[0].size >= 1) {
+//                    Log.d("TEST-Pose-", resultBundle.results.first().landmarks()[0].size.toString())
+//                }
 
 //                Log.d("TEST-", resultBundle.results.first().handednesses().toString())
 //                binding.bottomSheetLayout.inferenceTimeVal.text =
 //                    String.format("%d ms", resultBundle.inferenceTime)
 //
 //                // Pass necessary information to OverlayView for drawing on the canvas
-//                binding.overlay.setResults(
-//                    resultBundle.results.first(),
-//                    resultBundle.inputImageHeight,
-//                    resultBundle.inputImageWidth,
-//                    RunningMode.LIVE_STREAM
-//                )
-//
-//                // Force a redraw
-//                binding.overlay.invalidate()
+                binding.poseOverlay.setResults(
+                    resultBundle.results.first(),
+                    resultBundle.inputImageHeight,
+                    resultBundle.inputImageWidth,
+                    RunningMode.LIVE_STREAM
+                )
+
+                // Force a redraw
+                binding.poseOverlay.invalidate()
             }
         }
     }
@@ -756,15 +762,15 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
 //                    String.format("%d ms", resultBundle.inferenceTime)
 
                 // Pass necessary information to OverlayView for drawing on the canvas
-//                binding.overlay.setResults(
-//                    resultBundle.results.first(),
-//                    resultBundle.inputImageHeight,
-//                    resultBundle.inputImageWidth,
-//                    RunningMode.LIVE_STREAM
-//                )
-//
-//                // Force a redraw
-//                binding.overlay.invalidate()
+                binding.handOverlay.setResults(
+                    resultBundle.results.first(),
+                    resultBundle.inputImageHeight,
+                    resultBundle.inputImageWidth,
+                    RunningMode.LIVE_STREAM
+                )
+
+                // Force a redraw
+                binding.handOverlay.invalidate()
             }
         }
     }

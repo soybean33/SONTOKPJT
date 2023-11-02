@@ -40,10 +40,16 @@
         <androidx.camera.view.PreviewView
             android:id="@+id/pv_camera"
             android:layout_width="match_parent"
-            android:layout_height="match_parent" />
+            android:layout_height="match_parent"
+            app:scaleType="fillStart"/>
 
-        <com.sts.sontalksign.feature.conversation.OverlayView
-            android:id="@+id/overlay"
+        <com.sts.sontalksign.feature.conversation.HandOverlayView
+            android:id="@+id/hand_overlay"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"/>
+
+        <com.sts.sontalksign.feature.conversation.PoseOverlayView
+            android:id="@+id/pose_overlay"
             android:layout_width="match_parent"
             android:layout_height="match_parent"/>
 

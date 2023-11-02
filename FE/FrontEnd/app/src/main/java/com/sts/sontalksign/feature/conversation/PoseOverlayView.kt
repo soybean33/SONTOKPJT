@@ -11,14 +11,16 @@ import androidx.core.content.ContextCompat
 import com.google.mediapipe.tasks.vision.core.RunningMode
 import com.google.mediapipe.tasks.vision.handlandmarker.HandLandmarker
 import com.google.mediapipe.tasks.vision.handlandmarker.HandLandmarkerResult
+import com.google.mediapipe.tasks.vision.poselandmarker.PoseLandmarker
+import com.google.mediapipe.tasks.vision.poselandmarker.PoseLandmarkerResult
 import com.sts.sontalksign.R
 import kotlin.math.max
 import kotlin.math.min
 
-class OverlayView(context: Context?, attrs: AttributeSet?) :
+class PoseOverlayView(context: Context?, attrs: AttributeSet?) :
     View(context, attrs) {
 
-    private var results: HandLandmarkerResult? = null
+    private var poseResults: PoseLandmarkerResult? = null
     private var linePaint = Paint()
     private var pointPaint = Paint()
 
@@ -31,7 +33,7 @@ class OverlayView(context: Context?, attrs: AttributeSet?) :
     }
 
     fun clear() {
-        results = null
+        poseResults = null
         linePaint.reset()
         pointPaint.reset()
         invalidate()
@@ -51,10 +53,9 @@ class OverlayView(context: Context?, attrs: AttributeSet?) :
 
     override fun draw(canvas: Canvas) {
         super.draw(canvas)
-        Log.d("afsdfdsafdsafdsa", results.toString())
-        results?.let { handLandmarkerResult ->
-            for (landmark in handLandmarkerResult.landmarks()) {
-                for (normalizedLandmark in landmark) {
+        poseResults?.let { poseLandmarkerResult ->
+            for(landmark in poseLandmarkerResult.landmarks()) {
+                for(normalizedLandmark in landmark) {
                     canvas.drawPoint(
                         normalizedLandmark.x() * imageWidth * scaleFactor,
                         normalizedLandmark.y() * imageHeight * scaleFactor,
@@ -62,30 +63,25 @@ class OverlayView(context: Context?, attrs: AttributeSet?) :
                     )
                 }
 
-                HandLandmarker.HAND_CONNECTIONS.forEach {
+                PoseLandmarker.POSE_LANDMARKS.forEach {
                     canvas.drawLine(
-                        handLandmarkerResult.landmarks().get(0).get(it!!.start())
-                            .x() * imageWidth * scaleFactor,
-                        handLandmarkerResult.landmarks().get(0).get(it.start())
-                            .y() * imageHeight * scaleFactor,
-                        handLandmarkerResult.landmarks().get(0).get(it.end())
-                            .x() * imageWidth * scaleFactor,
-                        handLandmarkerResult.landmarks().get(0).get(it.end())
-                            .y() * imageHeight * scaleFactor,
-                        linePaint
-                    )
+                        poseLandmarkerResult.landmarks().get(0).get(it!!.start()).x() * imageWidth * scaleFactor,
+                        poseLandmarkerResult.landmarks().get(0).get(it.start()).y() * imageHeight * scaleFactor,
+                        poseLandmarkerResult.landmarks().get(0).get(it.end()).x() * imageWidth * scaleFactor,
+                        poseLandmarkerResult.landmarks().get(0).get(it.end()).y() * imageHeight * scaleFactor,
+                        linePaint)
                 }
             }
         }
     }
 
     fun setResults(
-        handLandmarkerResults: HandLandmarkerResult,
+        poseLandmarkerResults: PoseLandmarkerResult,
         imageHeight: Int,
         imageWidth: Int,
-        runningMode: RunningMode = RunningMode.IMAGE
+        runningMode: RunningMode// = RunningMode.LIVE_STREAM
     ) {
-        results = handLandmarkerResults
+        poseResults = poseLandmarkerResults
 
         this.imageHeight = imageHeight
         this.imageWidth = imageWidth
