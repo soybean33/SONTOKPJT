@@ -156,7 +156,7 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
 //                mResult = strBuf.toString()
 //                binding.tvCRS.text = mResult
 
-                handleSTTResult(results[0].toString(), true) // STT 결과를 RecyclerView에 추가
+                handleSTTResult(results[0].toString(), false) // STT 결과를 RecyclerView에 추가
 
                 binding.tvCRS.text = results[0].toString()
             }
@@ -196,6 +196,7 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
                 binding.etTextConversation.setText("")
 
                 generateTtsApi(inpContent) //TTS 적용 - 텍스트를 음성 출력
+
             }
             handled
         }
@@ -285,32 +286,6 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
                 handLandmarkerHelperListener = this
             )
         }
-
-        /* Create the PoseLandmarkerHelper, HandLandmarkerHelper that will handle the inference*/
-//        backgroundPoseExecutor.execute {
-//            poseLandmarkerHelper = PoseLandmarkerHelper(
-//                context = this,
-//                runningMode = RunningMode.LIVE_STREAM,
-//                minPoseDetectionConfidence = viewModel.currentMinPoseDetectionConfidence,
-//                minPoseTrackingConfidence = viewModel.currentMinPoseTrackingConfidence,
-//                minPosePresenceConfidence = viewModel.currentMinPosePresenceConfidence,
-//                currentDelegate = viewModel.currentPoseDelegate,
-//                poseLandmarkerHelperListener = this
-//            )
-//        }
-//
-//        backgroundHandExecutor.execute {
-//            handLandmarkerHelper = HandLandmarkerHelper(
-//                context = this,
-//                runningMode = RunningMode.LIVE_STREAM,
-//                minHandDetectionConfidence = viewModel.currentMinHandDetectionConfidence,
-//                minHandTrackingConfidence = viewModel.currentMinHandTrackingConfidence,
-//                minHandPresenceConfidence = viewModel.currentMinHandPresenceConfidence,
-//                maxNumHands = viewModel.currentMaxHands,
-//                currentDelegate = viewModel.currentHandDelegate,
-//                handLandmarkerHelperListener = this
-//            )
-//        }
     }
 
     /**
@@ -346,6 +321,10 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
                         mediaPlayer.setDataSource(resFile.path)
                         mediaPlayer.prepare()
                         mediaPlayer.start()
+                        // Add the TTS result to the RecyclerView
+                        runOnUiThread {
+                            handleTTSResult(line, true)
+                        }
                     }
                 } else {
                     val errorBody = response.errorBody()
@@ -394,6 +373,17 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
 
         textList += bContent
 
+    }
+
+    fun handleTTSResult(ttsResult: String, isMine: Boolean) {
+
+        val currentTime = System.currentTimeMillis()
+        val conversationCameraModel = ConversationCameraModel(
+            ConversationText = ttsResult,
+            ConversationTime = FileFormats.timeFormat.format(currentTime),
+            isLeft = isMine
+        )
+        conversationCameraAdapter.addItemAndScroll(conversationCameraModel, recyclerView)
     }
 
 
