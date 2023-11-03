@@ -1,6 +1,8 @@
+import android.util.TypedValue
 import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import androidx.core.view.marginLeft
 import androidx.recyclerview.widget.RecyclerView
 import com.sts.sontalksign.databinding.HistoryConversationBinding
 import com.sts.sontalksign.feature.conversation.ConversationCameraModel
@@ -15,9 +17,14 @@ class ConversationCameraAdapter(private val conversationCameraList: ArrayList<Co
 
             val isLeftMessage = conversationCamera.isLeft
             if (isLeftMessage) {
-                binding.tvHistoryConversationText.gravity = Gravity.START
+                binding.llhHistoryConversationText.gravity = Gravity.END
+                binding.tvHistoryConversationText.setTextSize(TypedValue.COMPLEX_UNIT_SP, 20f)
+//                binding.tvHistoryConversationText.setPadding(0, 0, 0, 10) // 10dp padding at the bottom
             } else {
-                binding.tvHistoryConversationText.gravity = Gravity.END
+                binding.llhHistoryConversationText.gravity = Gravity.START
+                binding.tvHistoryConversationText.setTextSize(TypedValue.COMPLEX_UNIT_SP, 20f)
+//                binding.tvHistoryConversationText.setPadding(0, 0, 0, 10) // 10dp padding at the bottom
+
             }
         }
     }
