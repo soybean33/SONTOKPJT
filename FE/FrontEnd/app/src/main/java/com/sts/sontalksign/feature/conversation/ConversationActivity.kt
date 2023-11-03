@@ -48,9 +48,11 @@ import com.sts.sontalksign.feature.apis.NaverAPI
 import com.sts.sontalksign.feature.common.CustomForm
 import com.sts.sontalksign.feature.utils.AudioWriterPCM
 import com.sts.sontalksign.global.FileFormats
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import java.io.BufferedReader
 import java.io.BufferedWriter
 import java.io.File
@@ -629,6 +631,7 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
     }
 
     private fun detectBoth(imageProxy: ImageProxy) {
+
         val frameTime = SystemClock.uptimeMillis()
 
         val bitmapBuffer =
@@ -658,6 +661,14 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
                 frameTime = frameTime
             )
         }
+
+//        val job = CoroutineScope(Dispatchers.Default).launch {
+//
+//        }
+//
+//        runBlocking {
+//            job.join()
+//        }
 
 //        if(this::poseLandmarkerHelper.isInitialized) {
 //            poseLandmarkerHelper.detectLiveStream(
@@ -884,7 +895,7 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
             viewModel.setMinPoseDetectionConfidence(poseLandmarkerHelper.minPoseDetectionConfidence)
             viewModel.setMinPoseTrackingConfidence(poseLandmarkerHelper.minPoseTrackingConfidence)
             viewModel.setMinPosePresenceConfidence(poseLandmarkerHelper.minPosePresenceConfidence)
-            viewModel.setDelegate(poseLandmarkerHelper.currentDelegate)
+            viewModel.setPoseDelegate(poseLandmarkerHelper.currentDelegate)
 
             // Close the PoseLandmarkerHelper and release resources
             backgroundBothExecutor.execute { poseLandmarkerHelper.clearPoseLandmarker() }
@@ -896,7 +907,7 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
             viewModel.setMinHandDetectionConfidence(handLandmarkerHelper.minHandDetectionConfidence)
             viewModel.setMinHandTrackingConfidence(handLandmarkerHelper.minHandTrackingConfidence)
             viewModel.setMinHandPresenceConfidence(handLandmarkerHelper.minHandPresenceConfidence)
-            viewModel.setDelegate(handLandmarkerHelper.currentDelegate)
+            viewModel.setHandDelegate(handLandmarkerHelper.currentDelegate)
 
             // Close the HandLandmarkerHelper and release resources
             backgroundBothExecutor.execute { handLandmarkerHelper.clearHandLandmarker() }
