@@ -615,7 +615,10 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
         imageProxy.use { bitmapBuffer.copyPixelsFromBuffer(imageProxy.planes[0].buffer) }
         imageProxy.close()
 
-        if(this::poseLandmarkerHelper.isInitialized) {
+        detectPose(imageProxy, bitmapBuffer, frameTime)
+        detectHand(imageProxy, bitmapBuffer, frameTime)
+
+/*        if(this::poseLandmarkerHelper.isInitialized) {
             poseLandmarkerHelper.detectLiveStream(
                 imageProxy = imageProxy,
                 bitmapBuffer = bitmapBuffer,
@@ -631,7 +634,7 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
                 isFrontCamera = cameraFacing == CameraSelector.LENS_FACING_FRONT,
                 frameTime = frameTime
             )
-        }
+        }*/
 
 //        val job = CoroutineScope(Dispatchers.Default).launch {
 //
@@ -656,21 +659,36 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
 //        }
     }
 
-//    private fun detectPose(imageProxy: ImageProxy) {
-//        if(this::poseLandmarkerHelper.isInitialized) {
-//            poseLandmarkerHelper.detectLiveStream(
-//                imageProxy = imageProxy,
-//                isFrontCamera = cameraFacing == CameraSelector.LENS_FACING_FRONT
-//            )
-//        }
-//    }
-//
-//    private fun detectHand(imageProxy: ImageProxy) {
-//        handLandmarkerHelper.detectLiveStream(
-//            imageProxy = imageProxy,
-//            isFrontCamera = cameraFacing == CameraSelector.LENS_FACING_FRONT
-//        )
-//    }
+    private fun detectPose(imageProxy: ImageProxy, bitmapBuffer: Bitmap, frameTime: Long) {
+        try {
+            if(this::poseLandmarkerHelper.isInitialized) {
+                poseLandmarkerHelper.detectLiveStream(
+                    imageProxy = imageProxy,
+                    bitmapBuffer = bitmapBuffer,
+                    isFrontCamera = cameraFacing == CameraSelector.LENS_FACING_FRONT,
+                    frameTime = frameTime
+                )
+            }
+
+        } catch (exec: Exception) {
+            Log.d("detectPose: ", exec.message.toString())
+        }
+    }
+
+    private fun detectHand(imageProxy: ImageProxy, bitmapBuffer: Bitmap, frameTime: Long) {
+        try {
+            if(this::handLandmarkerHelper.isInitialized) {
+                handLandmarkerHelper.detectLiveStream(
+                    imageProxy = imageProxy,
+                    bitmapBuffer = bitmapBuffer,
+                    isFrontCamera = cameraFacing == CameraSelector.LENS_FACING_FRONT,
+                    frameTime = frameTime
+                )
+            }
+        } catch (exec: Exception) {
+            Log.d("detectHand: ", exec.message.toString())
+        }
+    }
 
     override fun onConfigurationChanged(newConfig: Configuration) {
         super.onConfigurationChanged(newConfig)
