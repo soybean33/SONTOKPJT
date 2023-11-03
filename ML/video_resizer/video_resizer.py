@@ -1,5 +1,5 @@
 import cv2
-import mediapipe as mp
+import numpy as np
 
 # Prepare video
 fileName = "20231103_103532"
@@ -39,14 +39,20 @@ while True:
     cutout_frame = frame[int(H * hu):int(H * hu + H * hratio), int(W * wr):int(W * wr + W * wratio)]
 
     # padding
-    new_width = int(H * hu + H * hratio) - int(H * hu)
-    new_height = int(W * wr + W * wratio) - int(W * wr)
+    new_width = int(W * wr + W * wratio) - int(W * wr)
+    new_height = int(H * hu + H * hratio) - int(H * hu)
+
+    average_axis0 = cutout_frame.mean(axis=0)
+    average_axis1 = cutout_frame.mean(axis=1)
+    edge_color = np.array([average_axis0[0], average_axis0[-1], average_axis1[0], average_axis1[-1]])
+    average_color = edge_color.mean(axis=0)
+
     if target_width / target_height < new_width / new_height:
         padding = int((new_width * target_height / target_width - new_height) / 2)
-        padding_added_frame = cv2.copyMakeBorder(cutout_frame, padding, padding, 0, 0, cv2.BORDER_REPLICATE)
+        padding_added_frame = cv2.copyMakeBorder(cutout_frame, padding, padding, 0, 0, cv2.BORDER_CONSTANT, value=average_color)
     else:
         padding = int((new_height * target_width / target_height - new_width) / 2)
-        padding_added_frame = cv2.copyMakeBorder(cutout_frame, 0, 0, padding, padding, cv2.BORDER_REPLICATE)
+        padding_added_frame = cv2.copyMakeBorder(cutout_frame, 0, 0, padding, padding, cv2.BORDER_CONSTANT, value=average_color)
 
     # resize
     resized_frame = cv2.resize(padding_added_frame, (target_width, target_height), cv2.INTER_CUBIC)
