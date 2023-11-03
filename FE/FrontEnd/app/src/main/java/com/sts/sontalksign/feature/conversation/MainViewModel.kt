@@ -5,7 +5,7 @@ import androidx.lifecycle.ViewModel
 class MainViewModel : ViewModel() {
     /*Pose Landmarker*/
     private var _poseModel = PoseLandmarkerHelper.MODEL_POSE_LANDMARKER_LITE
-    private var _poseDelegate: Int = PoseLandmarkerHelper.DELEGATE_CPU
+    private var _poseDelegate: Int = PoseLandmarkerHelper.DELEGATE_GPU
     private var _minPoseDetectionConfidence: Float =
         PoseLandmarkerHelper.DEFAULT_POSE_DETECTION_CONFIDENCE
     private var _minPoseTrackingConfidence: Float = PoseLandmarkerHelper
@@ -14,7 +14,7 @@ class MainViewModel : ViewModel() {
         .DEFAULT_POSE_PRESENCE_CONFIDENCE
 
     /*Hand Landmarker*/
-    private var _handDelegate: Int = HandLandmarkerHelper.DELEGATE_CPU
+    private var _handDelegate: Int = HandLandmarkerHelper.DELEGATE_GPU
     private var _minHandDetectionConfidence: Float =
         HandLandmarkerHelper.DEFAULT_HAND_DETECTION_CONFIDENCE
     private var _minHandTrackingConfidence: Float = HandLandmarkerHelper
@@ -48,7 +48,7 @@ class MainViewModel : ViewModel() {
             _minHandPresenceConfidence
     val currentMaxHands: Int get() = _maxHands
 
-    fun setDelegate(delegate: Int) {
+    fun setPoseDelegate(delegate: Int) {
         _poseDelegate = delegate
     }
 
