@@ -14,11 +14,7 @@ import android.os.Handler
 import android.os.Message
 import android.os.SystemClock
 import android.util.Log
-import android.view.View
 import android.view.inputmethod.EditorInfo
-import android.widget.AdapterView
-import android.widget.Button
-import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.camera.core.AspectRatio
@@ -34,13 +30,10 @@ import androidx.camera.video.Recording
 import androidx.camera.video.VideoCapture
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.mediapipe.tasks.vision.core.RunningMode
-import com.google.mediapipe.tasks.vision.handlandmarker.HandLandmark
-import com.google.mediapipe.tasks.vision.handlandmarker.HandLandmarker
 import com.naver.speech.clientapi.SpeechRecognitionResult
 import com.sts.sontalksign.R
 import com.sts.sontalksign.databinding.ActivityConversationBinding
@@ -48,11 +41,9 @@ import com.sts.sontalksign.feature.apis.NaverAPI
 import com.sts.sontalksign.feature.common.CustomForm
 import com.sts.sontalksign.feature.utils.AudioWriterPCM
 import com.sts.sontalksign.global.FileFormats
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import java.io.BufferedReader
 import java.io.BufferedWriter
 import java.io.File
@@ -61,18 +52,19 @@ import java.io.FileReader
 import java.io.FileWriter
 import java.lang.IllegalStateException
 import java.lang.ref.WeakReference
-import java.util.Locale
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 
-
 class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.LandmarkerListener, HandLandmarkerHelper.LandmarkerListener {
     companion object {
+        private const val TAG: String = "ConversationActivity"
         private const val cTAG = "CameraX Preview"
         private const val hlTAG = "Hand Landmarker"
         private const val pTAG = "Pose Landmarker"
         private const val FILENAME_FORMAT = "yyyy-MM-dd-HH-mm-ss-SSS"
+
+        /** 카메라 및 오디오 권한 */
         private const val REQUEST_CODE_PERMISSIONS = 10
         private val REQUIRED_PERMISSIONS =
             mutableListOf(
@@ -85,16 +77,12 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
             }.toTypedArray()
     }
 
-    // ActivityConversationBinding 초기화 (이미 있는 코드)
+    /** ActivityConversationBinding 초기화 (이미 있는 코드) */
     private val binding by lazy {
         ActivityConversationBinding.inflate(layoutInflater)
     }
 
-
-
-    private val TAG: String = "ConversationActivity"
-
-    /*MediaPipe 관련 변수 - PoseLandmarker, HandLandmarker*/
+    /** MediaPipe 관련 변수 - PoseLandmarker, HandLandmarker */
     private lateinit var poseLandmarkerHelper: PoseLandmarkerHelper
     private lateinit var handLandmarkerHelper: HandLandmarkerHelper
     private val viewModel by lazy {
@@ -113,37 +101,36 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
 //    private lateinit var backgroundPoseExecutor: ExecutorService
 //    private lateinit var backgroundHandExecutor: ExecutorService
 
-    /*CameraX 관련 변수*/
-    private var imageCapture: ImageCapture? = null
-    private var videoCapture: VideoCapture<Recorder>? = null
-    private var recording: Recording? = null
+    /** CameraX 관련 변수 */
+//    private var imageCapture: ImageCapture? = null
+//    private var videoCapture: VideoCapture<Recorder>? = null
+//    private var recording: Recording? = null
 //    private lateinit var cameraExecutor: ExecutorService
 
-    private var isNowRecording: Boolean = false //사용자의 "녹음하기" 선택 여부
+    /** 사용자의 "녹음하기" 선택 여부 */
+    private var isNowRecording: Boolean = false
 
-    /*MediaPlayer 관련 변수(Naver Clova TTS API)*/
+    /** MediaPlayer 관련 변수(Naver Clova TTS API) */
     private lateinit var mediaPlayer: MediaPlayer
 
-    /*내부저장소 - txt 파일*/
-    private var directory: String? = null
-    private var convFilename: String? = null //대화내용 파일명
-    private var currentTime: Long? = null
-
-    private lateinit var textList: String
-
-    // naverspeech-sdk-android
+    /** naverspeech-sdk-android(CLOVA Speech Recognition(CSR)) */
     private val CLIENT_ID = "89kna7451i"
     private var handler: RecognitionHandler? = null
     private var naverRecognizer: NaverRecognizer? = null
     private var mResult: String? = null
     private var audioWriter: AudioWriterPCM? = null
 
+    /** 내부저장소 - txt 파일 */
+    private var directory: String? = null
+    private var convFilename: String? = null //대화내용 파일명
+    private var currentTime: Long? = null
 
-
+    private lateinit var textList: String
     private lateinit var conversationCameraAdapter: ConversationCameraAdapter
     private val conversationCamera: ArrayList<ConversationCameraModel> = ArrayList()
     private lateinit var recyclerView: RecyclerView // RecyclerView 선언
 
+    /**  CSR 상태에 대한 동작, clientReady, audioRecording, partialResult, final Result, recognitionError, clientInactive */
     private fun handleMessage(msg: Message) {
         when (msg.what) {
             R.id.clientReady -> {
@@ -156,13 +143,10 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
             R.id.partialResult -> {
                 mResult = msg.obj as String
                 binding.tvCRS.text = mResult
-                Log.d("김용우바보차우차우1111111111", "김용우바보차우차우")
-
             }
             R.id.finalResult -> {
                 val speechRecognitionResult = msg.obj as SpeechRecognitionResult
                 val results = speechRecognitionResult.results
-
 
 //                val strBuf = StringBuilder()
 //                for (result in results) {
@@ -195,15 +179,14 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
 
-
-        // RecyclerView 초기화
+        /** RecyclerView 초기화 */
         recyclerView = binding.rvCameraConversation
         recyclerView.layoutManager = LinearLayoutManager(this)
         conversationCameraAdapter = ConversationCameraAdapter(conversationCamera)
         recyclerView.adapter = conversationCameraAdapter
         (recyclerView.layoutManager as LinearLayoutManager).scrollToPosition(conversationCameraAdapter.itemCount - 1)
 
-        // 텍스트 입력 이벤트 처리
+        /** 텍스트 입력 이벤트 처리 */
         binding.etTextConversation.setOnEditorActionListener { textView, actionId, _ ->
             var handled = false
             //완료버튼 클릭에만 처리
@@ -217,21 +200,19 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
             handled
         }
 
-
-
-        //"대화 종료" 버튼 클릭
+        /** "대화 종료" 버튼 클릭 */
         binding.btnStopConversation.setOnClickListener { stopConversation() }
 
-        /*대화내용 저장*/
-        //대화 시작 - "녹음하기" 여부 저장
+        /** 대화내용 저장 */
+        /** 대화 시작 - "녹음하기" 여부 저장 */
         isNowRecording = intent.getBooleanExtra("isRecord", false)
 
-        //내부저장소의 경로 저장
+        /** 내부저장소의 경로 저장 */
         directory = filesDir.absolutePath //내부경로의 절대 경로
         createTextFile() //대화 텍스트 파일 생성
 
-        /*TTS 초기 설정*/
-        //음성 출력을 위한 MediaPlayer 초기 설정
+        /** TTS 초기 설정 */
+        /** 음성 출력을 위한 MediaPlayer 초기 설정 */
         mediaPlayer = MediaPlayer()
         mediaPlayer.setAudioAttributes(
             AudioAttributes.Builder()
@@ -240,9 +221,9 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
                 .build()
         )
 
+        /** CSR 관련 처리 */
         handler = RecognitionHandler(this)
         naverRecognizer = NaverRecognizer(this, handler!!, CLIENT_ID)
-
         binding.btnCRS.setOnClickListener {
             if (!naverRecognizer!!.getSpeechRecognizer().isRunning) {
                 // Start button is pushed when SpeechRecognizer's state is inactive.
@@ -261,7 +242,7 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
         }
 
 
-        //카메라 권한 요청
+        /** 카메라 권한 요청 */
         if(allPermissionsGranted()) {
 
         } else {
@@ -270,7 +251,7 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
             )
         }
 
-        /*MediaPipe 관련 초기 설정*/
+        /** MediaPipe 관련 초기 설정 */
         // Initialize our background executor
         backgroundBothExecutor = Executors.newFixedThreadPool(2)
 //        backgroundPoseExecutor = Executors.newSingleThreadExecutor()
