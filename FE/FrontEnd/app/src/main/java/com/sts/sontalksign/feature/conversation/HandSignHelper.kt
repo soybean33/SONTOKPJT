@@ -59,6 +59,12 @@ class HandSignHelper() {
                 hand[i][j] = hand_v2[i][j] - hand_v1[i][j]
             }
         }
+
+        /** 정규화 v */
+
+        /** 내적 */
+
+        /** 아크 코싸인 */
     }
 
     private fun Solution(){
