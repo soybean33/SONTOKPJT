@@ -1,14 +1,6 @@
 package com.sts.sontalksign.feature.conversation
 
-import android.app.Activity
-import android.content.Context
-import org.tensorflow.lite.Interpreter
-import org.tensorflow.lite.gpu.CompatibilityList
-import org.tensorflow.lite.gpu.GpuDelegate
-import java.io.FileInputStream
-import java.nio.ByteBuffer
-import java.nio.MappedByteBuffer
-import java.nio.channels.FileChannel
+import kotlin.math.*
 
 class HandSignHelper() {
 
@@ -52,19 +44,17 @@ class HandSignHelper() {
     private fun CalHand(hand : Array<Array<Double>>) {
         val hand_v1 : Array<Array<Double>> = arrayOf(hand[0], hand[1], hand[2], hand[3], hand[0],hand[5], hand[6], hand[7], hand[0],hand[9],hand[10], hand[11], hand[0], hand[13], hand[14], hand[15], hand[0], hand[17], hand[18], hand[19])
         val hand_v2 : Array<Array<Double>> = arrayOf(hand[1], hand[2], hand[3], hand[4], hand[5], hand[6], hand[7], hand[8], hand[9], hand[10], hand[11], hand[12], hand[13], hand[14], hand[15], hand[16], hand[17], hand[18], hand[19], hand[20])
-        val hand: Array<Array<Double>> = Array(20, {Array(3, {0.0})})
+        val hand: Array<Array<Double>> = Array(20) {Array(3){0.0}}
+        val hand_d : Array<Double> = Array(20) {0.0}
+        val hand_result: Array<Double> = Array(20) { 0.0 }
 
         for(i in 0..19) {
             for(j in 0..2) {
                 hand[i][j] = hand_v2[i][j] - hand_v1[i][j]
             }
+            hand_d[i] = hand[i][0] * hand[i][0] + hand[i][1] * hand[i][1] + hand[i][2] * hand[i][2] // 내적
+            hand_result[i] = Math.acos(hand_d[i])   // 아크 코싸인
         }
-
-        /** 정규화 v */
-
-        /** 내적 */
-
-        /** 아크 코싸인 */
     }
 
     private fun Solution(){
