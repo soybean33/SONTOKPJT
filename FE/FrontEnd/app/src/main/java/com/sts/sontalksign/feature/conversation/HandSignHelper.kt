@@ -1,73 +1,160 @@
 package com.sts.sontalksign.feature.conversation
 
 import android.content.Context
+import android.util.Log
 import com.google.mediapipe.tasks.vision.handlandmarker.HandLandmarker
 import com.google.mediapipe.tasks.vision.poselandmarker.PoseLandmarker
 import kotlin.math.*
 
-class HandSignHelper(handResultBundle: HandLandmarkerHelper.ResultBundle, poseResultBundle: PoseLandmarkerHelper.ResultBundle) {
+class HandSignHelper() {
+    private val TAG : String = "HandSignHelper"
 
-    var hand_1 : Array<Array<Double>> = Array(21, {Array(3, {0.0})})
-    var hand_1_score : Double = 0.98
-    var hand_1_category : String = "Left"
-
-    var hand_2: Array<Array<Double>> = Array(21, {Array(3, {0.0})})
-    var hand_2_score : Double = 0.99
-    var hand_2_category : String = "Right"
-
-    var face: Array<Array<Double>> = Array(11, {Array(3, {0.0})})
-    var body: Array<Array<Double>> = Array(20, {Array(3, {0.0})})
+    var leftHand : Array<Array<Float>> = Array(21) {Array(3) {0f}}
+    var rightHand: Array<Array<Float>> = Array(21) {Array(3) {0f}}
+    var face: Array<Array<Float>> = Array(11) {Array(3) {0f}}
+    var body: Array<Array<Float>> = Array(22) {Array(3) {0f}}
 
     var returnArray : Array<Double> = emptyArray()
 
-    init {
-        //TODO: 데이터 정형화
-        val laftHandIdx : Int = 0
-        val rightHandIdx : Int = 21
+    /** PoseLandmark 정형화 - 11개의 Face, 22개의 Body */
+    fun initPose(poseResultBundle: PoseLandmarkerHelper.ResultBundle) {
+        if(poseResultBundle.results.first().landmarks().size == 1) {
+            for(i in 0..10) {
+                if(poseResultBundle.results.first().landmarks()[0][i].presence().orElse(0f) < 0.5) {
+                    face[i][0] = 0f
+                    face[i][1] = 0f
+                    face[i][2] = 0f
 
-        when(handResultBundle.results.first().handednesses().size){
-            /** 한손 입력 */
-            1->{
-                /** 오른손 입력이 들어왔다면 */
-                if(handResultBundle.results.first().handednesses()[0][0].categoryName() == "Right"){
-
+                } else {
+                    face[i][0] = poseResultBundle.results.first().landmarks()[0][i].x()
+                    face[i][1] = poseResultBundle.results.first().landmarks()[0][i].y()
+                    face[i][2] = poseResultBundle.results.first().landmarks()[0][i].z()
                 }
-                else{
+            }
 
+            for(i in 11..32) {
+                if(poseResultBundle.results.first().landmarks()[0][i].visibility().orElse(0f) < 0.5) {
+                    body[i - 11][0] = 0f
+                    body[i - 11][1] = 0f
+                    body[i - 11][2] = 0f
+                } else {
+                    body[i - 11][0] = poseResultBundle.results.first().landmarks()[0][i].x()
+                    body[i - 11][1] = poseResultBundle.results.first().landmarks()[0][i].y()
+                    body[i - 11][2] = poseResultBundle.results.first().landmarks()[0][i].z()
+                }
+            }
+        }
+
+//        Log.d(TAG, "Face: " + face[0][0].toString())
+        Log.d(TAG, "Body: ${body[0][0].toString()}, ${body[1][0].toString()}")
+    }
+
+    /** Hand Landmark 정형화 */
+    fun initHand(handResultBundle: HandLandmarkerHelper.ResultBundle) {
+        when(handResultBundle.results.first().handednesses().size) {
+            /** 한손 입력 */
+            1 -> {
+                /** 오른손 입력이 들어왔다면 */
+                if (handResultBundle.results.first()
+                        .handednesses()[0][0].categoryName() == "Right"
+                ) {
+                    for (i in 0..20) {
+                        rightHand[i][0] = handResultBundle.results.first().landmarks()[0][i].x()
+                        rightHand[i][1] = handResultBundle.results.first().landmarks()[0][i].y()
+                        rightHand[i][2] = handResultBundle.results.first().landmarks()[0][i].z()
+                    }
+                } else {
+                    for (i in 0..20) {
+                        leftHand[i][0] = handResultBundle.results.first().landmarks()[0][i].x()
+                        leftHand[i][1] = handResultBundle.results.first().landmarks()[0][i].y()
+                        leftHand[i][2] = handResultBundle.results.first().landmarks()[0][i].z()
+                    }
                 }
             }
             /** 두손 입력 */
-            2->{
+            2 -> {
+                var handA: String =
+                    handResultBundle.results.first().handednesses()[0][0].categoryName()
+                var handB: String =
+                    handResultBundle.results.first().handednesses()[1][0].categoryName()
+                val scoreA: Float = handResultBundle.results.first().handednesses()[0][0].score()
+                val scoreB: Float = handResultBundle.results.first().handednesses()[1][0].score()
 
+                if (handA.equals(handB)) {
+                    if (handA.equals("Left")) {
+                        if (scoreA >= scoreB) {
+                            for (i in 0..20) {
+                                leftHand[i][0] =
+                                    handResultBundle.results.first().landmarks()[0][i].x()
+                                leftHand[i][1] =
+                                    handResultBundle.results.first().landmarks()[0][i].y()
+                                leftHand[i][2] =
+                                    handResultBundle.results.first().landmarks()[0][i].z()
+                            }
+                        } else {
+                            for (i in 0..20) {
+                                leftHand[i][0] =
+                                    handResultBundle.results.first().landmarks()[1][i].x()
+                                leftHand[i][1] =
+                                    handResultBundle.results.first().landmarks()[1][i].y()
+                                leftHand[i][2] =
+                                    handResultBundle.results.first().landmarks()[1][i].z()
+                            }
+                        }
+                    } else {
+                        if (scoreA >= scoreB) {
+                            for (i in 0..20) {
+                                rightHand[i][0] =
+                                    handResultBundle.results.first().landmarks()[0][i].x()
+                                rightHand[i][1] =
+                                    handResultBundle.results.first().landmarks()[0][i].y()
+                                rightHand[i][2] =
+                                    handResultBundle.results.first().landmarks()[0][i].z()
+                            }
+                        } else {
+                            for (i in 0..20) {
+                                rightHand[i][0] =
+                                    handResultBundle.results.first().landmarks()[1][i].x()
+                                rightHand[i][1] =
+                                    handResultBundle.results.first().landmarks()[1][i].y()
+                                rightHand[i][2] =
+                                    handResultBundle.results.first().landmarks()[1][i].z()
+                            }
+                        }
+                    }
+                } else {
+                    if (handA.equals("Left")) {
+                        for (i in 0..20) {
+                            leftHand[i][0] = handResultBundle.results.first().landmarks()[0][i].x()
+                            leftHand[i][1] = handResultBundle.results.first().landmarks()[0][i].y()
+                            leftHand[i][2] = handResultBundle.results.first().landmarks()[0][i].z()
+                        }
+                        for (i in 0..20) {
+                            rightHand[i][0] = handResultBundle.results.first().landmarks()[1][i].x()
+                            rightHand[i][1] = handResultBundle.results.first().landmarks()[1][i].y()
+                            rightHand[i][2] = handResultBundle.results.first().landmarks()[1][i].z()
+                        }
+
+                    } else {
+                        for (i in 0..20) {
+                            rightHand[i][0] = handResultBundle.results.first().landmarks()[0][i].x()
+                            rightHand[i][1] = handResultBundle.results.first().landmarks()[0][i].y()
+                            rightHand[i][2] = handResultBundle.results.first().landmarks()[0][i].z()
+                        }
+                        for (i in 0..20) {
+                            leftHand[i][0] = handResultBundle.results.first().landmarks()[1][i].x()
+                            leftHand[i][1] = handResultBundle.results.first().landmarks()[1][i].y()
+                            leftHand[i][2] = handResultBundle.results.first().landmarks()[1][i].z()
+                        }
+                    }
+                }
             }
         }
 
+        Log.d(TAG, "RightHand: ${rightHand.toString()}")
+        Log.d(TAG, "LeftHand: ${leftHand.toString()}")
     }
 
-    private fun Init(){
-        if(hand_1_category != hand_2_category) return
-
-        if(hand_1_category == "Left" && hand_2_category == "Left") {
-            if(hand_1_score > hand_2_score) {
-                hand_1_category = "Left"
-                hand_2_category = "Right"
-            }
-            else{
-                hand_1_category = "Right"
-                hand_2_category = "Left"
-            }
-        }
-        else if(hand_1_category == "Right" && hand_2_category == "Right") {
-            if(hand_1_score > hand_2_score) {
-                hand_1_category = "Right"
-                hand_2_category = "Left"
-            }
-            else{
-                hand_1_category = "Left"
-                hand_2_category = "Right"
-            }
-        }
-    }
     private fun CalHand(hand : Array<Array<Double>>) {
         val hand_v1 : Array<Array<Double>> = arrayOf(hand[0], hand[1], hand[2], hand[3], hand[0],hand[5], hand[6], hand[7], hand[0],hand[9],hand[10], hand[11], hand[0], hand[13], hand[14], hand[15], hand[0], hand[17], hand[18], hand[19])
         val hand_v2 : Array<Array<Double>> = arrayOf(hand[1], hand[2], hand[3], hand[4], hand[5], hand[6], hand[7], hand[8], hand[9], hand[10], hand[11], hand[12], hand[13], hand[14], hand[15], hand[16], hand[17], hand[18], hand[19], hand[20])
@@ -85,14 +172,6 @@ class HandSignHelper(handResultBundle: HandLandmarkerHelper.ResultBundle, poseRe
     }
 
     private fun Solution(){
-        Init()
-        if(hand_1_category == "Left") {
-            CalHand(hand_1)
-            CalHand(hand_2)
-        }
-        else{
-            CalHand(hand_2)
-            CalHand(hand_1)
-        }
+
     }
 }

@@ -34,6 +34,8 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.mediapipe.tasks.vision.core.RunningMode
+import com.google.mediapipe.tasks.vision.handlandmarker.HandLandmarkerResult
+import com.google.mediapipe.tasks.vision.poselandmarker.PoseLandmarkerResult
 import com.naver.speech.clientapi.SpeechRecognitionResult
 import com.sts.sontalksign.R
 import com.sts.sontalksign.databinding.ActivityConversationBinding
@@ -92,8 +94,6 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
     }
     private var preview: Preview? = null
     private var imageAnalyzer: ImageAnalysis? = null
-//    private var imagePoseAnalyzer: ImageAnalysis? = null
-//    private var imageHandAnalyzer: ImageAnalysis? = null
     private var camera: Camera? = null
     private var cameraProvider: ProcessCameraProvider? = null
     private var cameraFacing = CameraSelector.LENS_FACING_FRONT
@@ -102,6 +102,7 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
     private lateinit var backgroundBothExecutor: ExecutorService
 //    private lateinit var backgroundPoseExecutor: ExecutorService
 //    private lateinit var backgroundHandExecutor: ExecutorService
+    private val handSignHelper: HandSignHelper = HandSignHelper()
 
     /** CameraX 관련 변수 */
 //    private var imageCapture: ImageCapture? = null
@@ -244,7 +245,6 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
             }
         }
 
-
         /** 카메라 권한 요청 */
         if(allPermissionsGranted()) {
 
@@ -254,8 +254,7 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
             )
         }
 
-        /** MediaPipe 관련 초기 설정 */
-        // Initialize our background executor
+        /** MediaPipe의 background executor 초기 설정 */
         backgroundBothExecutor = Executors.newFixedThreadPool(2)
 //        backgroundPoseExecutor = Executors.newSingleThreadExecutor()
 //        backgroundHandExecutor = Executors.newSingleThreadExecutor()
@@ -534,11 +533,6 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
         preview = Preview.Builder().setTargetAspectRatio(AspectRatio.RATIO_4_3)
             .setTargetRotation(binding.pvCamera.display.rotation)
             .build()
-//            .also {
-//                it.setSurfaceProvider(binding.pvCamera.surfaceProvider)
-//            }
-
-//        val cameraSelector = CameraSelector.DEFAULT_FRONT_CAMERA
 
         // ImageAnalysis. Using RGBA 8888 to match how our models work
         imageAnalyzer =
@@ -552,61 +546,21 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
                     it.setAnalyzer(backgroundBothExecutor) {image ->
                         mediaPipeSequence(image)
                         //detectBoth(image)
-//                        detectPose(image)
-//                        detectHand(image)
                     }
                 }
 
-//        imagePoseAnalyzer =
-//            ImageAnalysis.Builder().setTargetAspectRatio(AspectRatio.RATIO_4_3)
-//                .setTargetRotation(binding.pvCamera.display.rotation)
-//                .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
-//                .setOutputImageFormat(ImageAnalysis.OUTPUT_IMAGE_FORMAT_RGBA_8888)
-//                .build()
-//                // The analyzer can then be assigned to the instance
-//                .also {
-//                    it.setAnalyzer(backgroundPoseExecutor) {image ->
-//                        detectPose(image)
-//                    }
-//                }
-//
-//        imageHandAnalyzer =
-//            ImageAnalysis.Builder().setTargetAspectRatio(AspectRatio.RATIO_4_3)
-//                .setTargetRotation(binding.pvCamera.display.rotation)
-//                .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
-//                .setOutputImageFormat(ImageAnalysis.OUTPUT_IMAGE_FORMAT_RGBA_8888)
-//                .build()
-//                // The analyzer can then be assigned to the instance
-//                .also {
-//                    it.setAnalyzer(backgroundHandExecutor) { image ->
-//                        detectHand(image)
-//                    }
-//                }
-
-        cameraProvider.unbindAll()
+        cameraProvider.unbindAll() //바인딩된 항목 전체 제거
 
         try {
             //카메라 관련 객체 바인딩
-            camera = cameraProvider.bindToLifecycle(
-                this, cameraSelector, preview, imageAnalyzer
-            )
-
+            camera = cameraProvider.bindToLifecycle(this, cameraSelector, preview, imageAnalyzer)
             preview?.setSurfaceProvider(binding.pvCamera.surfaceProvider)
-
-//            cameraProvider!!.unbindAll() //바인딩된 항목 전체 제거
-
-
-//            cameraProvider!!.bindToLifecycle(
-//                this, cameraSelector, preview
-//            )
         } catch(exc: Exception) {
             Log.e(TAG, "Use case binding failed", exc) //앱에 더이상 포커스 없는 경우 등의 실패 케이스 처리
         }
     }
 
     private suspend fun mediaPipe(imageProxy: ImageProxy) = coroutineScope {
-
-
         val frameTime = SystemClock.uptimeMillis()
 
         val bitmapBuffer =
@@ -631,10 +585,13 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
 
     private suspend fun mediaPipeProcess() = coroutineScope {
         launch {
-
+            try{
+                //val data: HandSignHelper = HandSignHelper(HandLandmarkerHelper.ResultBundle, PoseLandmarkerHelper.ResultBundle)
+            } catch (exec : Exception) {
+//                Log.d("mediaPipeProcess", exec.toString())
+            }
         }
     }
-
 
     private fun mediaPipeSequence(imageProxy: ImageProxy) = runBlocking {
         mediaPipe(imageProxy)
@@ -643,7 +600,6 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
     }
 
     private fun detectBoth(imageProxy: ImageProxy) {
-
         val frameTime = SystemClock.uptimeMillis()
 
         val bitmapBuffer =
@@ -658,46 +614,6 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
 
         detectPose(imageProxy, bitmapBuffer, frameTime)
         detectHand(imageProxy, bitmapBuffer, frameTime)
-
-/*        if(this::poseLandmarkerHelper.isInitialized) {
-            poseLandmarkerHelper.detectLiveStream(
-                imageProxy = imageProxy,
-                bitmapBuffer = bitmapBuffer,
-                isFrontCamera = cameraFacing == CameraSelector.LENS_FACING_FRONT,
-                frameTime = frameTime
-            )
-        }
-
-        if(this::handLandmarkerHelper.isInitialized) {
-            handLandmarkerHelper.detectLiveStream(
-                imageProxy = imageProxy,
-                bitmapBuffer = bitmapBuffer,
-                isFrontCamera = cameraFacing == CameraSelector.LENS_FACING_FRONT,
-                frameTime = frameTime
-            )
-        }*/
-
-//        val job = CoroutineScope(Dispatchers.Default).launch {
-//
-//        }
-//
-//        runBlocking {
-//            job.join()
-//        }
-
-//        if(this::poseLandmarkerHelper.isInitialized) {
-//            poseLandmarkerHelper.detectLiveStream(
-//                imageProxy = imageProxy,
-//                isFrontCamera = cameraFacing == CameraSelector.LENS_FACING_FRONT
-//            )
-//        }
-//
-//        if(this::handLandmarkerHelper.isInitialized) {
-//            handLandmarkerHelper.detectLiveStream(
-//                imageProxy = imageProxy,
-//                isFrontCamera = cameraFacing == CameraSelector.LENS_FACING_FRONT
-//            )
-//        }
     }
 
     private fun detectPose(imageProxy: ImageProxy, bitmapBuffer: Bitmap, frameTime: Long) {
@@ -735,12 +651,6 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
         super.onConfigurationChanged(newConfig)
         imageAnalyzer?.targetRotation =
             binding.pvCamera.display.rotation
-
-//        imagePoseAnalyzer?.targetRotation =
-//            binding.pvCamera.display.rotation
-//
-//        imageHandAnalyzer?.targetRotation =
-//            binding.pvCamera.display.rotation
     }
 
     // Update UI after pose have been detected. Extracts original
@@ -751,7 +661,17 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
     ) {
         this?.runOnUiThread {
             if (binding != null) {
-                Log.d("TEST-Pose", resultBundle.results.first().toString())
+                /** 실험실 로그 */
+//                Log.d("TEST-Pose", resultBundle.results.first().toString())
+//                Log.d("TEST-Pose-", resultBundle.results.first().landmarks().toString())
+//                Log.d("TEST-Pose-size", resultBundle.results.first().landmarks().size.toString())
+//
+//                if(resultBundle.results.first().landmarks().size == 1) {
+//                    Log.d("TEST-Pose-size-detail", resultBundle.results.first().landmarks()[0].size.toString())
+//                }
+//
+//                Log.d("TEST-Pose", resultBundle.results.first().toString()
+                handSignHelper.initPose(resultBundle)
 
                 //TODO: landmarks().size() 가 1이상인지 조건 확인 필요
 //                if(resultBundle.results.first().landmarks()[0].size >= 1) {
@@ -795,23 +715,32 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
     ) {
         this.runOnUiThread {
             if (binding != null) {
-                Log.d("TEST-Hand", resultBundle.results.first().toString())
-                Log.d("TEST-Hand-handed", resultBundle.results.first().handednesses().toString())
-                Log.d("TEST-Hand-size", resultBundle.results.first().handednesses().size.toString())
-                if(resultBundle.results.first().handednesses().size == 1){
-                    Log.d("TEST-Hand-category1111", resultBundle.results.first().handednesses()[0][0].categoryName())
-                    Log.d("TEST-Hand-score1111", resultBundle.results.first().handednesses()[0][0].score().toString())
-                }
-                if(resultBundle.results.first().handednesses().size == 2){
-                    Log.d("TEST-Hand-category2222", resultBundle.results.first().handednesses()[0][0].categoryName())
-                    Log.d("TEST-Hand-score2222", resultBundle.results.first().handednesses()[0][0].score().toString())
-                    Log.d("TEST-Hand-category2222", resultBundle.results.first().handednesses()[1][0].categoryName())
-                    Log.d("TEST-Hand-score2222", resultBundle.results.first().handednesses()[1][0].score().toString())
-                }
+//                Log.d("TEST-Hand", resultBundle.results.first().toString())
 
-//                binding.bottomSheetLayout.inferenceTimeVal.text =
-//                    String.format("%d ms", resultBundle.inferenceTime)
+                handSignHelper.initHand(resultBundle)
 
+                /** 실험실 로그 */
+//                Log.d("TEST-Hand-handed", resultBundle.results.first().handednesses().toString())
+//                Log.d("TEST-Hand-size", resultBundle.results.first().handednesses().size.toString())
+//
+//                if(resultBundle.results.first().handednesses().size == 1){
+//                    Log.d("TEST-Hand-category1111", resultBundle.results.first().handednesses()[0][0].categoryName())
+//                    Log.d("TEST-Hand-score1111", resultBundle.results.first().handednesses()[0][0].score().toString())
+//                    Log.d("TEST-Hand-index1111", resultBundle.results.first().handednesses()[0][0].index().toString())
+//                    Log.d("TEST-Hand-landmarks1111", resultBundle.results.first().landmarks()[0].size.toString())
+//                }
+//                else if(resultBundle.results.first().handednesses().size == 2){
+//                    Log.d("TEST-Hand-landmark2222", resultBundle.results.first().landmarks()[1].toString())
+//                    Log.d("TEST-Hand-landmark2222", resultBundle.results.first().landmarks()[1][20].toString())
+//                    Log.d("TEST-Hand-landmark2222", resultBundle.results.first().landmarks()[1][20].x().toString())
+//                    Log.d("TEST-Hand-category2222", resultBundle.results.first().handednesses()[0][0].categoryName())
+//                    Log.d("TEST-Hand-score2222", resultBundle.results.first().handednesses()[0][0].score().toString())
+//                    Log.d("TEST-Hand-category2222", resultBundle.results.first().handednesses()[1][0].categoryName())
+//                    Log.d("TEST-Hand-score2222", resultBundle.results.first().handednesses()[1][0].score().toString())
+//                    Log.d("TEST-Hand-index22221111", resultBundle.results.first().handednesses()[0][0].index().toString())
+//                    Log.d("TEST-Hand-index22222222", resultBundle.results.first().handednesses()[1][0].index().toString())
+//                }
+                
                 // Pass necessary information to OverlayView for drawing on the canvas
                 binding.handOverlay.setResults(
                     resultBundle.results.first(),
@@ -864,24 +793,13 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
 
     override fun onDestroy() {
         super.onDestroy()
-//        cameraExecutor.shutdown()
         mediaPlayer.release()
 
-        // Shut down our background executor
+        /** Shut down our background executor */
         backgroundBothExecutor.shutdown()
         backgroundBothExecutor.awaitTermination(
             Long.MAX_VALUE, TimeUnit.NANOSECONDS
         )
-
-//        backgroundPoseExecutor.shutdown()
-//        backgroundPoseExecutor.awaitTermination(
-//            Long.MAX_VALUE, TimeUnit.NANOSECONDS
-//        )
-//
-//        backgroundHandExecutor.shutdown()
-//        backgroundHandExecutor.awaitTermination(
-//            Long.MAX_VALUE, TimeUnit.NANOSECONDS
-//        )
     }
 
     public override fun onStart() {
@@ -906,22 +824,6 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
                 }
             }
         }
-
-//        backgroundPoseExecutor.execute {
-//            if(this::poseLandmarkerHelper.isInitialized) {
-//                if(poseLandmarkerHelper.isClose()) {
-//                    poseLandmarkerHelper.setupPoseLandmarker()
-//                }
-//            }
-//        }
-//
-//        backgroundHandExecutor.execute {
-//            if(this::handLandmarkerHelper.isInitialized) {
-//                if (handLandmarkerHelper.isClose()) {
-//                    handLandmarkerHelper.setupHandLandmarker()
-//                }
-//            }
-//        }
         
         //STT 초기 설정
         mResult = ""
@@ -940,7 +842,6 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
 
             // Close the PoseLandmarkerHelper and release resources
             backgroundBothExecutor.execute { poseLandmarkerHelper.clearPoseLandmarker() }
-//            backgroundPoseExecutor.execute { poseLandmarkerHelper.clearPoseLandmarker() }
         }
 
         if(this::handLandmarkerHelper.isInitialized) {
@@ -952,7 +853,6 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
 
             // Close the HandLandmarkerHelper and release resources
             backgroundBothExecutor.execute { handLandmarkerHelper.clearHandLandmarker() }
-//            backgroundHandExecutor.execute { handLandmarkerHelper.clearHandLandmarker() }
         }
     }
 
