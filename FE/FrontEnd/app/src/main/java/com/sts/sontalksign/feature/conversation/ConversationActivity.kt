@@ -797,6 +797,17 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
             if (binding != null) {
                 Log.d("TEST-Hand", resultBundle.results.first().toString())
                 Log.d("TEST-Hand-handed", resultBundle.results.first().handednesses().toString())
+                Log.d("TEST-Hand-size", resultBundle.results.first().handednesses().size.toString())
+                if(resultBundle.results.first().handednesses().size == 1){
+                    Log.d("TEST-Hand-category1111", resultBundle.results.first().handednesses()[0][0].categoryName())
+                    Log.d("TEST-Hand-score1111", resultBundle.results.first().handednesses()[0][0].score().toString())
+                }
+                if(resultBundle.results.first().handednesses().size == 2){
+                    Log.d("TEST-Hand-category2222", resultBundle.results.first().handednesses()[0][0].categoryName())
+                    Log.d("TEST-Hand-score2222", resultBundle.results.first().handednesses()[0][0].score().toString())
+                    Log.d("TEST-Hand-category2222", resultBundle.results.first().handednesses()[1][0].categoryName())
+                    Log.d("TEST-Hand-score2222", resultBundle.results.first().handednesses()[1][0].score().toString())
+                }
 
 //                binding.bottomSheetLayout.inferenceTimeVal.text =
 //                    String.format("%d ms", resultBundle.inferenceTime)

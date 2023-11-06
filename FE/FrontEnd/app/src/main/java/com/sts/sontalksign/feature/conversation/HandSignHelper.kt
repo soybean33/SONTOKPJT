@@ -5,7 +5,7 @@ import com.google.mediapipe.tasks.vision.handlandmarker.HandLandmarker
 import com.google.mediapipe.tasks.vision.poselandmarker.PoseLandmarker
 import kotlin.math.*
 
-class HandSignHelper(handLandmarker: HandLandmarkerHelper.ResultBundle, poseLandmarker: PoseLandmarkerHelper.ResultBundle) {
+class HandSignHelper(handResultBundle: HandLandmarkerHelper.ResultBundle, poseResultBundle: PoseLandmarkerHelper.ResultBundle) {
 
     var hand_1 : Array<Array<Double>> = Array(21, {Array(3, {0.0})})
     var hand_1_score : Double = 0.98
@@ -22,6 +22,26 @@ class HandSignHelper(handLandmarker: HandLandmarkerHelper.ResultBundle, poseLand
 
     init {
         //TODO: 데이터 정형화
+        val laftHandIdx : Int = 0
+        val rightHandIdx : Int = 21
+
+        when(handResultBundle.results.first().handednesses().size){
+            /** 한손 입력 */
+            1->{
+                /** 오른손 입력이 들어왔다면 */
+                if(handResultBundle.results.first().handednesses()[0][0].categoryName() == "Right"){
+
+                }
+                else{
+
+                }
+            }
+            /** 두손 입력 */
+            2->{
+
+            }
+        }
+
     }
 
     private fun Init(){
