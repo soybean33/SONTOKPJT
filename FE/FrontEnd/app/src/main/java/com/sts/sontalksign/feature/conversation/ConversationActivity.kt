@@ -43,7 +43,9 @@ import com.sts.sontalksign.feature.utils.AudioWriterPCM
 import com.sts.sontalksign.global.FileFormats
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import java.io.BufferedReader
 import java.io.BufferedWriter
 import java.io.File
@@ -548,7 +550,8 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
                 // The analyzer can then be assigned to the instance
                 .also {
                     it.setAnalyzer(backgroundBothExecutor) {image ->
-                        detectBoth(image)
+                        mediaPipeSequence(image)
+                        //detectBoth(image)
 //                        detectPose(image)
 //                        detectHand(image)
                     }
@@ -599,6 +602,44 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
         } catch(exc: Exception) {
             Log.e(TAG, "Use case binding failed", exc) //앱에 더이상 포커스 없는 경우 등의 실패 케이스 처리
         }
+    }
+
+    private suspend fun mediaPipe(imageProxy: ImageProxy) = coroutineScope {
+
+
+        val frameTime = SystemClock.uptimeMillis()
+
+        val bitmapBuffer =
+            Bitmap.createBitmap(
+                imageProxy.width,
+                imageProxy.height,
+                Bitmap.Config.ARGB_8888
+            )
+
+        imageProxy.use { bitmapBuffer.copyPixelsFromBuffer(imageProxy.planes[0].buffer) }
+        imageProxy.close()
+
+
+        launch {
+            detectPose(imageProxy, bitmapBuffer, frameTime)
+        }
+
+        launch {
+            detectHand(imageProxy, bitmapBuffer, frameTime)
+        }
+    }
+
+    private suspend fun mediaPipeProcess() = coroutineScope {
+        launch {
+
+        }
+    }
+
+
+    private fun mediaPipeSequence(imageProxy: ImageProxy) = runBlocking {
+        mediaPipe(imageProxy)
+
+        mediaPipeProcess()
     }
 
     private fun detectBoth(imageProxy: ImageProxy) {
