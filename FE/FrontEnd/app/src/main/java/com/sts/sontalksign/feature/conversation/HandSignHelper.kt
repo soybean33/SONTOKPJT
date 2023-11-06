@@ -5,7 +5,7 @@ import com.google.mediapipe.tasks.vision.handlandmarker.HandLandmarker
 import com.google.mediapipe.tasks.vision.poselandmarker.PoseLandmarker
 import kotlin.math.*
 
-class HandSignHelper(handLandmarker: HandLandmarker, poseLandmarker: PoseLandmarker) {
+class HandSignHelper(handLandmarker: HandLandmarkerHelper.ResultBundle, poseLandmarker: PoseLandmarkerHelper.ResultBundle) {
 
     var hand_1 : Array<Array<Double>> = Array(21, {Array(3, {0.0})})
     var hand_1_score : Double = 0.98
