@@ -1,21 +1,28 @@
 package com.sts.sontalksign.feature.conversation
 
+import android.content.Context
+import com.google.mediapipe.tasks.vision.handlandmarker.HandLandmarker
+import com.google.mediapipe.tasks.vision.poselandmarker.PoseLandmarker
 import kotlin.math.*
 
-class HandSignHelper() {
+class HandSignHelper(handLandmarker: HandLandmarker, poseLandmarker: PoseLandmarker) {
 
-    val hand_1 : Array<Array<Double>> = Array(21, {Array(3, {0.0})})
-    val hand_1_score : Double = 0.98
+    var hand_1 : Array<Array<Double>> = Array(21, {Array(3, {0.0})})
+    var hand_1_score : Double = 0.98
     var hand_1_category : String = "Left"
 
-    val hand_2: Array<Array<Double>> = Array(21, {Array(3, {0.0})})
-    val hand_2_score : Double = 0.99
+    var hand_2: Array<Array<Double>> = Array(21, {Array(3, {0.0})})
+    var hand_2_score : Double = 0.99
     var hand_2_category : String = "Right"
 
-    val face: Array<Array<Double>> = Array(11, {Array(3, {0.0})})
-    val body: Array<Array<Double>> = Array(20, {Array(3, {0.0})})
+    var face: Array<Array<Double>> = Array(11, {Array(3, {0.0})})
+    var body: Array<Array<Double>> = Array(20, {Array(3, {0.0})})
 
     var returnArray : Array<Double> = emptyArray()
+
+    init {
+        //TODO: 데이터 정형화
+    }
 
     private fun Init(){
         if(hand_1_category != hand_2_category) return
