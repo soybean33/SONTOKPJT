@@ -1,6 +1,11 @@
 package com.sts.sontalksign.feature.conversation
 
+import android.app.Activity
 import android.util.Log
+import org.tensorflow.lite.Interpreter
+import java.io.FileInputStream
+import java.nio.MappedByteBuffer
+import java.nio.channels.FileChannel
 import kotlin.math.acos
 
 
@@ -296,8 +301,31 @@ class HandSignHelper() {
             result[255 + i] = resultPose[i]
         }
 
-        //TODO: result를 모델에 넣는다. => 할아버지 해주세요.
+        val tflite = getTfliteInterpreter("sl_model.tflite")
+
+        //TODO: 할아버지가 만든 함수에 result를 넣고 거기서 나온 output
+
+        val output : String = ""
+
+
+        tflite.run(result, output)
+
+
          Log.d("Solution", result[0].toString())
+    }
+
+    private fun getTfliteInterpreter(modelPath: String): Interpreter {
+        return Interpreter(loadModelFile(activity = ConversationActivity::class.java, modelPath))
+    }
+
+    private fun loadModelFile(activity: Activity, modelPath: String): MappedByteBuffer{
+        val fileDescriptor = activity.assets.openFd(modelPath)
+        val inputStream: FileInputStream = FileInputStream(fileDescriptor.fileDescriptor)
+        val fileChannel: FileChannel = inputStream.channel
+
+        var startOffSet = fileDescriptor.startOffset
+        var declaredLength = fileDescriptor.declaredLength
+        return fileChannel.map(FileChannel.MapMode.READ_ONLY, startOffSet, declaredLength)
     }
 }
 
