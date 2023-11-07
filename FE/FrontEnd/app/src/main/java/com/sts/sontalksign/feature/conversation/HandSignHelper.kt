@@ -1,15 +1,25 @@
 package com.sts.sontalksign.feature.conversation
 
 import android.app.Activity
+import android.content.Context
+import android.content.res.AssetFileDescriptor
+import android.content.res.AssetManager
 import android.util.Log
+import org.tensorflow.lite.DataType
 import org.tensorflow.lite.Interpreter
 import java.io.FileInputStream
+import java.nio.ByteBuffer
+import java.nio.ByteOrder
 import java.nio.MappedByteBuffer
 import java.nio.channels.FileChannel
 import kotlin.math.acos
 
 
 class HandSignHelper() {
+    companion object {
+        const val MODEL_CLASSIFIER = "sl_model.tflite"
+    }
+
     private val TAG : String = "HandSignHelper"
 
     var leftHand : Array<Array<Float>> = Array(21) {Array(3) {0f}}
@@ -17,6 +27,27 @@ class HandSignHelper() {
     var pose: Array<Array<Float>> = Array(33) {Array(3) {0f}}
 
     var returnArray : Array<Double> = emptyArray()
+
+    private var interpreter : Interpreter ?= null
+
+    /** model 입력 데이터 관련 변수 */
+    val frameDeque = ArrayList<FloatArray>().apply {
+        repeat(5) {
+            add(FloatArray(265) {0f})
+        }
+    }
+
+    val inputData = ArrayList<ArrayList<FloatArray>>().apply {
+        repeat(30) {
+            add(ArrayList<FloatArray>().apply {
+                repeat(5) {
+                    add(FloatArray(265) {0f})
+                }
+            })
+        }
+    }
+
+    var cnt : Int = 0
 
     /** PoseLandmark 정형화 - 11개의 Face, 22개의 Body */
     fun initPose(poseResultBundle: PoseLandmarkerHelper.ResultBundle) {
@@ -262,7 +293,7 @@ class HandSignHelper() {
     }
 
 
-    public fun Solution(){
+    public fun Solution(context: Context){
         val result = FloatArray(265) {0f}
 
         /** leftHand 데이터 - point와 angle */
@@ -301,31 +332,88 @@ class HandSignHelper() {
             result[255 + i] = resultPose[i]
         }
 
-        val tflite = getTfliteInterpreter("sl_model.tflite")
+        frameDeque.removeFirst()
+        frameDeque.add(result)
 
-        //TODO: 할아버지가 만든 함수에 result를 넣고 거기서 나온 output
+        inputData.removeFirst()
+        inputData.add(frameDeque)
 
-        val output : String = ""
+        val tflite = getTfliteInterpreter("sl_model.tflite", context)
+//        var output : FloatArray = FloatArray(2) {0f}
+        var output: ByteBuffer = ByteBuffer.allocateDirect(2 * DataType.FLOAT32.byteSize())
+        output.order(ByteOrder.nativeOrder())
 
+        var byteBuffer = convertArrayToByteBuffer(inputData)
 
-        tflite.run(result, output)
+        if(cnt % 15 == 0) {
+            tflite.run(byteBuffer, output)
+        }
+        cnt = (cnt + 1) % 15
 
+        Log.d("output size: ", "${output.getFloat(0)}, ${output.getFloat(1)}")
+//        Log.d("기다려", "${inputData.size}, ${inputData[0].size}, ${inputData[0][0].size}")
 
-         Log.d("Solution", result[0].toString())
+        /** 실험실 */
+//        Log.d("FrameDeque Size: ", "${frameDeque.size}, ${frameDeque[0].size}")
+//        var tmp : String = ""
+//        for(k in 0 until 30) {
+//            for(i in 0 until 5) {
+//                for(j in 0 until 265) {
+//                    tmp += "${inputData[k][i][j].toString()}, "
+//                }
+//                Log.d("FrameDeque [${k}][ ${i}]: ", "${tmp}")
+//                tmp = ""
+//            }
+//        }
+
     }
 
-    private fun getTfliteInterpreter(modelPath: String): Interpreter {
-        return Interpreter(loadModelFile(activity = ConversationActivity::class.java, modelPath))
+    private fun convertArrayToByteBuffer(inputData: ArrayList<ArrayList<FloatArray>>) : ByteBuffer {
+        var byteBuffer: ByteBuffer = ByteBuffer.allocateDirect(5 * 265 * DataType.FLOAT32.byteSize())
+        byteBuffer.order(ByteOrder.nativeOrder())
+
+        Log.d("byteBuffer", byteBuffer.capacity().toString())
+
+        for(j in 0 until 5) {
+            for(k in 0 until 265) {
+                byteBuffer.putFloat(inputData[0][j][k])
+            }
+        }
+//        for(i in 0 until 30) {
+//
+//        }
+
+        ///tensorflow =  53,000
+        ///159,000
+        return byteBuffer
     }
 
-    private fun loadModelFile(activity: Activity, modelPath: String): MappedByteBuffer{
-        val fileDescriptor = activity.assets.openFd(modelPath)
-        val inputStream: FileInputStream = FileInputStream(fileDescriptor.fileDescriptor)
-        val fileChannel: FileChannel = inputStream.channel
+    private fun getTfliteInterpreter(modelPath: String, context: Context) : Interpreter{
+        Log.d("modelPath 누구냐?", context.packageCodePath)
 
-        var startOffSet = fileDescriptor.startOffset
-        var declaredLength = fileDescriptor.declaredLength
-        return fileChannel.map(FileChannel.MapMode.READ_ONLY, startOffSet, declaredLength)
+        val model : ByteBuffer = loadModelFile(context)
+        model.order(ByteOrder.nativeOrder())
+        interpreter = Interpreter(model)
+
+        return interpreter!!
+    }
+
+    private fun loadModelFile(context: Context): ByteBuffer {
+        val am : AssetManager = context.getAssets()
+        val afd : AssetFileDescriptor = am.openFd(MODEL_CLASSIFIER)
+        val fis : FileInputStream = FileInputStream(afd.fileDescriptor)
+        val fc : FileChannel = fis.channel
+        val startOffSet : Long = afd.startOffset
+        val declaredLength : Long = afd.declaredLength
+
+        return fc.map(FileChannel.MapMode.READ_ONLY, startOffSet, declaredLength)
+
+
+//        val fileDescriptor = context.assets.openFd(MODEL_CLASSIFIER)
+//        val inputStream: FileInputStream = FileInputStream(fileDescriptor.fileDescriptor)
+//        val fileChannel: FileChannel = inputStream.channel
+//
+//        return fileChannel.map(FileChannel.MapMode.READ_ONLY, startOffSet, declaredLength)
     }
 }
 
