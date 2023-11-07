@@ -1,10 +1,8 @@
 package com.sts.sontalksign.feature.conversation
 
-import android.content.Context
 import android.util.Log
-import com.google.mediapipe.tasks.vision.handlandmarker.HandLandmarker
-import com.google.mediapipe.tasks.vision.poselandmarker.PoseLandmarker
-import kotlin.math.*
+import kotlin.math.acos
+
 
 class HandSignHelper() {
     private val TAG : String = "HandSignHelper"
@@ -155,21 +153,83 @@ class HandSignHelper() {
         Log.d(TAG, "LeftHand: ${leftHand.toString()}")
     }
 
-    private fun CalHand(hand : Array<Array<Double>>) {
-        val hand_v1 : Array<Array<Double>> = arrayOf(hand[0], hand[1], hand[2], hand[3], hand[0],hand[5], hand[6], hand[7], hand[0],hand[9],hand[10], hand[11], hand[0], hand[13], hand[14], hand[15], hand[0], hand[17], hand[18], hand[19])
-        val hand_v2 : Array<Array<Double>> = arrayOf(hand[1], hand[2], hand[3], hand[4], hand[5], hand[6], hand[7], hand[8], hand[9], hand[10], hand[11], hand[12], hand[13], hand[14], hand[15], hand[16], hand[17], hand[18], hand[19], hand[20])
-        val hand: Array<Array<Double>> = Array(20) {Array(3){0.0}}
-        val hand_d : Array<Double> = Array(20) {0.0}
-        val hand_result: Array<Double> = Array(20) { 0.0 }
+    /** HandLandmarker 필요한 데이터로 변경 */
+    private fun calHand(hand: Array<Array<Float>>) {
+        val startJoints = intArrayOf(0, 1, 2, 3, 0, 5, 6, 7, 0, 9, 10, 11, 0, 13, 14, 15, 0, 17, 18, 19)
+        val destJoints = intArrayOf(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20)
 
-        for(i in 0..19) {
-            for(j in 0..2) {
-                hand[i][j] = hand_v2[i][j] - hand_v1[i][j]
+        val hand_v1 = calHandV(hand, startJoints)
+        val hand_v2 = calHandV(hand, destJoints)
+        var hand_v = Array(20) { Array(3) { 0f } }
+
+        /** 크기 구하기 */
+        for (i in 0 until 20) {
+            for (j in 0 until 3) {
+                hand_v[i][j] = hand_v2[i][j] - hand_v1[i][j]
             }
-            hand_d[i] = hand[i][0] * hand[i][0] + hand[i][1] * hand[i][1] + hand[i][2] * hand[i][2] // 내적
-            hand_result[i] = Math.acos(hand_d[i])   // 아크 코싸인
+        }
+
+        /** 정규화 */
+        for (i in 0 until 20) {
+            val norm = vectorNorm(hand_v[i])
+            if (norm != 0f) {
+                vectorDivideInPlace(hand_v[i], norm)
+            }
+        }
+
+        /** 각도 구하기 */
+        val angles = calculateAngles(hand_v)
+    }
+
+    private fun calHandV(hand: Array<Array<Float>>, indices: IntArray): Array<Array<Float>> {
+        val hand_v = Array(indices.size) { Array(3) { 0f } }
+        for (i in indices.indices) {
+            val index = indices[i]
+            for (j in 0 until 3) {
+                hand_v[i][j] = hand[index][j]
+            }
+        }
+        return hand_v
+    }
+
+    /** 정규화 함수 */
+    private inline fun vectorNorm(vector: Array<Float>): Float {
+        var sum = 0f
+        for (element in vector) {
+            sum += element * element
+        }
+        return kotlin.math.sqrt(sum)
+    }
+
+    /** 벡터 나눗셈 */
+    private inline fun vectorDivideInPlace(vector: Array<Float>, scalar: Float) {
+        for (i in vector.indices) {
+            vector[i] /= scalar
         }
     }
+
+    /** 벡터 내적 */
+    private fun calculateAngles(hand_v: Array<Array<Float>>): FloatArray {
+        val angles = FloatArray(15)
+        val joints1 = intArrayOf(0, 1, 2, 4, 5, 6, 8, 9, 10, 12, 13, 14, 16, 17, 18)
+        val joints2 = intArrayOf(1, 2, 3, 5, 6, 7, 9, 10, 11, 13, 14, 15, 17, 18, 19)
+
+        for (i in 0 until 15) {
+            val dotProduct = vectorDot(hand_v[joints1[i]], hand_v[joints2[i]])
+            angles[i] = acos(dotProduct)
+        }
+
+        return angles
+    }
+
+    private inline fun vectorDot(vector1: Array<Float>, vector2: Array<Float>): Float {
+        var dotProduct = 0f
+        for (i in vector1.indices) {
+            dotProduct += vector1[i] * vector2[i]
+        }
+        return dotProduct
+    }
+
 
     private fun Solution(){
 
