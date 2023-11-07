@@ -158,8 +158,8 @@ class HandSignHelper() {
         val startJoints = intArrayOf(0, 1, 2, 3, 0, 5, 6, 7, 0, 9, 10, 11, 0, 13, 14, 15, 0, 17, 18, 19)
         val destJoints = intArrayOf(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20)
 
-        val hand_v1 = calHandV(hand, startJoints)
-        val hand_v2 = calHandV(hand, destJoints)
+        val hand_v1 = calculateIdx(hand, startJoints)
+        val hand_v2 = calculateIdx(hand, destJoints)
         var hand_v = Array(20) { Array(3) { 0f } }
 
         /** 크기 구하기 */
@@ -181,7 +181,34 @@ class HandSignHelper() {
         val angles = calculateAngles(hand_v)
     }
 
-    private fun calHandV(hand: Array<Array<Float>>, indices: IntArray): Array<Array<Float>> {
+    private  fun calPose(pose: Array<Array<Float>>) {
+        val startJoints = intArrayOf(0, 4, 5, 6, 0, 1, 2, 3, 14, 12, 24, 13, 11, 23)
+        val destJoints = intArrayOf(4, 5, 6, 8, 1, 2, 3, 7, 16, 14, 12, 15, 13, 11)
+
+        val pose_v1 = calculateIdx(pose, startJoints)
+        val pose_v2 = calculateIdx(pose, destJoints)
+        var pose_v = Array(14) { Array(3) { 0f } }
+
+        /** 크기 구하기 */
+        for (i in 0 until 20) {
+            for (j in 0 until 3) {
+                pose_v[i][j] = pose_v2[i][j] - pose_v1[i][j]
+            }
+        }
+
+        /** 정규화 */
+        for (i in 0 until 20) {
+            val norm = vectorNorm(pose_v[i])
+            if (norm != 0f) {
+                vectorDivideInPlace(pose_v[i], norm)
+            }
+        }
+
+        /** 각도 구하기 */
+        val angles = calculateAngles(pose_v)
+    }
+
+    private fun calculateIdx(hand: Array<Array<Float>>, indices: IntArray): Array<Array<Float>> {
         val hand_v = Array(indices.size) { Array(3) { 0f } }
         for (i in indices.indices) {
             val index = indices[i]
