@@ -9,42 +9,28 @@ class HandSignHelper() {
 
     var leftHand : Array<Array<Float>> = Array(21) {Array(3) {0f}}
     var rightHand: Array<Array<Float>> = Array(21) {Array(3) {0f}}
-    var face: Array<Array<Float>> = Array(11) {Array(3) {0f}}
-    var body: Array<Array<Float>> = Array(22) {Array(3) {0f}}
+    var pose: Array<Array<Float>> = Array(33) {Array(3) {0f}}
 
     var returnArray : Array<Double> = emptyArray()
 
     /** PoseLandmark 정형화 - 11개의 Face, 22개의 Body */
     fun initPose(poseResultBundle: PoseLandmarkerHelper.ResultBundle) {
         if(poseResultBundle.results.first().landmarks().size == 1) {
-            for(i in 0..10) {
+            for(i in 0..32) {
                 if(poseResultBundle.results.first().landmarks()[0][i].presence().orElse(0f) < 0.5) {
-                    face[i][0] = 0f
-                    face[i][1] = 0f
-                    face[i][2] = 0f
+                    pose[i][0] = 0f
+                    pose[i][1] = 0f
+                    pose[i][2] = 0f
 
                 } else {
-                    face[i][0] = poseResultBundle.results.first().landmarks()[0][i].x()
-                    face[i][1] = poseResultBundle.results.first().landmarks()[0][i].y()
-                    face[i][2] = poseResultBundle.results.first().landmarks()[0][i].z()
-                }
-            }
-
-            for(i in 11..32) {
-                if(poseResultBundle.results.first().landmarks()[0][i].visibility().orElse(0f) < 0.5) {
-                    body[i - 11][0] = 0f
-                    body[i - 11][1] = 0f
-                    body[i - 11][2] = 0f
-                } else {
-                    body[i - 11][0] = poseResultBundle.results.first().landmarks()[0][i].x()
-                    body[i - 11][1] = poseResultBundle.results.first().landmarks()[0][i].y()
-                    body[i - 11][2] = poseResultBundle.results.first().landmarks()[0][i].z()
+                    pose[i][0] = poseResultBundle.results.first().landmarks()[0][i].x()
+                    pose[i][1] = poseResultBundle.results.first().landmarks()[0][i].y()
+                    pose[i][2] = poseResultBundle.results.first().landmarks()[0][i].z()
                 }
             }
         }
 
-//        Log.d(TAG, "Face: " + face[0][0].toString())
-        Log.d(TAG, "Body: ${body[0][0].toString()}, ${body[1][0].toString()}")
+        Log.d(TAG, "Body: ${pose[0][0].toString()}, ${pose[1][0].toString()}")
     }
 
     /** Hand Landmark 정형화 */
