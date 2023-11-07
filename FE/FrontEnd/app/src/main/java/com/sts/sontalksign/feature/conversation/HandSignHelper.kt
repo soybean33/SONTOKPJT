@@ -16,7 +16,7 @@ class HandSignHelper() {
     /** PoseLandmark 정형화 - 11개의 Face, 22개의 Body */
     fun initPose(poseResultBundle: PoseLandmarkerHelper.ResultBundle) {
         if(poseResultBundle.results.first().landmarks().size == 1) {
-            for(i in 0..32) {
+            for(i in 0 until 33) {
                 if(poseResultBundle.results.first().landmarks()[0][i].presence().orElse(0f) < 0.5) {
                     pose[i][0] = 0f
                     pose[i][1] = 0f
@@ -30,7 +30,7 @@ class HandSignHelper() {
             }
         }
 
-        Log.d(TAG, "Body: ${pose[0][0].toString()}, ${pose[1][0].toString()}")
+//        Log.d(TAG, "Body: ${pose[0][0].toString()}, ${pose[1][0].toString()}")
     }
 
     /** Hand Landmark 정형화 */
@@ -42,13 +42,13 @@ class HandSignHelper() {
                 if (handResultBundle.results.first()
                         .handednesses()[0][0].categoryName() == "Right"
                 ) {
-                    for (i in 0..20) {
+                    for (i in 0 until 21) {
                         rightHand[i][0] = handResultBundle.results.first().landmarks()[0][i].x()
                         rightHand[i][1] = handResultBundle.results.first().landmarks()[0][i].y()
                         rightHand[i][2] = handResultBundle.results.first().landmarks()[0][i].z()
                     }
                 } else {
-                    for (i in 0..20) {
+                    for (i in 0 until 21) {
                         leftHand[i][0] = handResultBundle.results.first().landmarks()[0][i].x()
                         leftHand[i][1] = handResultBundle.results.first().landmarks()[0][i].y()
                         leftHand[i][2] = handResultBundle.results.first().landmarks()[0][i].z()
@@ -67,7 +67,7 @@ class HandSignHelper() {
                 if (handA.equals(handB)) {
                     if (handA.equals("Left")) {
                         if (scoreA >= scoreB) {
-                            for (i in 0..20) {
+                            for (i in 0 until 21) {
                                 leftHand[i][0] =
                                     handResultBundle.results.first().landmarks()[0][i].x()
                                 leftHand[i][1] =
@@ -76,7 +76,7 @@ class HandSignHelper() {
                                     handResultBundle.results.first().landmarks()[0][i].z()
                             }
                         } else {
-                            for (i in 0..20) {
+                            for (i in 0 until 21) {
                                 leftHand[i][0] =
                                     handResultBundle.results.first().landmarks()[1][i].x()
                                 leftHand[i][1] =
@@ -87,7 +87,7 @@ class HandSignHelper() {
                         }
                     } else {
                         if (scoreA >= scoreB) {
-                            for (i in 0..20) {
+                            for (i in 0 until 21) {
                                 rightHand[i][0] =
                                     handResultBundle.results.first().landmarks()[0][i].x()
                                 rightHand[i][1] =
@@ -96,7 +96,7 @@ class HandSignHelper() {
                                     handResultBundle.results.first().landmarks()[0][i].z()
                             }
                         } else {
-                            for (i in 0..20) {
+                            for (i in 0 until 21) {
                                 rightHand[i][0] =
                                     handResultBundle.results.first().landmarks()[1][i].x()
                                 rightHand[i][1] =
@@ -108,24 +108,24 @@ class HandSignHelper() {
                     }
                 } else {
                     if (handA.equals("Left")) {
-                        for (i in 0..20) {
+                        for (i in 0 until 21) {
                             leftHand[i][0] = handResultBundle.results.first().landmarks()[0][i].x()
                             leftHand[i][1] = handResultBundle.results.first().landmarks()[0][i].y()
                             leftHand[i][2] = handResultBundle.results.first().landmarks()[0][i].z()
                         }
-                        for (i in 0..20) {
+                        for (i in 0 until 21) {
                             rightHand[i][0] = handResultBundle.results.first().landmarks()[1][i].x()
                             rightHand[i][1] = handResultBundle.results.first().landmarks()[1][i].y()
                             rightHand[i][2] = handResultBundle.results.first().landmarks()[1][i].z()
                         }
 
                     } else {
-                        for (i in 0..20) {
+                        for (i in 0 until 21) {
                             rightHand[i][0] = handResultBundle.results.first().landmarks()[0][i].x()
                             rightHand[i][1] = handResultBundle.results.first().landmarks()[0][i].y()
                             rightHand[i][2] = handResultBundle.results.first().landmarks()[0][i].z()
                         }
-                        for (i in 0..20) {
+                        for (i in 0 until 21) {
                             leftHand[i][0] = handResultBundle.results.first().landmarks()[1][i].x()
                             leftHand[i][1] = handResultBundle.results.first().landmarks()[1][i].y()
                             leftHand[i][2] = handResultBundle.results.first().landmarks()[1][i].z()
@@ -135,12 +135,12 @@ class HandSignHelper() {
             }
         }
 
-        Log.d(TAG, "RightHand: ${rightHand.toString()}")
-        Log.d(TAG, "LeftHand: ${leftHand.toString()}")
+//        Log.d(TAG, "RightHand: ${rightHand.toString()}")
+//        Log.d(TAG, "LeftHand: ${leftHand.toString()}")
     }
 
     /** HandLandmarker 필요한 데이터로 변경 */
-    private fun calHand(hand: Array<Array<Float>>) {
+    private fun calHand(hand: Array<Array<Float>>) : FloatArray {
         val startJoints = intArrayOf(0, 1, 2, 3, 0, 5, 6, 7, 0, 9, 10, 11, 0, 13, 14, 15, 0, 17, 18, 19)
         val destJoints = intArrayOf(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20)
 
@@ -163,11 +163,11 @@ class HandSignHelper() {
             }
         }
 
-        /** 각도 구하기 */
-        val angles = calculateAngles(hand_v)
+        /** 각도 구하기 및 반환 */
+        return calculateHandAngles(hand_v)
     }
 
-    private  fun calPose(pose: Array<Array<Float>>) {
+    private  fun calPose(pose: Array<Array<Float>>) : FloatArray{
         val startJoints = intArrayOf(0, 4, 5, 6, 0, 1, 2, 3, 14, 12, 24, 13, 11, 23)
         val destJoints = intArrayOf(4, 5, 6, 8, 1, 2, 3, 7, 16, 14, 12, 15, 13, 11)
 
@@ -176,14 +176,14 @@ class HandSignHelper() {
         var pose_v = Array(14) { Array(3) { 0f } }
 
         /** 크기 구하기 */
-        for (i in 0 until 20) {
+        for (i in 0 until 14) {
             for (j in 0 until 3) {
                 pose_v[i][j] = pose_v2[i][j] - pose_v1[i][j]
             }
         }
 
         /** 정규화 */
-        for (i in 0 until 20) {
+        for (i in 0 until 14) {
             val norm = vectorNorm(pose_v[i])
             if (norm != 0f) {
                 vectorDivideInPlace(pose_v[i], norm)
@@ -191,7 +191,7 @@ class HandSignHelper() {
         }
 
         /** 각도 구하기 */
-        val angles = calculateAngles(pose_v)
+        return calculatePoseAngles(pose_v)
     }
 
     private fun calculateIdx(hand: Array<Array<Float>>, indices: IntArray): Array<Array<Float>> {
@@ -222,12 +222,25 @@ class HandSignHelper() {
     }
 
     /** 벡터 내적 */
-    private fun calculateAngles(hand_v: Array<Array<Float>>): FloatArray {
+    private fun calculateHandAngles(hand_v: Array<Array<Float>>): FloatArray {
         val angles = FloatArray(15)
         val joints1 = intArrayOf(0, 1, 2, 4, 5, 6, 8, 9, 10, 12, 13, 14, 16, 17, 18)
         val joints2 = intArrayOf(1, 2, 3, 5, 6, 7, 9, 10, 11, 13, 14, 15, 17, 18, 19)
 
         for (i in 0 until 15) {
+            val dotProduct = vectorDot(hand_v[joints1[i]], hand_v[joints2[i]])
+            angles[i] = acos(dotProduct)
+        }
+
+        return angles
+    }
+
+    private fun calculatePoseAngles(hand_v: Array<Array<Float>>): FloatArray {
+        val angles = FloatArray(10)
+        val joints1 = intArrayOf(0, 1, 2, 4, 5, 6, 8, 9, 11, 12)
+        val joints2 = intArrayOf(1, 2, 3, 5, 6, 7, 9, 10, 12, 13)
+
+        for (i in 0 until 10) {
             val dotProduct = vectorDot(hand_v[joints1[i]], hand_v[joints2[i]])
             angles[i] = acos(dotProduct)
         }
@@ -244,7 +257,55 @@ class HandSignHelper() {
     }
 
 
-    private fun Solution(){
+    public fun Solution(){
+        val result = FloatArray(265) {0f}
 
+        /** leftHand 데이터 - point와 angle */
+        for(i in 0 until 21) {
+            for( j in 0 until 3) {
+                result[i*3 + j] = leftHand[i][j]
+            }
+        }
+
+        val resultLeftHand = calHand(leftHand)
+        for(i in 0 until 15) {
+            result[i + 63] = resultLeftHand[i]
+        }
+
+        /** rightHand 데이터 - point와 angle */
+        for(i in 0 until 21) {
+            for( j in 0 until 3) {
+                result[78 + i * 3 + j] = rightHand[i][j]
+            }
+        }
+
+        val resultRightHand = calHand(rightHand)
+        for(i in 0 until 15) {
+            result[i + 141] = resultRightHand[i]
+        }
+
+        /** pose 데이터 - point와 angle */
+        for(i in 0 until 33) {
+            for(j in 0 until 3) {
+                result[156 + i  * 3 + j] = pose[i][j]
+            }
+        }
+
+        val resultPose = calPose(pose)
+        for(i in 0 until 10) {
+            result[255 + i] = resultPose[i]
+        }
+
+        //TODO: result를 모델에 넣는다. => 할아버지 해주세요.
+         Log.d("Solution", result[0].toString())
     }
 }
+
+/**
+ * leftHand 21 * 3 = 63 + 15 = 78
+ * rightHand 상동 = 78
+ * ==== 156
+ * pose 33 * 3 = 99 + 10 = 109
+ * ==== 265
+ *
+ * */
