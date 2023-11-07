@@ -43,7 +43,7 @@ def calculate_angle(
     return d
 
 
-def create_data(file_root:str, file_list:list, hand_model_path: str, pose_model_path:str, dataset_type:str) -> None:
+def create_data(file_root:str, file_list:list, hand_model_path: str, pose_model_path:str, dataset_type:str, dataset_save_path:str) -> None:
     # 동작 라벨 모음 actions_save :  파일 저장용 
     actions = {}
     actions_save = []
@@ -80,30 +80,32 @@ def create_data(file_root:str, file_list:list, hand_model_path: str, pose_model_
     print(f"videos: {videos}")
     print(f"actions: {actions}")
 
+    # mediapipe hand model load
+    hand_base_options = python.BaseOptions(model_asset_path=hand_model_path)
+    hand_options = vision.HandLandmarkerOptions(
+        base_options=hand_base_options,
+        running_mode=vision.RunningMode.VIDEO,
+        num_hands=2)
+
+    # mediapipe pose model load
+    pose_base_options = python.BaseOptions(model_asset_path=pose_model_path)
+    pose_options = vision.PoseLandmarkerOptions(
+        base_options=pose_base_options,
+        running_mode=vision.RunningMode.VIDEO,
+        output_segmentation_masks=True)
+
+
     os.makedirs('dataset', exist_ok=True)
     
     for video in videos:
         video_label = video.split()[0].split("_")[1]
         print(video_label)
 
-        # mediapipe hand model load
-        hand_base_options = python.BaseOptions(model_asset_path=hand_model_path)
-        hand_options = vision.HandLandmarkerOptions(
-            base_options=hand_base_options,
-            running_mode=vision.RunningMode.VIDEO,
-            num_hands=2)
+        # mediapipe model set
         mp_hands = vision.HandLandmarker.create_from_options(hand_options)
-
-        # mediapipe pose model load
-        pose_base_options = python.BaseOptions(model_asset_path=pose_model_path)
-        pose_options = vision.PoseLandmarkerOptions(
-            base_options=pose_base_options,
-            running_mode=vision.RunningMode.VIDEO,
-            output_segmentation_masks=True)
         mp_pose = vision.PoseLandmarker.create_from_options(pose_options)
 
-        hand_cap = cv2.VideoCapture(file_root + video)
-        pose_cap = cv2.VideoCapture(file_root + video)
+        cap = cv2.VideoCapture(file_root + video)
 
         # video frame data
         video_data = []
@@ -113,16 +115,14 @@ def create_data(file_root:str, file_list:list, hand_model_path: str, pose_model_
         print(f'real save label idx is :{label_idx}')
         
         
-        while hand_cap.isOpened() and pose_cap.isOpened():
+        while cap.isOpened():
             frame_data = []
-            hand_ret, hand_img = hand_cap.read()
-            pose_ret, pose_img = pose_cap.read()
-            if not hand_ret or not pose_ret:
+            ret, img = cap.read()
+            if not ret:
                 break
-            hand_img = mp.Image(image_format=mp.ImageFormat.SRGB, data=hand_img)
-            pose_img = mp.Image(image_format=mp.ImageFormat.SRGB, data=pose_img)
-            hand_result = mp_hands.detect_for_video(hand_img, int(hand_cap.get(cv2.CAP_PROP_POS_MSEC)))
-            pose_result = mp_pose.detect_for_video(pose_img, int(pose_cap.get(cv2.CAP_PROP_POS_MSEC)))
+            img = mp.Image(image_format=mp.ImageFormat.SRGB, data=img)
+            hand_result = mp_hands.detect_for_video(img, int(cap.get(cv2.CAP_PROP_POS_MSEC)))
+            pose_result = mp_pose.detect_for_video(img, int(cap.get(cv2.CAP_PROP_POS_MSEC)))
 
     # Hand
             if hand_result.hand_landmarks and pose_result.pose_landmarks:   # 둘 다 있을 때만 저장
@@ -189,14 +189,15 @@ def create_data(file_root:str, file_list:list, hand_model_path: str, pose_model_
 
             full_seq_data = np.array(full_seq_data)
             print(actions[video_label], full_seq_data.shape)
-            np.save(os.path.join('dataset', f'seq_{video[0:-4]}'), full_seq_data)
+            np.save(os.path.join(dataset_save_path, f'seq_{video[0:-4]}'), full_seq_data)
 
             label_idx += 1
             print(f'next label is :{label_idx}')
         else:
             print("zero landmarkers is not saved!")
     # 라벨 데이터 저장
-    np.save(os.path.join('dataset', f'labels'), sorted(list(actions.keys()), key=lambda x:actions[x]))
+    if dataset_type == "train":
+        np.save(os.path.join('dataset', f'labels'), sorted(list(actions.keys()), key=lambda x:actions[x]))
 
     return
 
@@ -205,12 +206,14 @@ def create_data(file_root:str, file_list:list, hand_model_path: str, pose_model_
 def dir_setting() -> list:
     # default
     file_root = "data/"
+    dataset_save_path = "dataset/"
     dataset_type = "train"
     hand_model_path = "mediapipe_models/"
     pose_model_path = "mediapipe_models/"
 
     # input 을 받아 설정
     type_input = input("data set type (train / test, default: train) :").strip()
+    dataset_save_path_input = input("dataset save path(default : dataset/) :").strip()
     root_input = input("data file root (default : data/): ").strip()
     hand_model_path_input = input("hand model path(mediapipe_models/): ").strip()
     pose_model_path_input = input("pose model path(mediapipe_models/): ").strip()
@@ -218,6 +221,8 @@ def dir_setting() -> list:
     # input이 있을 경우만 설정
     if type_input != '':
         dataset_type = type_input
+    if dataset_save_path_input != '':
+        dataset_save_path = dataset_save_path_input
     if root_input != '':
         file_root = root_input
     if hand_model_path_input != '':
@@ -228,7 +233,7 @@ def dir_setting() -> list:
     pose_model_path +=  'pose_landmarker_lite.task'
     file_list = os.listdir(file_root)
 
-    return [file_root, file_list, hand_model_path, pose_model_path, dataset_type]
+    return [file_root, file_list, hand_model_path, pose_model_path, dataset_type, dataset_save_path]
 
 
 if __name__ == "__main__":
