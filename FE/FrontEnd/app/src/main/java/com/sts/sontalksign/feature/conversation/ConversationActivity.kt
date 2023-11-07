@@ -586,9 +586,10 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
     private suspend fun mediaPipeProcess() = coroutineScope {
         launch {
             try{
+                handSignHelper.Solution()
                 //val data: HandSignHelper = HandSignHelper(HandLandmarkerHelper.ResultBundle, PoseLandmarkerHelper.ResultBundle)
             } catch (exec : Exception) {
-//                Log.d("mediaPipeProcess", exec.toString())
+                Log.d("mediaPipeProcess", exec.toString())
             }
         }
     }
