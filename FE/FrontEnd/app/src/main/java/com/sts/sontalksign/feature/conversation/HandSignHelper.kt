@@ -7,6 +7,7 @@ import android.content.res.AssetManager
 import android.util.Log
 import org.tensorflow.lite.DataType
 import org.tensorflow.lite.Interpreter
+//import org.tensorflow.lite.Interpreter
 import java.io.FileInputStream
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
@@ -36,6 +37,9 @@ class HandSignHelper() {
             add(FloatArray(265) {0f})
         }
     }
+    var signWords : Array<String> = arrayOf("석사", "연구")
+    var wordQueue : Array<String> = arrayOf("", "1", "2", "3", "4")
+    val wordCounterMap : MutableMap<String, Int> = mutableMapOf("" to 0, "1" to 0, "2" to 0, "3" to 0, "4" to 0)
 
     /** PoseLandmark 정형화 - 11개의 Face, 22개의 Body */
     fun initPose(poseResultBundle: PoseLandmarkerHelper.ResultBundle) {
@@ -322,6 +326,7 @@ class HandSignHelper() {
 
         frameDeque.removeFirst()
         frameDeque.add(result)
+//        val tflite = getTfliteInterpreter("sl_model.tflite")
 
         val output = Array(1) {
             FloatArray(2) { 0.0f }
@@ -357,6 +362,87 @@ class HandSignHelper() {
 
     private fun getTfliteInterpreter(modelPath: String, context: Context) : Interpreter{
         Log.d("modelPath 누구냐?", context.packageCodePath)
+//        tflite.run(result, output)
+
+
+         Log.d("Solution", result[0].toString())
+    }
+
+    private fun getWordIndex(predictionResult: Array<Float>): Int {
+        var maxIndex: Int = 0
+        var maxProbability: Float = 0f
+        for (index in 0 until predictionResult.size) {
+            if (maxProbability < predictionResult[index]) {
+                maxIndex = index
+                maxProbability = predictionResult[index]
+            }
+        }
+        return maxIndex
+    }
+
+    private fun wordQueueManager(predictionResult: Array<Float>): String {
+        var wordIndex: Int = getWordIndex(predictionResult)
+        val probabilityThreshold: Float = 0.8f
+        val counterThreshold: Int = 5
+        var signWord: String
+        if(predictionResult[wordIndex] < probabilityThreshold) {
+            signWord = ""
+        }
+        else {
+            signWord = signWords[wordIndex]
+        }
+        var signWordExistInQueue: Boolean = false
+        var minIndex: Int = 0
+        var minCount: Int = counterThreshold
+        for(index in 0 until wordQueue.size) {
+            if(wordQueue[index] == signWord) {
+                signWordExistInQueue = true
+                minIndex = index
+                break
+            }
+            else {
+                if(wordCounterMap[wordQueue[index]]!! < minCount) {
+                    minIndex = index
+                    minCount = wordCounterMap[wordQueue[index]]!!
+                }
+            }
+        }
+        var signWordVerified: Boolean = false
+        if(signWordExistInQueue) {
+            if(wordCounterMap[signWord]!! == counterThreshold - 1) {
+                signWordVerified = true
+            }
+        }
+        else {
+            wordCounterMap[wordQueue[minIndex]] = 0
+            wordQueue[minIndex] = signWord
+            wordCounterMap[signWord] = 0
+        }
+        for(word in wordQueue) {
+            if(signWordVerified && counterThreshold < wordCounterMap[word]!!) {
+                wordCounterMap[word] = counterThreshold
+            }
+            wordCounterMap[word] = (wordCounterMap[word]!! - 1).coerceAtLeast(0)
+        }
+        if(signWordExistInQueue) {
+            wordCounterMap[signWord] = wordCounterMap[signWord]!! + 2
+        }
+        else {
+            wordCounterMap[signWord] = 1
+        }
+        if(signWordVerified) {
+            return signWord
+        }
+        return ""
+
+//    private fun getTfliteInterpreter(modelPath: String): Interpreter {
+//        return Interpreter(loadModelFile(activity = ConversationActivity::class.java, modelPath))
+//    }
+
+    private fun loadModelFile(activity: Activity, modelPath: String): MappedByteBuffer{
+        val fileDescriptor = activity.assets.openFd(modelPath)
+        val inputStream: FileInputStream = FileInputStream(fileDescriptor.fileDescriptor)
+        val fileChannel: FileChannel = inputStream.channel
 
         val model : ByteBuffer = loadModelFile(context)
         model.order(ByteOrder.nativeOrder())

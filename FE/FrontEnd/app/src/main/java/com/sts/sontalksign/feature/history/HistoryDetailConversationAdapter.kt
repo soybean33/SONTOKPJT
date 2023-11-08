@@ -1,5 +1,6 @@
 package com.sts.sontalksign.feature.history
 
+import android.util.TypedValue
 import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.ViewGroup
@@ -21,17 +22,15 @@ class HistoryDetailConversationAdapter(private val historyDetailConList: ArrayLi
             // 왼쪽/오른쪽 여부에 따라 메시지 아이템을 조절
             val isLeftMessage = historyDetailConversation.isLeft
             if (isLeftMessage) {
-                // 왼쪽 메시지
-
-                binding.llhHistoryConversationText.gravity = Gravity.START
-//                layoutParams.leftToLeft = Gravity.LEFT
-//                layoutParams.marginEnd = 200 // 오른쪽 마진 조절
-            } else {
-                // 오른쪽 메시지
-//                layoutParams.marginStart = 200 // 왼쪽 마진 조절
-
                 binding.llhHistoryConversationText.gravity = Gravity.END
-//                layoutParams.leftToRight = Gravity.RIGHT
+                binding.tvHistoryConversationText.setTextSize(TypedValue.COMPLEX_UNIT_SP, 20f)
+                binding.llhHistoryConversationText.alpha = 0.5f // 투명도를 0.5로 설정
+//                binding.tvHistoryConversationText.setPadding(0, 0, 0, 10) // 10dp padding at the bottom
+            } else {
+                binding.llhHistoryConversationText.gravity = Gravity.START
+                binding.tvHistoryConversationText.setTextSize(TypedValue.COMPLEX_UNIT_SP, 20f)
+                binding.llhHistoryConversationText.alpha = 0.5f // 투명도를 0.5로 설정
+//                binding.tvHistoryConversationText.setPadding(0, 0, 0, 10) // 10dp padding at the bottom
             }
 
 
