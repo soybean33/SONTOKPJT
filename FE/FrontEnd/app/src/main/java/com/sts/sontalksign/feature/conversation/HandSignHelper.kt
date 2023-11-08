@@ -38,8 +38,8 @@ class HandSignHelper() {
         }
     }
     var signWords : Array<String> = arrayOf("석사", "연구")
-    var wordQueue : Array<String> = arrayOf("", "1", "2", "3", "4")
-    val wordCounterMap : MutableMap<String, Int> = mutableMapOf("" to 0, "1" to 0, "2" to 0, "3" to 0, "4" to 0)
+    var wordQueue : Array<String> = arrayOf("", "1", "2", "3", "4", "5", "6", "7")
+    val wordCounterMap : MutableMap<String, Int> = mutableMapOf("" to 0, "1" to 0, "2" to 0, "3" to 0, "4" to 0, "5" to 0, "6" to 0, "7" to 0)
 
     /** PoseLandmark 정형화 - 11개의 Face, 22개의 Body */
     fun initPose(poseResultBundle: PoseLandmarkerHelper.ResultBundle) {
@@ -336,18 +336,21 @@ class HandSignHelper() {
         var input = convertArrayToByteBuffer(frameDeque)
         tflite.run(input, output)
 
-        for(i in 0 until output.size) {
-            for(j in 0 until output[i].size) {
-                Log.d("output", "${i}, ${j} : ${output[i][j]}")
-            }
-        }
+//        for(i in 0 until output.size) {
+//            for(j in 0 until output[i].size) {
+//                Log.d("output", "${i}, ${j} : ${output[i][j]}")
+//            }
+//        }
+
+        val resultString : String = wordQueueManager(output[0].toList().toTypedArray())
+        Log.d("resultString: ", resultString)
     }
 
     private fun convertArrayToByteBuffer(inputData: ArrayList<FloatArray>) : ByteBuffer {
         var byteBuffer: ByteBuffer = ByteBuffer.allocate(5 * 265 * 4)
         byteBuffer.order(ByteOrder.nativeOrder())
 
-        Log.d("byteBuffer", byteBuffer.capacity().toString())
+//        Log.d("byteBuffer", byteBuffer.capacity().toString())
 
         for(i in 0 until 5) {
             for(j in 0 until 265) {
@@ -360,7 +363,7 @@ class HandSignHelper() {
     }
 
     private fun getTfliteInterpreter(modelPath: String, context: Context) : Interpreter{
-        Log.d("modelPath 누구냐?", context.packageCodePath)
+//        Log.d("modelPath 누구냐?", context.packageCodePath)
 
         val model : ByteBuffer = loadModelFile(context)
         model.order(ByteOrder.nativeOrder())
@@ -384,7 +387,7 @@ class HandSignHelper() {
     private fun wordQueueManager(predictionResult: Array<Float>): String {
         var wordIndex: Int = getWordIndex(predictionResult)
         val probabilityThreshold: Float = 0.8f
-        val counterThreshold: Int = 5
+        val counterThreshold: Int = 8
         var signWord: String
         if (predictionResult[wordIndex] < probabilityThreshold) {
             signWord = ""
