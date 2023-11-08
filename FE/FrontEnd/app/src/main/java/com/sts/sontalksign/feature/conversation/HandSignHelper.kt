@@ -326,7 +326,6 @@ class HandSignHelper() {
 
         frameDeque.removeFirst()
         frameDeque.add(result)
-//        val tflite = getTfliteInterpreter("sl_model.tflite")
 
         val output = Array(1) {
             FloatArray(2) { 0.0f }
@@ -362,10 +361,12 @@ class HandSignHelper() {
 
     private fun getTfliteInterpreter(modelPath: String, context: Context) : Interpreter{
         Log.d("modelPath 누구냐?", context.packageCodePath)
-//        tflite.run(result, output)
 
+        val model : ByteBuffer = loadModelFile(context)
+        model.order(ByteOrder.nativeOrder())
+        interpreter = Interpreter(model)
 
-         Log.d("Solution", result[0].toString())
+        return interpreter!!
     }
 
     private fun getWordIndex(predictionResult: Array<Float>): Int {
@@ -385,70 +386,51 @@ class HandSignHelper() {
         val probabilityThreshold: Float = 0.8f
         val counterThreshold: Int = 5
         var signWord: String
-        if(predictionResult[wordIndex] < probabilityThreshold) {
+        if (predictionResult[wordIndex] < probabilityThreshold) {
             signWord = ""
-        }
-        else {
+        } else {
             signWord = signWords[wordIndex]
         }
         var signWordExistInQueue: Boolean = false
         var minIndex: Int = 0
         var minCount: Int = counterThreshold
-        for(index in 0 until wordQueue.size) {
-            if(wordQueue[index] == signWord) {
+        for (index in 0 until wordQueue.size) {
+            if (wordQueue[index] == signWord) {
                 signWordExistInQueue = true
                 minIndex = index
                 break
-            }
-            else {
-                if(wordCounterMap[wordQueue[index]]!! < minCount) {
+            } else {
+                if (wordCounterMap[wordQueue[index]]!! < minCount) {
                     minIndex = index
                     minCount = wordCounterMap[wordQueue[index]]!!
                 }
             }
         }
         var signWordVerified: Boolean = false
-        if(signWordExistInQueue) {
-            if(wordCounterMap[signWord]!! == counterThreshold - 1) {
+        if (signWordExistInQueue) {
+            if (wordCounterMap[signWord]!! == counterThreshold - 1) {
                 signWordVerified = true
             }
-        }
-        else {
+        } else {
             wordCounterMap[wordQueue[minIndex]] = 0
             wordQueue[minIndex] = signWord
             wordCounterMap[signWord] = 0
         }
-        for(word in wordQueue) {
-            if(signWordVerified && counterThreshold < wordCounterMap[word]!!) {
+        for (word in wordQueue) {
+            if (signWordVerified && counterThreshold < wordCounterMap[word]!!) {
                 wordCounterMap[word] = counterThreshold
             }
             wordCounterMap[word] = (wordCounterMap[word]!! - 1).coerceAtLeast(0)
         }
-        if(signWordExistInQueue) {
+        if (signWordExistInQueue) {
             wordCounterMap[signWord] = wordCounterMap[signWord]!! + 2
-        }
-        else {
+        } else {
             wordCounterMap[signWord] = 1
         }
-        if(signWordVerified) {
+        if (signWordVerified) {
             return signWord
         }
         return ""
-
-//    private fun getTfliteInterpreter(modelPath: String): Interpreter {
-//        return Interpreter(loadModelFile(activity = ConversationActivity::class.java, modelPath))
-//    }
-
-    private fun loadModelFile(activity: Activity, modelPath: String): MappedByteBuffer{
-        val fileDescriptor = activity.assets.openFd(modelPath)
-        val inputStream: FileInputStream = FileInputStream(fileDescriptor.fileDescriptor)
-        val fileChannel: FileChannel = inputStream.channel
-
-        val model : ByteBuffer = loadModelFile(context)
-        model.order(ByteOrder.nativeOrder())
-        interpreter = Interpreter(model)
-
-        return interpreter!!
     }
 
     private fun loadModelFile(context: Context): ByteBuffer {
