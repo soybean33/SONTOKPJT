@@ -28,8 +28,8 @@ class HandSignHelper() {
     val signWordSize : Int = signWords.size
 
     /** 변경해보며 적용해 봐야하는 임계값들 */
-    val probabilityThreshold: Float = 0.8f
-    val counterThreshold: Int = 8
+    val probabilityThreshold: Float = 0.7f
+    val counterThreshold: Int = 12
 
     /** PoseLandmark 정형화 - 11개의 Face, 22개의 Body */
     fun initPose(poseResultBundle: PoseLandmarkerHelper.ResultBundle) {
