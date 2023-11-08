@@ -1,15 +1,26 @@
 package com.sts.sontalksign.feature.conversation
 
 import android.app.Activity
+import android.content.Context
+import android.content.res.AssetFileDescriptor
+import android.content.res.AssetManager
 import android.util.Log
+import org.tensorflow.lite.DataType
+import org.tensorflow.lite.Interpreter
 //import org.tensorflow.lite.Interpreter
 import java.io.FileInputStream
+import java.nio.ByteBuffer
+import java.nio.ByteOrder
 import java.nio.MappedByteBuffer
 import java.nio.channels.FileChannel
 import kotlin.math.acos
 
 
 class HandSignHelper() {
+    companion object {
+        const val MODEL_CLASSIFIER = "sl_model.tflite"
+    }
+
     private val TAG : String = "HandSignHelper"
 
     var leftHand : Array<Array<Float>> = Array(21) {Array(3) {0f}}
@@ -18,6 +29,14 @@ class HandSignHelper() {
 
     var returnArray : Array<Double> = emptyArray()
 
+    private var interpreter : Interpreter ?= null
+
+    /** model 입력 데이터 관련 변수 */
+    val frameDeque = ArrayList<FloatArray>().apply {
+        repeat(5) {
+            add(FloatArray(265) {0f})
+        }
+    }
     var signWords : Array<String> = arrayOf("석사", "연구")
     var wordQueue : Array<String> = arrayOf("", "1", "2", "3", "4")
     val wordCounterMap : MutableMap<String, Int> = mutableMapOf("" to 0, "1" to 0, "2" to 0, "3" to 0, "4" to 0)
@@ -266,7 +285,7 @@ class HandSignHelper() {
     }
 
 
-    public fun Solution(){
+    public fun Solution(context: Context){
         val result = FloatArray(265) {0f}
 
         /** leftHand 데이터 - point와 angle */
@@ -305,13 +324,44 @@ class HandSignHelper() {
             result[255 + i] = resultPose[i]
         }
 
+        frameDeque.removeFirst()
+        frameDeque.add(result)
 //        val tflite = getTfliteInterpreter("sl_model.tflite")
 
-        //TODO: 할아버지가 만든 함수에 result를 넣고 거기서 나온 output
+        val output = Array(1) {
+            FloatArray(2) { 0.0f }
+        }
 
-        val output : String = ""
+        val tflite = getTfliteInterpreter("sl_model.tflite", context)
 
+        var input = convertArrayToByteBuffer(frameDeque)
+        tflite.run(input, output)
 
+        for(i in 0 until output.size) {
+            for(j in 0 until output[i].size) {
+                Log.d("output", "${i}, ${j} : ${output[i][j]}")
+            }
+        }
+    }
+
+    private fun convertArrayToByteBuffer(inputData: ArrayList<FloatArray>) : ByteBuffer {
+        var byteBuffer: ByteBuffer = ByteBuffer.allocate(5 * 265 * 4)
+        byteBuffer.order(ByteOrder.nativeOrder())
+
+        Log.d("byteBuffer", byteBuffer.capacity().toString())
+
+        for(i in 0 until 5) {
+            for(j in 0 until 265) {
+                byteBuffer.putFloat(inputData[i][j])
+            }
+        }
+        ///tensorflow =  53,000
+        ///159,000
+        return byteBuffer
+    }
+
+    private fun getTfliteInterpreter(modelPath: String, context: Context) : Interpreter{
+        Log.d("modelPath 누구냐?", context.packageCodePath)
 //        tflite.run(result, output)
 
 
@@ -394,9 +444,22 @@ class HandSignHelper() {
         val inputStream: FileInputStream = FileInputStream(fileDescriptor.fileDescriptor)
         val fileChannel: FileChannel = inputStream.channel
 
-        var startOffSet = fileDescriptor.startOffset
-        var declaredLength = fileDescriptor.declaredLength
-        return fileChannel.map(FileChannel.MapMode.READ_ONLY, startOffSet, declaredLength)
+        val model : ByteBuffer = loadModelFile(context)
+        model.order(ByteOrder.nativeOrder())
+        interpreter = Interpreter(model)
+
+        return interpreter!!
+    }
+
+    private fun loadModelFile(context: Context): ByteBuffer {
+        val am : AssetManager = context.getAssets()
+        val afd : AssetFileDescriptor = am.openFd(MODEL_CLASSIFIER)
+        val fis : FileInputStream = FileInputStream(afd.fileDescriptor)
+        val fc : FileChannel = fis.channel
+        val startOffSet : Long = afd.startOffset
+        val declaredLength : Long = afd.declaredLength
+
+        return fc.map(FileChannel.MapMode.READ_ONLY, startOffSet, declaredLength)
     }
 }
 
