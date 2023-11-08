@@ -37,18 +37,6 @@ class HandSignHelper() {
         }
     }
 
-    val inputData = ArrayList<ArrayList<FloatArray>>().apply {
-        repeat(30) {
-            add(ArrayList<FloatArray>().apply {
-                repeat(5) {
-                    add(FloatArray(265) {0f})
-                }
-            })
-        }
-    }
-
-    var cnt : Int = 0
-
     /** PoseLandmark 정형화 - 11개의 Face, 22개의 Body */
     fun initPose(poseResultBundle: PoseLandmarkerHelper.ResultBundle) {
         if(poseResultBundle.results.first().landmarks().size == 1) {
@@ -335,54 +323,33 @@ class HandSignHelper() {
         frameDeque.removeFirst()
         frameDeque.add(result)
 
-        inputData.removeFirst()
-        inputData.add(frameDeque)
+        val output = Array(1) {
+            FloatArray(2) { 0.0f }
+        }
 
         val tflite = getTfliteInterpreter("sl_model.tflite", context)
-//        var output : FloatArray = FloatArray(2) {0f}
-        var output: ByteBuffer = ByteBuffer.allocateDirect(2 * DataType.FLOAT32.byteSize())
-        output.order(ByteOrder.nativeOrder())
 
-        var byteBuffer = convertArrayToByteBuffer(inputData)
+        var input = convertArrayToByteBuffer(frameDeque)
+        tflite.run(input, output)
 
-        if(cnt % 15 == 0) {
-            tflite.run(byteBuffer, output)
+        for(i in 0 until output.size) {
+            for(j in 0 until output[i].size) {
+                Log.d("output", "${i}, ${j} : ${output[i][j]}")
+            }
         }
-        cnt = (cnt + 1) % 15
-
-        Log.d("output size: ", "${output.getFloat(0)}, ${output.getFloat(1)}")
-//        Log.d("기다려", "${inputData.size}, ${inputData[0].size}, ${inputData[0][0].size}")
-
-        /** 실험실 */
-//        Log.d("FrameDeque Size: ", "${frameDeque.size}, ${frameDeque[0].size}")
-//        var tmp : String = ""
-//        for(k in 0 until 30) {
-//            for(i in 0 until 5) {
-//                for(j in 0 until 265) {
-//                    tmp += "${inputData[k][i][j].toString()}, "
-//                }
-//                Log.d("FrameDeque [${k}][ ${i}]: ", "${tmp}")
-//                tmp = ""
-//            }
-//        }
-
     }
 
-    private fun convertArrayToByteBuffer(inputData: ArrayList<ArrayList<FloatArray>>) : ByteBuffer {
-        var byteBuffer: ByteBuffer = ByteBuffer.allocateDirect(5 * 265 * DataType.FLOAT32.byteSize())
+    private fun convertArrayToByteBuffer(inputData: ArrayList<FloatArray>) : ByteBuffer {
+        var byteBuffer: ByteBuffer = ByteBuffer.allocate(5 * 265 * 4)
         byteBuffer.order(ByteOrder.nativeOrder())
 
         Log.d("byteBuffer", byteBuffer.capacity().toString())
 
-        for(j in 0 until 5) {
-            for(k in 0 until 265) {
-                byteBuffer.putFloat(inputData[0][j][k])
+        for(i in 0 until 5) {
+            for(j in 0 until 265) {
+                byteBuffer.putFloat(inputData[i][j])
             }
         }
-//        for(i in 0 until 30) {
-//
-//        }
-
         ///tensorflow =  53,000
         ///159,000
         return byteBuffer
@@ -407,13 +374,6 @@ class HandSignHelper() {
         val declaredLength : Long = afd.declaredLength
 
         return fc.map(FileChannel.MapMode.READ_ONLY, startOffSet, declaredLength)
-
-
-//        val fileDescriptor = context.assets.openFd(MODEL_CLASSIFIER)
-//        val inputStream: FileInputStream = FileInputStream(fileDescriptor.fileDescriptor)
-//        val fileChannel: FileChannel = inputStream.channel
-//
-//        return fileChannel.map(FileChannel.MapMode.READ_ONLY, startOffSet, declaredLength)
     }
 }
 
