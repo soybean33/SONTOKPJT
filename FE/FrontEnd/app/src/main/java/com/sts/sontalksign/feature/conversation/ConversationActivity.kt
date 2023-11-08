@@ -2,6 +2,7 @@ package com.sts.sontalksign.feature.conversation
 
 import ConversationCameraAdapter
 import android.Manifest
+import android.animation.ValueAnimator
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.pm.PackageManager
@@ -9,6 +10,7 @@ import android.content.res.AssetFileDescriptor
 import android.content.res.AssetManager
 import android.content.res.Configuration
 import android.graphics.Bitmap
+import android.graphics.Rect
 import android.media.AudioAttributes
 import android.media.MediaPlayer
 import android.os.Build
@@ -18,6 +20,8 @@ import android.os.Looper
 import android.os.Message
 import android.os.SystemClock
 import android.util.Log
+import android.view.View
+import android.view.ViewGroup
 import android.view.WindowManager
 import android.view.inputmethod.EditorInfo
 import android.widget.Toast
@@ -29,11 +33,19 @@ import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.ImageProxy
 import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
+import androidx.constraintlayout.widget.ConstraintSet
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import androidx.window.layout.DisplayFeature
+import androidx.window.layout.FoldingFeature
+import androidx.window.layout.WindowInfoTracker
+import androidx.window.layout.WindowLayoutInfo
 import com.google.mediapipe.tasks.vision.core.RunningMode
 import com.naver.speech.clientapi.SpeechRecognitionResult
 import com.sts.sontalksign.R
@@ -136,6 +148,9 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
 
     var printResult : String = "dd"
 
+    /** Foldable 반응형 */
+    private lateinit var windowInfoTracker: WindowInfoTracker
+
     /**  CSR 상태에 대한 동작, clientReady, audioRecording, partialResult, final Result, recognitionError, clientInactive */
     private fun handleMessage(msg: Message) {
         when (msg.what) {
@@ -185,6 +200,10 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
         super.onCreate(savedInstanceState)
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         setContentView(binding.root)
+
+        /** Foldable 반응 tracker */
+        windowInfoTracker = WindowInfoTracker.getOrCreate(this@ConversationActivity)
+        onWindowLayoutInfoChange()
 
         /** RecyclerView 초기화 */
         recyclerView = binding.rvCameraConversation
@@ -816,7 +835,43 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
         }
     }
 
+    private fun onWindowLayoutInfoChange() {
+        lifecycleScope.launch(Dispatchers.Main) {
+            lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                windowInfoTracker.windowLayoutInfo(this@ConversationActivity)
+                    .collect { value ->
+                        updateUI(value)
+                    }
+            }
+        }
+    }
 
+    private fun updateUI(newLayoutInfo: WindowLayoutInfo) {
+        var oldLayoutHeight : Int ?= null
+        var newLayoutHeight : Int ?= null
+        if(newLayoutInfo.displayFeatures[0].toString().contains("HALF_OPENED")) {
+            oldLayoutHeight = dpToPx(500)
+            newLayoutHeight = dpToPx(400)
+        } else if(newLayoutInfo.displayFeatures[0].toString().contains("FLAT")) {
+            oldLayoutHeight = dpToPx(400)
+            newLayoutHeight = dpToPx(500)
+        }
+
+        val animator = ValueAnimator.ofInt(oldLayoutHeight!!, newLayoutHeight!!)
+        animator.addUpdateListener { animation ->
+            val value = animation.animatedValue as Int
+            binding.cameraContainer.layoutParams.height = value
+            binding.cameraContainer.requestLayout()
+        }
+
+        animator.duration = 500
+        animator.start()
+    }
+
+    private fun dpToPx(dp: Int) : Int {
+        val scale = resources.displayMetrics.density
+        return (dp * scale + 0.5f).toInt()
+    }
 
     //카메라 권한
     private fun allPermissionsGranted() = REQUIRED_PERMISSIONS.all {
