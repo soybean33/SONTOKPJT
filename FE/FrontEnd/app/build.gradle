@@ -11,8 +11,8 @@ android {
         applicationId "com.sts.sontalksign"
         minSdk 29
         targetSdk 33
-        versionCode 7
-        versionName "1.1.2"
+        versionCode 8
+        versionName "1.1.3"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
 
@@ -38,6 +38,10 @@ android {
     buildFeatures {
         viewBinding true    // 바인딩
     }
+
+    aaptOptions {
+        noCompress "tflite"
+    }
 }
 
 dependencies {
@@ -62,8 +66,9 @@ dependencies {
     implementation  'com.naver.speech.clientapi:naverspeech-ncp-sdk-android:1.1.6'
 
     // 텐서플로우 라이트
-    implementation 'org.tensorflow:tensorflow-lite:2.3.0'
-    implementation 'org.tensorflow:tensorflow-lite-gpu:2.3.0'
+    implementation 'org.tensorflow:tensorflow-lite-select-tf-ops:+'
+    implementation 'org.tensorflow:tensorflow-lite:2.9.0'
+    implementation 'org.tensorflow:tensorflow-lite-gpu:2.9.0'
 
     implementation 'androidx.core:core-ktx:1.8.0'
     implementation 'androidx.appcompat:appcompat:1.6.1'

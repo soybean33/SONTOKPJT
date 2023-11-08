@@ -98,4 +98,14 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/tv_CRS" />
 
+    <TextView
+        android:id="@+id/tv_HandSign"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="24dp"
+        android:text="TextView"
+        android:textColor="#FFFFFF"
+        app:layout_constraintBottom_toBottomOf="@+id/tv_CRS"
+        app:layout_constraintEnd_toStartOf="@+id/tv_CRS" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>

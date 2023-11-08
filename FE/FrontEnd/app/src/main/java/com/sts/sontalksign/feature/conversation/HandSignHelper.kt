@@ -1,13 +1,8 @@
 package com.sts.sontalksign.feature.conversation
 
-import android.app.Activity
-import android.util.Log
-//import org.tensorflow.lite.Interpreter
-import java.io.FileInputStream
-import java.nio.MappedByteBuffer
-import java.nio.channels.FileChannel
+import java.nio.ByteBuffer
+import java.nio.ByteOrder
 import kotlin.math.acos
-
 
 class HandSignHelper() {
     private val TAG : String = "HandSignHelper"
@@ -18,10 +13,29 @@ class HandSignHelper() {
 
     var returnArray : Array<Double> = emptyArray()
 
+
+
+    /** model 입력 데이터 관련 변수 */
+    val frameDeque = ArrayList<FloatArray>().apply {
+        repeat(5) {
+            add(FloatArray(265) {0f})
+        }
+    }
+    var signWords : Array<String> = arrayOf("석사", "연구")
+    var wordQueue : Array<String> = arrayOf("", "1", "2", "3", "4", "5", "6", "7")
+    val wordCounterMap : MutableMap<String, Int> = mutableMapOf("" to 0, "1" to 0, "2" to 0, "3" to 0, "4" to 0, "5" to 0, "6" to 0, "7" to 0)
+
+    val signWordSize : Int = signWords.size
+
+    /** 변경해보며 적용해 봐야하는 임계값들 */
+    val probabilityThreshold: Float = 0.7f
+    val counterThreshold: Int = 12
+
     /** PoseLandmark 정형화 - 11개의 Face, 22개의 Body */
     fun initPose(poseResultBundle: PoseLandmarkerHelper.ResultBundle) {
         if(poseResultBundle.results.first().landmarks().size == 1) {
             for(i in 0 until 33) {
+                /** 카메라 밖으로 나갔다면, 즉 presence 값이 0.5보다 작다면 0으로 처리 */
                 if(poseResultBundle.results.first().landmarks()[0][i].presence().orElse(0f) < 0.5) {
                     pose[i][0] = 0f
                     pose[i][1] = 0f
@@ -34,8 +48,6 @@ class HandSignHelper() {
                 }
             }
         }
-
-//        Log.d(TAG, "Body: ${pose[0][0].toString()}, ${pose[1][0].toString()}")
     }
 
     /** Hand Landmark 정형화 */
@@ -62,15 +74,15 @@ class HandSignHelper() {
             }
             /** 두손 입력 */
             2 -> {
-                var handA: String =
-                    handResultBundle.results.first().handednesses()[0][0].categoryName()
-                var handB: String =
-                    handResultBundle.results.first().handednesses()[1][0].categoryName()
+                var handA: String = handResultBundle.results.first().handednesses()[0][0].categoryName()
+                var handB: String = handResultBundle.results.first().handednesses()[1][0].categoryName()
                 val scoreA: Float = handResultBundle.results.first().handednesses()[0][0].score()
                 val scoreB: Float = handResultBundle.results.first().handednesses()[1][0].score()
 
+                /** 같은 쪽 손 두개가 입력된 경우 */
                 if (handA.equals(handB)) {
-                    if (handA.equals("Left")) {
+                    if (handA.equals("Left")) { /** 두 손 모두 왼손 인 경우 */
+                        /**  score가 더 높은 쪽이 왼손 */
                         if (scoreA >= scoreB) {
                             for (i in 0 until 21) {
                                 leftHand[i][0] =
@@ -90,7 +102,7 @@ class HandSignHelper() {
                                     handResultBundle.results.first().landmarks()[1][i].z()
                             }
                         }
-                    } else {
+                    } else {    /** 두 손 모두 오른손 인 경우 */
                         if (scoreA >= scoreB) {
                             for (i in 0 until 21) {
                                 rightHand[i][0] =
@@ -139,19 +151,17 @@ class HandSignHelper() {
                 }
             }
         }
-
-//        Log.d(TAG, "RightHand: ${rightHand.toString()}")
-//        Log.d(TAG, "LeftHand: ${leftHand.toString()}")
     }
 
     /** HandLandmarker 필요한 데이터로 변경 */
     private fun calHand(hand: Array<Array<Float>>) : FloatArray {
+        /** 각도를 구할 20개의 점 */
         val startJoints = intArrayOf(0, 1, 2, 3, 0, 5, 6, 7, 0, 9, 10, 11, 0, 13, 14, 15, 0, 17, 18, 19)
         val destJoints = intArrayOf(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20)
 
         val hand_v1 = calculateIdx(hand, startJoints)
         val hand_v2 = calculateIdx(hand, destJoints)
-        var hand_v = Array(20) { Array(3) { 0f } }
+        var hand_v = Array(20) { Array(3) { 0f } }  /** 3차원의 20개의 점 */
 
         /** 크기 구하기 */
         for (i in 0 until 20) {
@@ -163,9 +173,7 @@ class HandSignHelper() {
         /** 정규화 */
         for (i in 0 until 20) {
             val norm = vectorNorm(hand_v[i])
-            if (norm != 0f) {
-                vectorDivideInPlace(hand_v[i], norm)
-            }
+            if (norm != 0f) { vectorDivideInPlace(hand_v[i], norm) }
         }
 
         /** 각도 구하기 및 반환 */
@@ -190,9 +198,7 @@ class HandSignHelper() {
         /** 정규화 */
         for (i in 0 until 14) {
             val norm = vectorNorm(pose_v[i])
-            if (norm != 0f) {
-                vectorDivideInPlace(pose_v[i], norm)
-            }
+            if (norm != 0f) { vectorDivideInPlace(pose_v[i], norm) }
         }
 
         /** 각도 구하기 */
@@ -226,7 +232,7 @@ class HandSignHelper() {
         }
     }
 
-    /** 벡터 내적 */
+    /** 손 벡터 내적 */
     private fun calculateHandAngles(hand_v: Array<Array<Float>>): FloatArray {
         val angles = FloatArray(15)
         val joints1 = intArrayOf(0, 1, 2, 4, 5, 6, 8, 9, 10, 12, 13, 14, 16, 17, 18)
@@ -240,6 +246,7 @@ class HandSignHelper() {
         return angles
     }
 
+    /** 포즈 벡터 내적 */
     private fun calculatePoseAngles(hand_v: Array<Array<Float>>): FloatArray {
         val angles = FloatArray(10)
         val joints1 = intArrayOf(0, 1, 2, 4, 5, 6, 8, 9, 11, 12)
@@ -253,16 +260,14 @@ class HandSignHelper() {
         return angles
     }
 
+    /** 벡터 크기 구하기 */
     private inline fun vectorDot(vector1: Array<Float>, vector2: Array<Float>): Float {
         var dotProduct = 0f
-        for (i in vector1.indices) {
-            dotProduct += vector1[i] * vector2[i]
-        }
+        for (i in vector1.indices) { dotProduct += vector1[i] * vector2[i] }
         return dotProduct
     }
 
-
-    public fun Solution(){
+    fun Solution() : ByteBuffer{
         val result = FloatArray(265) {0f}
 
         /** leftHand 데이터 - point와 angle */
@@ -301,31 +306,86 @@ class HandSignHelper() {
             result[255 + i] = resultPose[i]
         }
 
-//        val tflite = getTfliteInterpreter("sl_model.tflite")
+        frameDeque.removeFirst() /** 먼저 추가하고 제거하는 것이 outofbound를 방지할 수 있을 듯 */
+        frameDeque.add(result)
 
-        //TODO: 할아버지가 만든 함수에 result를 넣고 거기서 나온 output
-
-        val output : String = ""
-
-
-//        tflite.run(result, output)
-
-
-         Log.d("Solution", result[0].toString())
+        return convertArrayToByteBuffer(frameDeque)
     }
 
-//    private fun getTfliteInterpreter(modelPath: String): Interpreter {
-//        return Interpreter(loadModelFile(activity = ConversationActivity::class.java, modelPath))
-//    }
+    private fun convertArrayToByteBuffer(inputData: ArrayList<FloatArray>) : ByteBuffer {
+        var byteBuffer: ByteBuffer = ByteBuffer.allocate(5 * 265 * 4)   /** 5개의 265 길이의 Byte 크기(4) */
+        byteBuffer.order(ByteOrder.nativeOrder())
 
-    private fun loadModelFile(activity: Activity, modelPath: String): MappedByteBuffer{
-        val fileDescriptor = activity.assets.openFd(modelPath)
-        val inputStream: FileInputStream = FileInputStream(fileDescriptor.fileDescriptor)
-        val fileChannel: FileChannel = inputStream.channel
+        for(i in 0 until 5) {
+            for(j in 0 until 265) {
+                byteBuffer.putFloat(inputData[i][j])
+            }
+        }
 
-        var startOffSet = fileDescriptor.startOffset
-        var declaredLength = fileDescriptor.declaredLength
-        return fileChannel.map(FileChannel.MapMode.READ_ONLY, startOffSet, declaredLength)
+        return byteBuffer
+    }
+
+    private fun getWordIndex(predictionResult: Array<Float>): Int {
+        var maxIndex: Int = 0
+        var maxProbability: Float = 0f
+        for (index in 0 until predictionResult.size) {
+            if (maxProbability < predictionResult[index]) {
+                maxIndex = index
+                maxProbability = predictionResult[index]
+            }
+        }
+
+        return maxIndex
+    }
+
+    fun wordQueueManager(predictionResult: Array<Float>): String {
+        var wordIndex: Int = getWordIndex(predictionResult)
+        var signWord: String
+        if (predictionResult[wordIndex] < probabilityThreshold) {
+            signWord = ""
+        } else {
+            signWord = signWords[wordIndex]
+        }
+        var signWordExistInQueue: Boolean = false
+        var minIndex: Int = 0
+        var minCount: Int = counterThreshold
+        for (index in 0 until wordQueue.size) {
+            if (wordQueue[index] == signWord) {
+                signWordExistInQueue = true
+                minIndex = index
+                break
+            } else {
+                if (wordCounterMap[wordQueue[index]]!! < minCount) {
+                    minIndex = index
+                    minCount = wordCounterMap[wordQueue[index]]!!
+                }
+            }
+        }
+        var signWordVerified: Boolean = false
+        if (signWordExistInQueue) {
+            if (wordCounterMap[signWord]!! == counterThreshold - 1) {
+                signWordVerified = true
+            }
+        } else {
+            wordCounterMap[wordQueue[minIndex]] = 0
+            wordQueue[minIndex] = signWord
+            wordCounterMap[signWord] = 0
+        }
+        for (word in wordQueue) {
+            if (signWordVerified && counterThreshold < wordCounterMap[word]!!) {
+                wordCounterMap[word] = counterThreshold
+            }
+            wordCounterMap[word] = (wordCounterMap[word]!! - 1).coerceAtLeast(0)
+        }
+        if (signWordExistInQueue) {
+            wordCounterMap[signWord] = wordCounterMap[signWord]!! + 2
+        } else {
+            wordCounterMap[signWord] = 1
+        }
+        if (signWordVerified) {
+            return signWord
+        }
+        return ""
     }
 }
 

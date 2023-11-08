@@ -3,7 +3,10 @@ package com.sts.sontalksign.feature.conversation
 import ConversationCameraAdapter
 import android.Manifest
 import android.annotation.SuppressLint
+import android.content.Context
 import android.content.pm.PackageManager
+import android.content.res.AssetFileDescriptor
+import android.content.res.AssetManager
 import android.content.res.Configuration
 import android.graphics.Bitmap
 import android.media.AudioAttributes
@@ -15,6 +18,7 @@ import android.os.Looper
 import android.os.Message
 import android.os.SystemClock
 import android.util.Log
+import android.view.WindowManager
 import android.view.inputmethod.EditorInfo
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
@@ -43,9 +47,13 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import org.tensorflow.lite.Interpreter
+import org.tensorflow.lite.gpu.CompatibilityList
+import org.tensorflow.lite.gpu.GpuDelegate
 import java.io.BufferedReader
 import java.io.BufferedWriter
 import java.io.File
+import java.io.FileInputStream
 import java.io.FileOutputStream
 import java.io.FileReader
 import java.io.FileWriter
@@ -64,6 +72,7 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
         private const val hlTAG = "Hand Landmarker"
         private const val pTAG = "Pose Landmarker"
         private const val FILENAME_FORMAT = "yyyy-MM-dd-HH-mm-ss-SSS"
+        private const val MODEL_CLASSIFIER = "sl_model.tflite"
 
         /** 카메라 및 오디오 권한 */
         private const val REQUEST_CODE_PERMISSIONS = 10
@@ -97,15 +106,10 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
 
     /** Blocking ML operations are performed using this executor */
     private lateinit var backgroundBothExecutor: ExecutorService
-//    private lateinit var backgroundPoseExecutor: ExecutorService
-//    private lateinit var backgroundHandExecutor: ExecutorService
     private val handSignHelper: HandSignHelper = HandSignHelper()
 
-    /** CameraX 관련 변수 */
-//    private var imageCapture: ImageCapture? = null
-//    private var videoCapture: VideoCapture<Recorder>? = null
-//    private var recording: Recording? = null
-//    private lateinit var cameraExecutor: ExecutorService
+    private var tflite : Interpreter ?= null
+    private var interpreter : Interpreter?= null
 
     /** 사용자의 "녹음하기" 선택 여부 */
     private var isNowRecording: Boolean = false
@@ -130,10 +134,8 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
     private val conversationCamera: ArrayList<ConversationCameraModel> = ArrayList()
     private lateinit var recyclerView: RecyclerView // RecyclerView 선언
 
+    var printResult : String = "dd"
 
-
-
-    
     /**  CSR 상태에 대한 동작, clientReady, audioRecording, partialResult, final Result, recognitionError, clientInactive */
     private fun handleMessage(msg: Message) {
         when (msg.what) {
@@ -181,6 +183,7 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         setContentView(binding.root)
 
         /** RecyclerView 초기화 */
@@ -249,6 +252,8 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
             }
         }
 
+
+
         /** 카메라 권한 요청 */
         if(allPermissionsGranted()) {
 
@@ -260,9 +265,6 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
 
         /** MediaPipe의 background executor 초기 설정 */
         backgroundBothExecutor = Executors.newFixedThreadPool(2)
-//        backgroundPoseExecutor = Executors.newSingleThreadExecutor()
-//        backgroundHandExecutor = Executors.newSingleThreadExecutor()
-
         binding.pvCamera.post {
             setUpCamera()
         }
@@ -292,7 +294,40 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
             )
         }
 
+        tflite = getTfliteInterpreter()
+    }
 
+    private fun getTfliteInterpreter() : Interpreter {
+        val model : ByteBuffer = loadModelFile(this).apply {
+            order(ByteOrder.nativeOrder())
+        }
+
+        val compatList = CompatibilityList()
+        val options = Interpreter.Options().apply{
+            if(compatList.isDelegateSupportedOnThisDevice){
+                // if the device has a supported GPU, add the GPU delegate
+                val delegateOptions = compatList.bestOptionsForThisDevice
+                addDelegate(GpuDelegate(delegateOptions))
+                Log.d("GPU/CPU", "GGGGGGGGGGGGGGGGGGGG")
+            } else {
+                setNumThreads(4)
+                Log.d("GPU/CPU", "CCCCCCCCCCCCCCCCCCC")
+            }
+        }
+
+        interpreter = Interpreter(model, options)
+        return interpreter!!
+    }
+
+    private fun loadModelFile(context: Context): ByteBuffer {
+        val am : AssetManager = context.getAssets()
+        val afd : AssetFileDescriptor = am.openFd(MODEL_CLASSIFIER)
+        val fis : FileInputStream = FileInputStream(afd.fileDescriptor)
+        val fc : FileChannel = fis.channel
+        val startOffSet : Long = afd.startOffset
+        val declaredLength : Long = afd.declaredLength
+
+        return fc.map(FileChannel.MapMode.READ_ONLY, startOffSet, declaredLength)
     }
 
     /**
@@ -638,12 +673,15 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
 
     private suspend fun mediaPipeProcess() = coroutineScope {
         launch {
-            try{
-                handSignHelper.Solution()
-                //val data: HandSignHelper = HandSignHelper(HandLandmarkerHelper.ResultBundle, PoseLandmarkerHelper.ResultBundle)
-            } catch (exec : Exception) {
-                Log.d("mediaPipeProcess", exec.toString())
+            val input : ByteBuffer = handSignHelper.Solution()
+            val output = Array(1) {
+                FloatArray(2) { 0.0f }
             }
+
+            tflite!!.run(input, output)
+
+            val result = handSignHelper.wordQueueManager(output[0].toList().toTypedArray())
+            Log.d("Result", result)
         }
     }
 
@@ -715,28 +753,8 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
     ) {
         this?.runOnUiThread {
             if (binding != null) {
-                /** 실험실 로그 */
-//                Log.d("TEST-Pose", resultBundle.results.first().toString())
-//                Log.d("TEST-Pose-", resultBundle.results.first().landmarks().toString())
-//                Log.d("TEST-Pose-size", resultBundle.results.first().landmarks().size.toString())
-//
-//                if(resultBundle.results.first().landmarks().size == 1) {
-//                    Log.d("TEST-Pose-size-detail", resultBundle.results.first().landmarks()[0].size.toString())
-//                }
-//
-//                Log.d("TEST-Pose", resultBundle.results.first().toString()
                 handSignHelper.initPose(resultBundle)
 
-                //TODO: landmarks().size() 가 1이상인지 조건 확인 필요
-//                if(resultBundle.results.first().landmarks()[0].size >= 1) {
-//                    Log.d("TEST-Pose-", resultBundle.results.first().landmarks()[0].size.toString())
-//                }
-
-//                Log.d("TEST-", resultBundle.results.first().handednesses().toString())
-//                binding.bottomSheetLayout.inferenceTimeVal.text =
-//                    String.format("%d ms", resultBundle.inferenceTime)
-//
-//                // Pass necessary information to OverlayView for drawing on the canvas
                 binding.poseOverlay.setResults(
                     resultBundle.results.first(),
                     resultBundle.inputImageHeight,
@@ -772,28 +790,6 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
 //                Log.d("TEST-Hand", resultBundle.results.first().toString())
 
                 handSignHelper.initHand(resultBundle)
-
-                /** 실험실 로그 */
-//                Log.d("TEST-Hand-handed", resultBundle.results.first().handednesses().toString())
-//                Log.d("TEST-Hand-size", resultBundle.results.first().handednesses().size.toString())
-//
-//                if(resultBundle.results.first().handednesses().size == 1){
-//                    Log.d("TEST-Hand-category1111", resultBundle.results.first().handednesses()[0][0].categoryName())
-//                    Log.d("TEST-Hand-score1111", resultBundle.results.first().handednesses()[0][0].score().toString())
-//                    Log.d("TEST-Hand-index1111", resultBundle.results.first().handednesses()[0][0].index().toString())
-//                    Log.d("TEST-Hand-landmarks1111", resultBundle.results.first().landmarks()[0].size.toString())
-//                }
-//                else if(resultBundle.results.first().handednesses().size == 2){
-//                    Log.d("TEST-Hand-landmark2222", resultBundle.results.first().landmarks()[1].toString())
-//                    Log.d("TEST-Hand-landmark2222", resultBundle.results.first().landmarks()[1][20].toString())
-//                    Log.d("TEST-Hand-landmark2222", resultBundle.results.first().landmarks()[1][20].x().toString())
-//                    Log.d("TEST-Hand-category2222", resultBundle.results.first().handednesses()[0][0].categoryName())
-//                    Log.d("TEST-Hand-score2222", resultBundle.results.first().handednesses()[0][0].score().toString())
-//                    Log.d("TEST-Hand-category2222", resultBundle.results.first().handednesses()[1][0].categoryName())
-//                    Log.d("TEST-Hand-score2222", resultBundle.results.first().handednesses()[1][0].score().toString())
-//                    Log.d("TEST-Hand-index22221111", resultBundle.results.first().handednesses()[0][0].index().toString())
-//                    Log.d("TEST-Hand-index22222222", resultBundle.results.first().handednesses()[1][0].index().toString())
-//                }
                 
                 // Pass necessary information to OverlayView for drawing on the canvas
                 binding.handOverlay.setResults(
