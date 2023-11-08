@@ -25,21 +25,15 @@ import androidx.camera.core.AspectRatio
 import androidx.camera.core.Camera
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageAnalysis
-import androidx.camera.core.ImageCapture
 import androidx.camera.core.ImageProxy
 import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
-import androidx.camera.video.Recorder
-import androidx.camera.video.Recording
-import androidx.camera.video.VideoCapture
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.mediapipe.tasks.vision.core.RunningMode
-import com.google.mediapipe.tasks.vision.handlandmarker.HandLandmarkerResult
-import com.google.mediapipe.tasks.vision.poselandmarker.PoseLandmarkerResult
 import com.naver.speech.clientapi.SpeechRecognitionResult
 import com.sts.sontalksign.R
 import com.sts.sontalksign.databinding.ActivityConversationBinding
@@ -140,7 +134,7 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
     private val conversationCamera: ArrayList<ConversationCameraModel> = ArrayList()
     private lateinit var recyclerView: RecyclerView // RecyclerView 선언
 
-    var printResult : String = "dddddd"
+    var printResult : String = "dd"
 
     /**  CSR 상태에 대한 동작, clientReady, audioRecording, partialResult, final Result, recognitionError, clientInactive */
     private fun handleMessage(msg: Message) {

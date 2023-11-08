@@ -1,20 +1,8 @@
 package com.sts.sontalksign.feature.conversation
 
-
-import android.content.Context
-import android.content.res.AssetFileDescriptor
-import android.content.res.AssetManager
-import android.util.Log
-
-import org.tensorflow.lite.Interpreter
-import org.tensorflow.lite.gpu.CompatibilityList
-import org.tensorflow.lite.gpu.GpuDelegate
-import java.io.FileInputStream
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
-import java.nio.channels.FileChannel
 import kotlin.math.acos
-
 
 class HandSignHelper() {
     private val TAG : String = "HandSignHelper"
@@ -47,6 +35,7 @@ class HandSignHelper() {
     fun initPose(poseResultBundle: PoseLandmarkerHelper.ResultBundle) {
         if(poseResultBundle.results.first().landmarks().size == 1) {
             for(i in 0 until 33) {
+                /** 카메라 밖으로 나갔다면, 즉 presence 값이 0.5보다 작다면 0으로 처리 */
                 if(poseResultBundle.results.first().landmarks()[0][i].presence().orElse(0f) < 0.5) {
                     pose[i][0] = 0f
                     pose[i][1] = 0f
@@ -85,15 +74,15 @@ class HandSignHelper() {
             }
             /** 두손 입력 */
             2 -> {
-                var handA: String =
-                    handResultBundle.results.first().handednesses()[0][0].categoryName()
-                var handB: String =
-                    handResultBundle.results.first().handednesses()[1][0].categoryName()
+                var handA: String = handResultBundle.results.first().handednesses()[0][0].categoryName()
+                var handB: String = handResultBundle.results.first().handednesses()[1][0].categoryName()
                 val scoreA: Float = handResultBundle.results.first().handednesses()[0][0].score()
                 val scoreB: Float = handResultBundle.results.first().handednesses()[1][0].score()
 
+                /** 같은 쪽 손 두개가 입력된 경우 */
                 if (handA.equals(handB)) {
-                    if (handA.equals("Left")) {
+                    if (handA.equals("Left")) { /** 두 손 모두 왼손 인 경우 */
+                        /**  score가 더 높은 쪽이 왼손 */
                         if (scoreA >= scoreB) {
                             for (i in 0 until 21) {
                                 leftHand[i][0] =
@@ -113,7 +102,7 @@ class HandSignHelper() {
                                     handResultBundle.results.first().landmarks()[1][i].z()
                             }
                         }
-                    } else {
+                    } else {    /** 두 손 모두 오른손 인 경우 */
                         if (scoreA >= scoreB) {
                             for (i in 0 until 21) {
                                 rightHand[i][0] =
@@ -166,12 +155,13 @@ class HandSignHelper() {
 
     /** HandLandmarker 필요한 데이터로 변경 */
     private fun calHand(hand: Array<Array<Float>>) : FloatArray {
+        /** 각도를 구할 20개의 점 */
         val startJoints = intArrayOf(0, 1, 2, 3, 0, 5, 6, 7, 0, 9, 10, 11, 0, 13, 14, 15, 0, 17, 18, 19)
         val destJoints = intArrayOf(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20)
 
         val hand_v1 = calculateIdx(hand, startJoints)
         val hand_v2 = calculateIdx(hand, destJoints)
-        var hand_v = Array(20) { Array(3) { 0f } }
+        var hand_v = Array(20) { Array(3) { 0f } }  /** 3차원의 20개의 점 */
 
         /** 크기 구하기 */
         for (i in 0 until 20) {
@@ -183,9 +173,7 @@ class HandSignHelper() {
         /** 정규화 */
         for (i in 0 until 20) {
             val norm = vectorNorm(hand_v[i])
-            if (norm != 0f) {
-                vectorDivideInPlace(hand_v[i], norm)
-            }
+            if (norm != 0f) { vectorDivideInPlace(hand_v[i], norm) }
         }
 
         /** 각도 구하기 및 반환 */
@@ -210,9 +198,7 @@ class HandSignHelper() {
         /** 정규화 */
         for (i in 0 until 14) {
             val norm = vectorNorm(pose_v[i])
-            if (norm != 0f) {
-                vectorDivideInPlace(pose_v[i], norm)
-            }
+            if (norm != 0f) { vectorDivideInPlace(pose_v[i], norm) }
         }
 
         /** 각도 구하기 */
@@ -277,9 +263,7 @@ class HandSignHelper() {
     /** 벡터 크기 구하기 */
     private inline fun vectorDot(vector1: Array<Float>, vector2: Array<Float>): Float {
         var dotProduct = 0f
-        for (i in vector1.indices) {
-            dotProduct += vector1[i] * vector2[i]
-        }
+        for (i in vector1.indices) { dotProduct += vector1[i] * vector2[i] }
         return dotProduct
     }
 
@@ -322,14 +306,14 @@ class HandSignHelper() {
             result[255 + i] = resultPose[i]
         }
 
-        frameDeque.removeFirst()
+        frameDeque.removeFirst() /** 먼저 추가하고 제거하는 것이 outofbound를 방지할 수 있을 듯 */
         frameDeque.add(result)
 
         return convertArrayToByteBuffer(frameDeque)
     }
 
     private fun convertArrayToByteBuffer(inputData: ArrayList<FloatArray>) : ByteBuffer {
-        var byteBuffer: ByteBuffer = ByteBuffer.allocate(5 * 265 * 4)
+        var byteBuffer: ByteBuffer = ByteBuffer.allocate(5 * 265 * 4)   /** 5개의 265 길이의 Byte 크기(4) */
         byteBuffer.order(ByteOrder.nativeOrder())
 
         for(i in 0 until 5) {
@@ -350,6 +334,7 @@ class HandSignHelper() {
                 maxProbability = predictionResult[index]
             }
         }
+
         return maxIndex
     }
 
