@@ -104,6 +104,7 @@
         android:layout_height="wrap_content"
         android:layout_marginEnd="24dp"
         android:text="TextView"
+        android:textColor="#FFFFFF"
         app:layout_constraintBottom_toBottomOf="@+id/tv_CRS"
         app:layout_constraintEnd_toStartOf="@+id/tv_CRS" />
 

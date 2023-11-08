@@ -14,6 +14,7 @@ import android.os.Handler
 import android.os.Message
 import android.os.SystemClock
 import android.util.Log
+import android.view.WindowManager
 import android.view.inputmethod.EditorInfo
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
@@ -133,7 +134,7 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
     private val conversationCamera: ArrayList<ConversationCameraModel> = ArrayList()
     private lateinit var recyclerView: RecyclerView // RecyclerView 선언
 
-    val handSignHelperResult : String = ""
+    var printResult : String = "dddddd"
 
     /**  CSR 상태에 대한 동작, clientReady, audioRecording, partialResult, final Result, recognitionError, clientInactive */
     private fun handleMessage(msg: Message) {
@@ -182,6 +183,7 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         setContentView(binding.root)
 
         /** RecyclerView 초기화 */
@@ -247,7 +249,7 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
             }
         }
 
-        if(handSignHelperResult != "") binding.tvHandSign.text = handSignHelperResult
+
 
         /** 카메라 권한 요청 */
         if(allPermissionsGranted()) {
@@ -591,7 +593,13 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
         launch {
             val handSignHelperResult : String = handSignHelper.Solution(this@ConversationActivity)
 
-            Log.d("afdsfadsfdsafdsafdsafads", handSignHelperResult)
+            Log.d("aaaaaaaaaaaaa11111111111111111111", handSignHelperResult)
+            if(!handSignHelperResult.equals("")) {
+                printResult = handSignHelperResult
+                Log.d("aaaaaaaaaaaaa222222222222222222222222", handSignHelperResult)
+            }
+
+
 
 //            try{
 //                handSignHelper.Solution(this@ConversationActivity)
