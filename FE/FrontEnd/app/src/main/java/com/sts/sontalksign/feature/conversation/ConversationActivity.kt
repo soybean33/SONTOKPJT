@@ -3,7 +3,10 @@ package com.sts.sontalksign.feature.conversation
 import ConversationCameraAdapter
 import android.Manifest
 import android.annotation.SuppressLint
+import android.content.Context
 import android.content.pm.PackageManager
+import android.content.res.AssetFileDescriptor
+import android.content.res.AssetManager
 import android.content.res.Configuration
 import android.graphics.Bitmap
 import android.media.AudioAttributes
@@ -49,14 +52,21 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import org.tensorflow.lite.Interpreter
+import org.tensorflow.lite.gpu.CompatibilityList
+import org.tensorflow.lite.gpu.GpuDelegate
 import java.io.BufferedReader
 import java.io.BufferedWriter
 import java.io.File
+import java.io.FileInputStream
 import java.io.FileOutputStream
 import java.io.FileReader
 import java.io.FileWriter
 import java.lang.IllegalStateException
 import java.lang.ref.WeakReference
+import java.nio.ByteBuffer
+import java.nio.ByteOrder
+import java.nio.channels.FileChannel
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
@@ -68,6 +78,7 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
         private const val hlTAG = "Hand Landmarker"
         private const val pTAG = "Pose Landmarker"
         private const val FILENAME_FORMAT = "yyyy-MM-dd-HH-mm-ss-SSS"
+        private const val MODEL_CLASSIFIER = "sl_model.tflite"
 
         /** 카메라 및 오디오 권한 */
         private const val REQUEST_CODE_PERMISSIONS = 10
@@ -101,15 +112,10 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
 
     /** Blocking ML operations are performed using this executor */
     private lateinit var backgroundBothExecutor: ExecutorService
-//    private lateinit var backgroundPoseExecutor: ExecutorService
-//    private lateinit var backgroundHandExecutor: ExecutorService
     private val handSignHelper: HandSignHelper = HandSignHelper()
 
-    /** CameraX 관련 변수 */
-//    private var imageCapture: ImageCapture? = null
-//    private var videoCapture: VideoCapture<Recorder>? = null
-//    private var recording: Recording? = null
-//    private lateinit var cameraExecutor: ExecutorService
+    private var tflite : Interpreter ?= null
+    private var interpreter : Interpreter?= null
 
     /** 사용자의 "녹음하기" 선택 여부 */
     private var isNowRecording: Boolean = false
@@ -262,9 +268,6 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
 
         /** MediaPipe의 background executor 초기 설정 */
         backgroundBothExecutor = Executors.newFixedThreadPool(2)
-//        backgroundPoseExecutor = Executors.newSingleThreadExecutor()
-//        backgroundHandExecutor = Executors.newSingleThreadExecutor()
-
         binding.pvCamera.post {
             setUpCamera()
         }
@@ -293,6 +296,41 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
                 handLandmarkerHelperListener = this
             )
         }
+
+        tflite = getTfliteInterpreter()
+    }
+
+    private fun getTfliteInterpreter() : Interpreter {
+        val model : ByteBuffer = loadModelFile(this).apply {
+            order(ByteOrder.nativeOrder())
+        }
+
+        val compatList = CompatibilityList()
+        val options = Interpreter.Options().apply{
+            if(compatList.isDelegateSupportedOnThisDevice){
+                // if the device has a supported GPU, add the GPU delegate
+                val delegateOptions = compatList.bestOptionsForThisDevice
+                addDelegate(GpuDelegate(delegateOptions))
+                Log.d("GPU/CPU", "GGGGGGGGGGGGGGGGGGGG")
+            } else {
+                setNumThreads(4)
+                Log.d("GPU/CPU", "CCCCCCCCCCCCCCCCCCC")
+            }
+        }
+
+        interpreter = Interpreter(model, options)
+        return interpreter!!
+    }
+
+    private fun loadModelFile(context: Context): ByteBuffer {
+        val am : AssetManager = context.getAssets()
+        val afd : AssetFileDescriptor = am.openFd(MODEL_CLASSIFIER)
+        val fis : FileInputStream = FileInputStream(afd.fileDescriptor)
+        val fc : FileChannel = fis.channel
+        val startOffSet : Long = afd.startOffset
+        val declaredLength : Long = afd.declaredLength
+
+        return fc.map(FileChannel.MapMode.READ_ONLY, startOffSet, declaredLength)
     }
 
     /**
@@ -591,22 +629,15 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
 
     private suspend fun mediaPipeProcess() = coroutineScope {
         launch {
-            val handSignHelperResult : String = handSignHelper.Solution(this@ConversationActivity)
-
-            Log.d("aaaaaaaaaaaaa11111111111111111111", handSignHelperResult)
-            if(!handSignHelperResult.equals("")) {
-                printResult = handSignHelperResult
-                Log.d("aaaaaaaaaaaaa222222222222222222222222", handSignHelperResult)
+            val input : ByteBuffer = handSignHelper.Solution()
+            val output = Array(1) {
+                FloatArray(2) { 0.0f }
             }
 
+            tflite!!.run(input, output)
 
-
-//            try{
-//                handSignHelper.Solution(this@ConversationActivity)
-//                //val data: HandSignHelper = HandSignHelper(HandLandmarkerHelper.ResultBundle, PoseLandmarkerHelper.ResultBundle)
-//            } catch (exec : Exception) {
-//                Log.d("mediaPipeProcess", exec.toString())
-//            }
+            val result = handSignHelper.wordQueueManager(output[0].toList().toTypedArray())
+            Log.d("Result", result)
         }
     }
 

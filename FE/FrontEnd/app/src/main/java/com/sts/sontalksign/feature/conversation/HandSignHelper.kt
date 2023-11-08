@@ -17,10 +17,6 @@ import kotlin.math.acos
 
 
 class HandSignHelper() {
-    companion object {
-        const val MODEL_CLASSIFIER = "sl_model.tflite"
-    }
-
     private val TAG : String = "HandSignHelper"
 
     var leftHand : Array<Array<Float>> = Array(21) {Array(3) {0f}}
@@ -29,7 +25,7 @@ class HandSignHelper() {
 
     var returnArray : Array<Double> = emptyArray()
 
-    private var interpreter : Interpreter ?= null
+
 
     /** model 입력 데이터 관련 변수 */
     val frameDeque = ArrayList<FloatArray>().apply {
@@ -287,8 +283,7 @@ class HandSignHelper() {
         return dotProduct
     }
 
-
-    public fun Solution(context: Context) : String {
+    fun Solution() : ByteBuffer{
         val result = FloatArray(265) {0f}
 
         /** leftHand 데이터 - point와 angle */
@@ -330,18 +325,7 @@ class HandSignHelper() {
         frameDeque.removeFirst()
         frameDeque.add(result)
 
-        val output = Array(1) {
-            FloatArray(signWordSize) { 0.0f }
-        }
-
-        val tflite = getTfliteInterpreter("sl_model.tflite", context)
-
-        var input = convertArrayToByteBuffer(frameDeque)
-        tflite.run(input, output)
-
-        Log.d("aaaaaaaaaaa", wordQueueManager(output[0].toList().toTypedArray()))
-
-        return wordQueueManager(output[0].toList().toTypedArray())
+        return convertArrayToByteBuffer(frameDeque)
     }
 
     private fun convertArrayToByteBuffer(inputData: ArrayList<FloatArray>) : ByteBuffer {
@@ -357,30 +341,6 @@ class HandSignHelper() {
         return byteBuffer
     }
 
-    /** 모델 연결 */
-    private fun getTfliteInterpreter(modelPath: String, context: Context) : Interpreter{
-
-        val model : ByteBuffer = loadModelFile(context)
-        model.order(ByteOrder.nativeOrder())
-
-        val compatList = CompatibilityList()
-        val options = Interpreter.Options().apply{
-            if(compatList.isDelegateSupportedOnThisDevice){
-                // if the device has a supported GPU, add the GPU delegate
-                val delegateOptions = compatList.bestOptionsForThisDevice
-                this.addDelegate(GpuDelegate(delegateOptions))
-            } else {
-                this.setNumThreads(4)
-            }
-        }
-
-        interpreter = Interpreter(model, options)
-//        interpreter = Interpreter(model)
-
-
-        return interpreter!!
-    }
-
     private fun getWordIndex(predictionResult: Array<Float>): Int {
         var maxIndex: Int = 0
         var maxProbability: Float = 0f
@@ -393,7 +353,7 @@ class HandSignHelper() {
         return maxIndex
     }
 
-    private fun wordQueueManager(predictionResult: Array<Float>): String {
+    fun wordQueueManager(predictionResult: Array<Float>): String {
         var wordIndex: Int = getWordIndex(predictionResult)
         var signWord: String
         if (predictionResult[wordIndex] < probabilityThreshold) {
@@ -441,17 +401,6 @@ class HandSignHelper() {
             return signWord
         }
         return ""
-    }
-
-    private fun loadModelFile(context: Context): ByteBuffer {
-        val am : AssetManager = context.getAssets()
-        val afd : AssetFileDescriptor = am.openFd(MODEL_CLASSIFIER)
-        val fis : FileInputStream = FileInputStream(afd.fileDescriptor)
-        val fc : FileChannel = fis.channel
-        val startOffSet : Long = afd.startOffset
-        val declaredLength : Long = afd.declaredLength
-
-        return fc.map(FileChannel.MapMode.READ_ONLY, startOffSet, declaredLength)
     }
 }
 
