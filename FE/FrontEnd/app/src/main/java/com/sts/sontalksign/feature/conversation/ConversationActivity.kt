@@ -11,6 +11,7 @@ import android.media.MediaPlayer
 import android.os.Build
 import android.os.Bundle
 import android.os.Handler
+import android.os.Looper
 import android.os.Message
 import android.os.SystemClock
 import android.util.Log
@@ -21,21 +22,15 @@ import androidx.camera.core.AspectRatio
 import androidx.camera.core.Camera
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageAnalysis
-import androidx.camera.core.ImageCapture
 import androidx.camera.core.ImageProxy
 import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
-import androidx.camera.video.Recorder
-import androidx.camera.video.Recording
-import androidx.camera.video.VideoCapture
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.mediapipe.tasks.vision.core.RunningMode
-import com.google.mediapipe.tasks.vision.handlandmarker.HandLandmarkerResult
-import com.google.mediapipe.tasks.vision.poselandmarker.PoseLandmarkerResult
 import com.naver.speech.clientapi.SpeechRecognitionResult
 import com.sts.sontalksign.R
 import com.sts.sontalksign.databinding.ActivityConversationBinding
@@ -54,11 +49,13 @@ import java.io.File
 import java.io.FileOutputStream
 import java.io.FileReader
 import java.io.FileWriter
-import java.lang.IllegalStateException
 import java.lang.ref.WeakReference
+import java.util.Timer
+import java.util.TimerTask
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
+
 
 class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.LandmarkerListener, HandLandmarkerHelper.LandmarkerListener {
     companion object {
@@ -133,6 +130,10 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
     private val conversationCamera: ArrayList<ConversationCameraModel> = ArrayList()
     private lateinit var recyclerView: RecyclerView // RecyclerView 선언
 
+
+
+
+    
     /**  CSR 상태에 대한 동작, clientReady, audioRecording, partialResult, final Result, recognitionError, clientInactive */
     private fun handleMessage(msg: Message) {
         when (msg.what) {
@@ -159,7 +160,7 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
 //                mResult = strBuf.toString()
 //                binding.tvCRS.text = mResult
 
-                handleSTTResult(results[0].toString(), false) // STT 결과를 RecyclerView에 추가
+                startSTTWithTimer(results[0].toString(), false) // STT 결과를 RecyclerView에 추가
 
                 binding.tvCRS.text = results[0].toString()
             }
@@ -205,7 +206,10 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
         }
 
         /** "대화 종료" 버튼 클릭 */
-        binding.btnStopConversation.setOnClickListener { stopConversation() }
+        binding.btnStopConversation.setOnClickListener {
+            stopConversation()
+            stopSTTTimer()
+        }
 
         /** 대화내용 저장 */
         /** 대화 시작 - "녹음하기" 여부 저장 */
@@ -287,12 +291,57 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
                 handLandmarkerHelperListener = this
             )
         }
+
+
     }
 
     /**
      * TTS API 요청
      * line: 입력으로 들어온 문장
      */
+
+// 스레드입니다
+
+    private var sttTimer: Timer? = null
+
+    private fun startSTTWithTimer(sttResult: String, isMine: Boolean) {
+        // 타이머 초기화 (7초마다 실행)
+        sttTimer = Timer()
+        sttTimer?.schedule(object : TimerTask() {
+            override fun run() {
+
+                val currentTime = System.currentTimeMillis()
+                val conversationCameraModel = ConversationCameraModel(
+                    ConversationText = sttResult,
+                    ConversationTime = FileFormats.timeFormat.format(currentTime),
+                    isLeft = isMine
+                )
+
+                runOnUiThread {
+                    // 여기에서 UI 업데이트 수행, 예: RecyclerView에 항목 추가
+                    conversationCameraAdapter.addItemAndScroll(conversationCameraModel, recyclerView)
+                }
+
+
+                // STT 결과를 UI에 업데이트
+                updateUIWithSTTResult(sttResult)
+            }
+        }, 0, 7000) // 0ms부터 시작하여 7초마다 반복
+    }
+
+    private fun stopSTTTimer() {
+        sttTimer?.cancel() // 타이머 중지
+        sttTimer?.purge() // 타이머 관련 자원 정리
+        sttTimer = null // 타이머 초기화
+    }
+
+
+    private fun updateUIWithSTTResult(sttResult: String) {
+        runOnUiThread {
+            binding.tvCRS.text = sttResult
+        }
+    }
+
     private fun generateTtsApi(line: String) {
 
         //API 요청을 위한 스레드 생성
@@ -384,21 +433,25 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
             ConversationTime = FileFormats.timeFormat.format(currentTime),
             isLeft = isMine
         )
-        conversationCameraAdapter.addItemAndScroll(conversationCameraModel, recyclerView)
+        runOnUiThread {
+            // 여기에서 UI 업데이트 수행, 예: RecyclerView에 항목 추가
+            conversationCameraAdapter.addItemAndScroll(conversationCameraModel, recyclerView)
+        }
+
     }
 
 
     // STT 결과 생성 시 호출되는 메서드
-    fun handleSTTResult(sttResult: String, isMine: Boolean) {
-
-        val currentTime = System.currentTimeMillis()
-        val conversationCameraModel = ConversationCameraModel(
-            ConversationText = sttResult,
-            ConversationTime = FileFormats.timeFormat.format(currentTime),
-            isLeft = isMine
-        )
-        conversationCameraAdapter.addItemAndScroll(conversationCameraModel, recyclerView)
-    }
+//    fun handleSTTResult(sttResult: String, isMine: Boolean) {
+//
+//        val currentTime = System.currentTimeMillis()
+//        val conversationCameraModel = ConversationCameraModel(
+//            ConversationText = sttResult,
+//            ConversationTime = FileFormats.timeFormat.format(currentTime),
+//            isLeft = isMine
+//        )
+//        conversationCameraAdapter.addItemAndScroll(conversationCameraModel, recyclerView)
+//    }
 
 
     // RecyclerView를 스크롤하는 코드
