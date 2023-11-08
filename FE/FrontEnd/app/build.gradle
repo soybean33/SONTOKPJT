@@ -67,8 +67,10 @@ dependencies {
 
     // 텐서플로우 라이트
     implementation 'org.tensorflow:tensorflow-lite:+'
-    implementation 'org.tensorflow:tensorflow-lite-gpu:+'
+    //implementation 'org.tensorflow:tensorflow-lite-gpu:+'
     implementation 'org.tensorflow:tensorflow-lite-select-tf-ops:+'
+    //implementation 'org.tensorflow:tensorflow-lite:2.3.0'
+    implementation 'org.tensorflow:tensorflow-lite-gpu:2.3.0'
 
     implementation 'androidx.core:core-ktx:1.8.0'
     implementation 'androidx.appcompat:appcompat:1.6.1'

@@ -1,17 +1,17 @@
 package com.sts.sontalksign.feature.conversation
 
-import android.app.Activity
+
 import android.content.Context
 import android.content.res.AssetFileDescriptor
 import android.content.res.AssetManager
 import android.util.Log
-import org.tensorflow.lite.DataType
+
 import org.tensorflow.lite.Interpreter
-//import org.tensorflow.lite.Interpreter
+import org.tensorflow.lite.gpu.CompatibilityList
+import org.tensorflow.lite.gpu.GpuDelegate
 import java.io.FileInputStream
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
-import java.nio.MappedByteBuffer
 import java.nio.channels.FileChannel
 import kotlin.math.acos
 
@@ -41,6 +41,12 @@ class HandSignHelper() {
     var wordQueue : Array<String> = arrayOf("", "1", "2", "3", "4", "5", "6", "7")
     val wordCounterMap : MutableMap<String, Int> = mutableMapOf("" to 0, "1" to 0, "2" to 0, "3" to 0, "4" to 0, "5" to 0, "6" to 0, "7" to 0)
 
+    val signWordSize : Int = signWords.size
+
+    /** 변경해보며 적용해 봐야하는 임계값들 */
+    val probabilityThreshold: Float = 0.8f
+    val counterThreshold: Int = 8
+
     /** PoseLandmark 정형화 - 11개의 Face, 22개의 Body */
     fun initPose(poseResultBundle: PoseLandmarkerHelper.ResultBundle) {
         if(poseResultBundle.results.first().landmarks().size == 1) {
@@ -57,8 +63,6 @@ class HandSignHelper() {
                 }
             }
         }
-
-//        Log.d(TAG, "Body: ${pose[0][0].toString()}, ${pose[1][0].toString()}")
     }
 
     /** Hand Landmark 정형화 */
@@ -162,9 +166,6 @@ class HandSignHelper() {
                 }
             }
         }
-
-//        Log.d(TAG, "RightHand: ${rightHand.toString()}")
-//        Log.d(TAG, "LeftHand: ${leftHand.toString()}")
     }
 
     /** HandLandmarker 필요한 데이터로 변경 */
@@ -249,7 +250,7 @@ class HandSignHelper() {
         }
     }
 
-    /** 벡터 내적 */
+    /** 손 벡터 내적 */
     private fun calculateHandAngles(hand_v: Array<Array<Float>>): FloatArray {
         val angles = FloatArray(15)
         val joints1 = intArrayOf(0, 1, 2, 4, 5, 6, 8, 9, 10, 12, 13, 14, 16, 17, 18)
@@ -263,6 +264,7 @@ class HandSignHelper() {
         return angles
     }
 
+    /** 포즈 벡터 내적 */
     private fun calculatePoseAngles(hand_v: Array<Array<Float>>): FloatArray {
         val angles = FloatArray(10)
         val joints1 = intArrayOf(0, 1, 2, 4, 5, 6, 8, 9, 11, 12)
@@ -276,6 +278,7 @@ class HandSignHelper() {
         return angles
     }
 
+    /** 벡터 크기 구하기 */
     private inline fun vectorDot(vector1: Array<Float>, vector2: Array<Float>): Float {
         var dotProduct = 0f
         for (i in vector1.indices) {
@@ -285,7 +288,7 @@ class HandSignHelper() {
     }
 
 
-    public fun Solution(context: Context){
+    public fun Solution(context: Context) : String {
         val result = FloatArray(265) {0f}
 
         /** leftHand 데이터 - point와 angle */
@@ -328,7 +331,7 @@ class HandSignHelper() {
         frameDeque.add(result)
 
         val output = Array(1) {
-            FloatArray(2) { 0.0f }
+            FloatArray(signWordSize) { 0.0f }
         }
 
         val tflite = getTfliteInterpreter("sl_model.tflite", context)
@@ -336,38 +339,44 @@ class HandSignHelper() {
         var input = convertArrayToByteBuffer(frameDeque)
         tflite.run(input, output)
 
-//        for(i in 0 until output.size) {
-//            for(j in 0 until output[i].size) {
-//                Log.d("output", "${i}, ${j} : ${output[i][j]}")
-//            }
-//        }
+        Log.d("aaaaaaaaaaa", wordQueueManager(output[0].toList().toTypedArray()))
 
-        val resultString : String = wordQueueManager(output[0].toList().toTypedArray())
-        Log.d("resultString: ", resultString)
+        return wordQueueManager(output[0].toList().toTypedArray())
     }
 
     private fun convertArrayToByteBuffer(inputData: ArrayList<FloatArray>) : ByteBuffer {
         var byteBuffer: ByteBuffer = ByteBuffer.allocate(5 * 265 * 4)
         byteBuffer.order(ByteOrder.nativeOrder())
 
-//        Log.d("byteBuffer", byteBuffer.capacity().toString())
-
         for(i in 0 until 5) {
             for(j in 0 until 265) {
                 byteBuffer.putFloat(inputData[i][j])
             }
         }
-        ///tensorflow =  53,000
-        ///159,000
+
         return byteBuffer
     }
 
+    /** 모델 연결 */
     private fun getTfliteInterpreter(modelPath: String, context: Context) : Interpreter{
-//        Log.d("modelPath 누구냐?", context.packageCodePath)
 
         val model : ByteBuffer = loadModelFile(context)
         model.order(ByteOrder.nativeOrder())
-        interpreter = Interpreter(model)
+
+        val compatList = CompatibilityList()
+        val options = Interpreter.Options().apply{
+            if(compatList.isDelegateSupportedOnThisDevice){
+                // if the device has a supported GPU, add the GPU delegate
+                val delegateOptions = compatList.bestOptionsForThisDevice
+                this.addDelegate(GpuDelegate(delegateOptions))
+            } else {
+                this.setNumThreads(4)
+            }
+        }
+
+        interpreter = Interpreter(model, options)
+//        interpreter = Interpreter(model)
+
 
         return interpreter!!
     }
@@ -386,8 +395,6 @@ class HandSignHelper() {
 
     private fun wordQueueManager(predictionResult: Array<Float>): String {
         var wordIndex: Int = getWordIndex(predictionResult)
-        val probabilityThreshold: Float = 0.8f
-        val counterThreshold: Int = 8
         var signWord: String
         if (predictionResult[wordIndex] < probabilityThreshold) {
             signWord = ""

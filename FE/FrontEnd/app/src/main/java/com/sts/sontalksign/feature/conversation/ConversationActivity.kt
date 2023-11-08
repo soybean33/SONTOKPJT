@@ -133,6 +133,8 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
     private val conversationCamera: ArrayList<ConversationCameraModel> = ArrayList()
     private lateinit var recyclerView: RecyclerView // RecyclerView 선언
 
+    val handSignHelperResult : String = ""
+
     /**  CSR 상태에 대한 동작, clientReady, audioRecording, partialResult, final Result, recognitionError, clientInactive */
     private fun handleMessage(msg: Message) {
         when (msg.what) {
@@ -244,6 +246,8 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
                 naverRecognizer!!.getSpeechRecognizer().stop()
             }
         }
+
+        if(handSignHelperResult != "") binding.tvHandSign.text = handSignHelperResult
 
         /** 카메라 권한 요청 */
         if(allPermissionsGranted()) {
@@ -585,7 +589,10 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
 
     private suspend fun mediaPipeProcess() = coroutineScope {
         launch {
-            handSignHelper.Solution(this@ConversationActivity)
+            val handSignHelperResult : String = handSignHelper.Solution(this@ConversationActivity)
+
+            Log.d("afdsfadsfdsafdsafdsafads", handSignHelperResult)
+
 //            try{
 //                handSignHelper.Solution(this@ConversationActivity)
 //                //val data: HandSignHelper = HandSignHelper(HandLandmarkerHelper.ResultBundle, PoseLandmarkerHelper.ResultBundle)
@@ -663,28 +670,8 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
     ) {
         this?.runOnUiThread {
             if (binding != null) {
-                /** 실험실 로그 */
-//                Log.d("TEST-Pose", resultBundle.results.first().toString())
-//                Log.d("TEST-Pose-", resultBundle.results.first().landmarks().toString())
-//                Log.d("TEST-Pose-size", resultBundle.results.first().landmarks().size.toString())
-//
-//                if(resultBundle.results.first().landmarks().size == 1) {
-//                    Log.d("TEST-Pose-size-detail", resultBundle.results.first().landmarks()[0].size.toString())
-//                }
-//
-//                Log.d("TEST-Pose", resultBundle.results.first().toString()
                 handSignHelper.initPose(resultBundle)
 
-                //TODO: landmarks().size() 가 1이상인지 조건 확인 필요
-//                if(resultBundle.results.first().landmarks()[0].size >= 1) {
-//                    Log.d("TEST-Pose-", resultBundle.results.first().landmarks()[0].size.toString())
-//                }
-
-//                Log.d("TEST-", resultBundle.results.first().handednesses().toString())
-//                binding.bottomSheetLayout.inferenceTimeVal.text =
-//                    String.format("%d ms", resultBundle.inferenceTime)
-//
-//                // Pass necessary information to OverlayView for drawing on the canvas
                 binding.poseOverlay.setResults(
                     resultBundle.results.first(),
                     resultBundle.inputImageHeight,
@@ -720,28 +707,6 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
 //                Log.d("TEST-Hand", resultBundle.results.first().toString())
 
                 handSignHelper.initHand(resultBundle)
-
-                /** 실험실 로그 */
-//                Log.d("TEST-Hand-handed", resultBundle.results.first().handednesses().toString())
-//                Log.d("TEST-Hand-size", resultBundle.results.first().handednesses().size.toString())
-//
-//                if(resultBundle.results.first().handednesses().size == 1){
-//                    Log.d("TEST-Hand-category1111", resultBundle.results.first().handednesses()[0][0].categoryName())
-//                    Log.d("TEST-Hand-score1111", resultBundle.results.first().handednesses()[0][0].score().toString())
-//                    Log.d("TEST-Hand-index1111", resultBundle.results.first().handednesses()[0][0].index().toString())
-//                    Log.d("TEST-Hand-landmarks1111", resultBundle.results.first().landmarks()[0].size.toString())
-//                }
-//                else if(resultBundle.results.first().handednesses().size == 2){
-//                    Log.d("TEST-Hand-landmark2222", resultBundle.results.first().landmarks()[1].toString())
-//                    Log.d("TEST-Hand-landmark2222", resultBundle.results.first().landmarks()[1][20].toString())
-//                    Log.d("TEST-Hand-landmark2222", resultBundle.results.first().landmarks()[1][20].x().toString())
-//                    Log.d("TEST-Hand-category2222", resultBundle.results.first().handednesses()[0][0].categoryName())
-//                    Log.d("TEST-Hand-score2222", resultBundle.results.first().handednesses()[0][0].score().toString())
-//                    Log.d("TEST-Hand-category2222", resultBundle.results.first().handednesses()[1][0].categoryName())
-//                    Log.d("TEST-Hand-score2222", resultBundle.results.first().handednesses()[1][0].score().toString())
-//                    Log.d("TEST-Hand-index22221111", resultBundle.results.first().handednesses()[0][0].index().toString())
-//                    Log.d("TEST-Hand-index22222222", resultBundle.results.first().handednesses()[1][0].index().toString())
-//                }
                 
                 // Pass necessary information to OverlayView for drawing on the canvas
                 binding.handOverlay.setResults(
