@@ -37,10 +37,24 @@
             android:id="@+id/hand_overlay"
             android:layout_width="match_parent"
             android:layout_height="match_parent" />
+
         <com.sts.sontalksign.feature.conversation.PoseOverlayView
             android:id="@+id/pose_overlay"
             android:layout_width="match_parent"
             android:layout_height="match_parent" />
+
+        <TextView
+            android:id="@+id/tv_alert_unfolded"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="플립을 접은 후 대화를 시작해주세요!"
+            android:textColor="@color/tag6color"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:background="@color/subgray"
+            android:paddingVertical="15dp"
+            android:gravity="center"
+            />
     </androidx.coordinatorlayout.widget.CoordinatorLayout>
 
 
@@ -48,7 +62,6 @@
         android:id="@+id/et_text_conversation"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="10dp"
         android:ems="10"
         android:hint="텍스트를 입력하세요"
         android:inputType="text"
