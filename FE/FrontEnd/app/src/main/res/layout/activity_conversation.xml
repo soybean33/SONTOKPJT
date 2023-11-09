@@ -2,15 +2,15 @@
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/cl_conversation"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/black"
     tools:context=".feature.conversation.ConversationActivity">
 
     <androidx.coordinatorlayout.widget.CoordinatorLayout
         android:id="@+id/camera_container"
         android:layout_width="match_parent"
-        android:layout_height="500dp"
+        android:layout_height="700dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
@@ -50,14 +50,11 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="10dp"
         android:ems="10"
-
         android:hint="텍스트를 입력하세요"
         android:inputType="text"
         android:textColor="@color/base"
         android:textColorHint="@color/base"
-
         app:layout_constraintEnd_toEndOf="parent"
-
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/camera_container" />
 
