@@ -38,3 +38,11 @@
 
 - lag를 5로 설정
 
+## v7
+
+- video 이름에서 형태소 추출
+- 하나의 형태소에 대해 여러 수어 영상이 올 수 있도록 형태소(actions)를 dictionary로 변경
+- MediaPipe 설정 한 번만 하도록 수정
+- video capture를 1개만 사용하도록 변경
+- input을 받아 dataset type 설정 가능(train / test)
+
