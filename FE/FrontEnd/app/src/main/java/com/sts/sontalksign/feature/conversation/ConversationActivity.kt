@@ -58,6 +58,9 @@ import java.io.FileOutputStream
 import java.io.FileReader
 import java.io.FileWriter
 import java.lang.ref.WeakReference
+import java.nio.ByteBuffer
+import java.nio.ByteOrder
+import java.nio.channels.FileChannel
 import java.util.Timer
 import java.util.TimerTask
 import java.util.concurrent.ExecutorService
@@ -162,7 +165,7 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
 //                mResult = strBuf.toString()
 //                binding.tvCRS.text = mResult
 
-                startSTTWithTimer(results[0].toString(), false) // STT 결과를 RecyclerView에 추가
+                startSTT(results[0].toString(), false) // 이 부분을 변경
 
                 binding.tvCRS.text = results[0].toString()
             }
@@ -170,13 +173,13 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
                 audioWriter?.close()
                 mResult = "Error code : ${msg.obj}"
                 binding.tvCRS.text = mResult
-                binding.btnCRS.setText(R.string.str_start)
-                binding.btnCRS.isEnabled = true
+//                binding.btnCRS.setText(R.string.str_start)
+//                binding.btnCRS.isEnabled = true
             }
             R.id.clientInactive -> {
                 audioWriter?.close()
-                binding.btnCRS.setText(R.string.str_start)
-                binding.btnCRS.isEnabled = true
+//                binding.btnCRS.setText(R.string.str_start)
+//                binding.btnCRS.isEnabled = true
             }
         }
     }
@@ -191,14 +194,16 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
         recyclerView.layoutManager = LinearLayoutManager(this)
         conversationCameraAdapter = ConversationCameraAdapter(conversationCamera)
         recyclerView.adapter = conversationCameraAdapter
-        (recyclerView.layoutManager as LinearLayoutManager).scrollToPosition(conversationCameraAdapter.itemCount - 1)
+        (recyclerView.layoutManager as LinearLayoutManager).scrollToPosition(
+            conversationCameraAdapter.itemCount - 1
+        )
 
         /** 텍스트 입력 이벤트 처리 */
         binding.etTextConversation.setOnEditorActionListener { textView, actionId, _ ->
             var handled = false
             //완료버튼 클릭에만 처리
-            if(actionId == EditorInfo.IME_ACTION_DONE) {
-                var inpContent= textView.text.toString()
+            if (actionId == EditorInfo.IME_ACTION_DONE) {
+                var inpContent = textView.text.toString()
                 addTextLine(inpContent, false)
                 binding.etTextConversation.setText("")
 
@@ -208,10 +213,10 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
             handled
         }
 
+
         /** "대화 종료" 버튼 클릭 */
         binding.btnStopConversation.setOnClickListener {
             stopConversation()
-            stopSTTTimer()
         }
 
         /** 대화내용 저장 */
@@ -235,27 +240,26 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
         /** CSR 관련 처리 */
         handler = RecognitionHandler(this)
         naverRecognizer = NaverRecognizer(this, handler!!, CLIENT_ID)
-        binding.btnCRS.setOnClickListener {
-            if (!naverRecognizer!!.getSpeechRecognizer().isRunning) {
-                // Start button is pushed when SpeechRecognizer's state is inactive.
-                // Run SpeechRecongizer by calling recognize().
-                mResult = ""
-                binding.tvCRS.text = "Connecting..."
-                binding.btnCRS.setText(R.string.str_stop)
-                naverRecognizer!!.recognize()
-
-
-            } else {
-                Log.d(TAG, "stop and wait Final Result")
-                binding.tvCRS.isEnabled = false
-                naverRecognizer!!.getSpeechRecognizer().stop()
-            }
-        }
-
+//        binding.btnCRS.setOnClickListener {
+//            if (!naverRecognizer!!.getSpeechRecognizer().isRunning) {
+//                // Start button is pushed when SpeechRecognizer's state is inactive.
+//                // Run SpeechRecongizer by calling recognize().
+//                mResult = ""
+//                binding.tvCRS.text = "Connecting..."
+//                binding.btnCRS.setText(R.string.str_stop)
+//                naverRecognizer!!.recognize()
+//
+//
+//            } else {
+//                Log.d(TAG, "stop and wait Final Result")
+//                binding.tvCRS.isEnabled = false
+//                naverRecognizer!!.getSpeechRecognizer().stop()
+//            }
+//        }
 
 
         /** 카메라 권한 요청 */
-        if(allPermissionsGranted()) {
+        if (allPermissionsGranted()) {
 
         } else {
             ActivityCompat.requestPermissions(
@@ -295,6 +299,39 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
         }
 
         tflite = getTfliteInterpreter()
+
+
+        val sttHandler = Handler()  // Handler 객체 생성
+
+        val sttRunnable = object : Runnable {
+            override fun run() {
+                if (!naverRecognizer!!.getSpeechRecognizer().isRunning) {
+                    // Start button is pushed when SpeechRecognizer's state is inactive.
+                    // Run SpeechRecongizer by calling recognize().
+                    mResult = ""
+                    binding.tvCRS.text = "Connecting..."
+//                    binding.btnCRS.setText(R.string.str_stop)
+                    naverRecognizer!!.recognize()
+                } else {
+                    Log.d(TAG, "stop and wait Final Result")
+                    binding.tvCRS.isEnabled = false
+                    naverRecognizer!!.getSpeechRecognizer().stop()
+                }
+
+                fetchSTTResult { sttResult ->
+                    val isMine = false
+                    startSTT(sttResult, isMine)
+                }
+                sttHandler.postDelayed(this, 7000)
+            }
+        }
+        sttHandler.postDelayed(sttRunnable, 7000)
+    }
+
+    private fun fetchSTTResult(callback: (String) -> Unit) {
+        // 네이버 STT API 호출 및 결과를 callback 함수를 통해 전달
+        // 네이버 STT API 호출 및 결과를 callback 함수를 통해 전달
+        // 이 부분에서 STT API를 호출하고 결과를 callback으로 전달하는 로직을 추가해야 합니다.
     }
 
     private fun getTfliteInterpreter() : Interpreter {
@@ -330,52 +367,8 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
         return fc.map(FileChannel.MapMode.READ_ONLY, startOffSet, declaredLength)
     }
 
-    /**
-     * TTS API 요청
-     * line: 입력으로 들어온 문장
-     */
-
-// 스레드입니다
-
-    private var sttTimer: Timer? = null
-
-    private fun startSTTWithTimer(sttResult: String, isMine: Boolean) {
-        // 타이머 초기화 (7초마다 실행)
-        sttTimer = Timer()
-        sttTimer?.schedule(object : TimerTask() {
-            override fun run() {
-
-                val currentTime = System.currentTimeMillis()
-                val conversationCameraModel = ConversationCameraModel(
-                    ConversationText = sttResult,
-                    ConversationTime = FileFormats.timeFormat.format(currentTime),
-                    isLeft = isMine
-                )
-
-                runOnUiThread {
-                    // 여기에서 UI 업데이트 수행, 예: RecyclerView에 항목 추가
-                    conversationCameraAdapter.addItemAndScroll(conversationCameraModel, recyclerView)
-                }
 
 
-                // STT 결과를 UI에 업데이트
-                updateUIWithSTTResult(sttResult)
-            }
-        }, 0, 7000) // 0ms부터 시작하여 7초마다 반복
-    }
-
-    private fun stopSTTTimer() {
-        sttTimer?.cancel() // 타이머 중지
-        sttTimer?.purge() // 타이머 관련 자원 정리
-        sttTimer = null // 타이머 초기화
-    }
-
-
-    private fun updateUIWithSTTResult(sttResult: String) {
-        runOnUiThread {
-            binding.tvCRS.text = sttResult
-        }
-    }
 
     private fun generateTtsApi(line: String) {
 
@@ -460,6 +453,7 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
 
     }
 
+    @SuppressLint("SuspiciousIndentation")
     fun handleTTSResult(ttsResult: String, isMine: Boolean) {
 
         val currentTime = System.currentTimeMillis()
@@ -468,25 +462,23 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
             ConversationTime = FileFormats.timeFormat.format(currentTime),
             isLeft = isMine
         )
-        runOnUiThread {
-            // 여기에서 UI 업데이트 수행, 예: RecyclerView에 항목 추가
-            conversationCameraAdapter.addItemAndScroll(conversationCameraModel, recyclerView)
-        }
+
+            this.conversationCameraAdapter.addItemAndScroll(conversationCameraModel, recyclerView)
 
     }
 
 
-    // STT 결과 생성 시 호출되는 메서드
-//    fun handleSTTResult(sttResult: String, isMine: Boolean) {
-//
-//        val currentTime = System.currentTimeMillis()
-//        val conversationCameraModel = ConversationCameraModel(
-//            ConversationText = sttResult,
-//            ConversationTime = FileFormats.timeFormat.format(currentTime),
-//            isLeft = isMine
-//        )
-//        conversationCameraAdapter.addItemAndScroll(conversationCameraModel, recyclerView)
-//    }
+
+    fun startSTT(sttResult: String, isMine: Boolean) {
+
+        val currentTime = System.currentTimeMillis()
+        val conversationCameraModel = ConversationCameraModel(
+            ConversationText = sttResult,
+            ConversationTime = FileFormats.timeFormat.format(currentTime),
+            isLeft = isMine
+        )
+        conversationCameraAdapter.addItemAndScroll(conversationCameraModel, recyclerView)
+    }
 
 
     // RecyclerView를 스크롤하는 코드
@@ -512,11 +504,11 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
         }
     }
 
-    // 스크롤 대상 위치가 업데이트될 때 RecyclerView를 스크롤
-    fun updateAndScrollToLatestItem() {
-        conversationCameraAdapter.notifyDataSetChanged()
-        scrollToLatestItem()
-    }
+//    // 스크롤 대상 위치가 업데이트될 때 RecyclerView를 스크롤
+//    fun updateAndScrollToLatestItem() {
+//        conversationCameraAdapter.notifyDataSetChanged()
+//        scrollToLatestItem()
+//    }
     // 오류 메시지를 표시하는 메서드
     fun showErrorMessage(message: String) {
         // 오류 메시지를 사용자에게 표시하거나 다른 조치를 취하십시오.
@@ -878,8 +870,8 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
         //STT 초기 설정
         mResult = ""
         binding.tvCRS.text = ""
-        binding.btnCRS.setText(R.string.str_start)
-        binding.btnCRS.isEnabled = true
+//        binding.btnCRS.setText(R.string.str_start)
+//        binding.btnCRS.isEnabled = true
     }
 
     override fun onPause() {
