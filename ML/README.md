@@ -105,7 +105,7 @@ https://aihub.or.kr/aihubdata/data/view.do?currMenu=115&topMenu=100&aihubDataSe=
 
 - 특징점(keypoint) 가공 데이터 (.json)
 
-![keypoint](./image/keypoint.png)
+![keypoint](./readme_images/keypoint.png)
 
 ## video
 
@@ -151,3 +151,4 @@ https://developers.rtzr.ai/
   - 이를 위해선 레이어층에 대한 이해화 해당 레이어의 역할을 이해하고 지울지를 결정해야함
   - -> 현실적으로 어렵다고 판단
   - 대안: 일단 1번 방향으로 데이터를 GPU 서버에 올렸다 내렸다 반복하면서 모델 학습 시키는 방향
+
