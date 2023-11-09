@@ -38,16 +38,16 @@ class HandSignHelper() {
         if(poseResultBundle.results.first().landmarks().size == 1) {
             for(i in 0 until 33) {
                 /** 카메라 밖으로 나갔다면, 즉 presence 값이 0.5보다 작다면 0으로 처리 */
-                if(poseResultBundle.results.first().landmarks()[0][i].presence().orElse(0f) < 0.5) {
-                    pose[i][0] = 0f
-                    pose[i][1] = 0f
-                    pose[i][2] = 0f
-
-                } else {
+//                if(poseResultBundle.results.first().landmarks()[0][i].presence().orElse(0f) < 0.5) {
+//                    pose[i][0] = 0f
+//                    pose[i][1] = 0f
+//                    pose[i][2] = 0f
+//
+//                } else {
                     pose[i][0] = poseResultBundle.results.first().landmarks()[0][i].x()
                     pose[i][1] = poseResultBundle.results.first().landmarks()[0][i].y()
                     pose[i][2] = poseResultBundle.results.first().landmarks()[0][i].z()
-                }
+//                }
             }
         }
     }
