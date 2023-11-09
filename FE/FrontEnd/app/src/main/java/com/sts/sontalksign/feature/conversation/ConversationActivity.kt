@@ -324,20 +324,21 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
             order(ByteOrder.nativeOrder())
         }
 
-        val compatList = CompatibilityList()
-        val options = Interpreter.Options().apply{
-            if(compatList.isDelegateSupportedOnThisDevice){
-                // if the device has a supported GPU, add the GPU delegate
-                val delegateOptions = compatList.bestOptionsForThisDevice
-                addDelegate(GpuDelegate(delegateOptions))
-                Log.d("GPU/CPU", "GGGGGGGGGGGGGGGGGGGG")
-            } else {
-                setNumThreads(4)
-                Log.d("GPU/CPU", "CCCCCCCCCCCCCCCCCCC")
-            }
-        }
-
-        interpreter = Interpreter(model, options)
+//        val compatList = CompatibilityList()
+//        val options = Interpreter.Options().apply{
+//            if(compatList.isDelegateSupportedOnThisDevice){
+//                // if the device has a supported GPU, add the GPU delegate
+//                val delegateOptions = compatList.bestOptionsForThisDevice
+//                addDelegate(GpuDelegate(delegateOptions))
+//                Log.d("GPU/CPU", "GGGGGGGGGGGGGGGGGGGG")
+//            } else {
+//                setNumThreads(4)
+//                Log.d("GPU/CPU", "CCCCCCCCCCCCCCCCCCC")
+//            }
+//        }
+//
+//        interpreter = Interpreter(model, options)
+        interpreter = Interpreter(model)
         return interpreter!!
     }
 
@@ -702,7 +703,12 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
 
             tflite!!.run(input, output)
 
+            // Log.d("Result", "${output[0][0]} ${output[0][1]} ${output[0][2]} ${output[0][3]} ${output[0][4]} ${output[0][5]} ${output[0][6]} ${output[0][7]} ${output[0][8]} ${output[0][9]} ${output[0][10]} ${output[0][11]} ${output[0][12]} ${output[0][13]} ${output[0][14]}")
+
+            Log.d("Result", "${output[0][0]} ${output[0][1]}")
             val result = handSignHelper.wordQueueManager(output[0].toList().toTypedArray())
+
+
             Log.d("Result", result)
         }
     }
