@@ -1,5 +1,6 @@
 package com.sts.sontalksign.feature.conversation
 
+import android.util.Log
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import kotlin.math.acos
@@ -21,7 +22,8 @@ class HandSignHelper() {
             add(FloatArray(265) {0f})
         }
     }
-    var signWords : Array<String> = arrayOf("석사", "연구")
+    var signWords : Array<String> = arrayOf("가다", "강아지", "단추", "덥다", "돼지", "먹다", "물음표", "반갑다", "아침", "오늘", "오후", "저녁", "졸리다", "좋다", "할아버지"            )
+    //var signWords : Array<String> = arrayOf("석사", "연구")
     var wordQueue : Array<String> = arrayOf("", "1", "2", "3", "4", "5", "6", "7")
     val wordCounterMap : MutableMap<String, Int> = mutableMapOf("" to 0, "1" to 0, "2" to 0, "3" to 0, "4" to 0, "5" to 0, "6" to 0, "7" to 0)
 
@@ -29,7 +31,7 @@ class HandSignHelper() {
 
     /** 변경해보며 적용해 봐야하는 임계값들 */
     val probabilityThreshold: Float = 0.8f
-    val counterThreshold: Int = 8
+    val counterThreshold: Int = 5
 
     /** PoseLandmark 정형화 - 11개의 Face, 22개의 Body */
     fun initPose(poseResultBundle: PoseLandmarkerHelper.ResultBundle) {
@@ -273,7 +275,7 @@ class HandSignHelper() {
         /** leftHand 데이터 - point와 angle */
         for(i in 0 until 21) {
             for( j in 0 until 3) {
-                result[i*3 + j] = leftHand[i][j]
+                result[i * 3 + j] = leftHand[i][j]
             }
         }
 
@@ -306,8 +308,9 @@ class HandSignHelper() {
             result[255 + i] = resultPose[i]
         }
 
-        frameDeque.removeFirst() /** 먼저 추가하고 제거하는 것이 outofbound를 방지할 수 있을 듯 */
+
         frameDeque.add(result)
+        frameDeque.removeFirst() /** 먼저 추가하고 제거하는 것이 outofbound를 방지할 수 있을 듯 */
 
         return convertArrayToByteBuffer(frameDeque)
     }
@@ -386,6 +389,10 @@ class HandSignHelper() {
             return signWord
         }
         return ""
+    }
+
+    public fun dataSize() : Int {
+        return signWordSize
     }
 }
 

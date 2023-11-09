@@ -18,6 +18,7 @@ import android.media.MediaPlayer
 import android.os.Build
 import android.os.Bundle
 import android.os.Handler
+import android.os.Looper
 import android.os.Message
 import android.os.SystemClock
 import android.util.Log
@@ -70,14 +71,16 @@ import java.io.FileInputStream
 import java.io.FileOutputStream
 import java.io.FileReader
 import java.io.FileWriter
-import java.lang.IllegalStateException
 import java.lang.ref.WeakReference
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import java.nio.channels.FileChannel
+import java.util.Timer
+import java.util.TimerTask
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
+
 
 class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.LandmarkerListener, HandLandmarkerHelper.LandmarkerListener {
     companion object {
@@ -180,7 +183,7 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
 //                mResult = strBuf.toString()
 //                binding.tvCRS.text = mResult
 
-                handleSTTResult(results[0].toString(), false) // STT 결과를 RecyclerView에 추가
+                startSTTWithTimer(results[0].toString(), false) // STT 결과를 RecyclerView에 추가
 
                 binding.tvCRS.text = results[0].toString()
             }
@@ -231,7 +234,10 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
         }
 
         /** "대화 종료" 버튼 클릭 */
-        binding.btnStopConversation.setOnClickListener { stopConversation() }
+        binding.btnStopConversation.setOnClickListener {
+            stopConversation()
+            stopSTTTimer()
+        }
 
         /** 대화내용 저장 */
         /** 대화 시작 - "녹음하기" 여부 저장 */
@@ -319,20 +325,21 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
             order(ByteOrder.nativeOrder())
         }
 
-        val compatList = CompatibilityList()
-        val options = Interpreter.Options().apply{
-            if(compatList.isDelegateSupportedOnThisDevice){
-                // if the device has a supported GPU, add the GPU delegate
-                val delegateOptions = compatList.bestOptionsForThisDevice
-                addDelegate(GpuDelegate(delegateOptions))
+//        val compatList = CompatibilityList()
+//        val options = Interpreter.Options().apply{
+//            if(compatList.isDelegateSupportedOnThisDevice){
+//                // if the device has a supported GPU, add the GPU delegate
+//                val delegateOptions = compatList.bestOptionsForThisDevice
+//                addDelegate(GpuDelegate(delegateOptions))
 //                Log.d("GPU/CPU", "GGGGGGGGGGGGGGGGGGGG")
-            } else {
-                setNumThreads(4)
+//            } else {
+//                setNumThreads(4)
 //                Log.d("GPU/CPU", "CCCCCCCCCCCCCCCCCCC")
-            }
-        }
-
-        interpreter = Interpreter(model, options)
+//            }
+//        }
+//
+//        interpreter = Interpreter(model, options)
+        interpreter = Interpreter(model)
         return interpreter!!
     }
 
@@ -351,6 +358,49 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
      * TTS API 요청
      * line: 입력으로 들어온 문장
      */
+
+// 스레드입니다
+
+    private var sttTimer: Timer? = null
+
+    private fun startSTTWithTimer(sttResult: String, isMine: Boolean) {
+        // 타이머 초기화 (7초마다 실행)
+        sttTimer = Timer()
+        sttTimer?.schedule(object : TimerTask() {
+            override fun run() {
+
+                val currentTime = System.currentTimeMillis()
+                val conversationCameraModel = ConversationCameraModel(
+                    ConversationText = sttResult,
+                    ConversationTime = FileFormats.timeFormat.format(currentTime),
+                    isLeft = isMine
+                )
+
+                runOnUiThread {
+                    // 여기에서 UI 업데이트 수행, 예: RecyclerView에 항목 추가
+                    conversationCameraAdapter.addItemAndScroll(conversationCameraModel, recyclerView)
+                }
+
+
+                // STT 결과를 UI에 업데이트
+                updateUIWithSTTResult(sttResult)
+            }
+        }, 0, 7000) // 0ms부터 시작하여 7초마다 반복
+    }
+
+    private fun stopSTTTimer() {
+        sttTimer?.cancel() // 타이머 중지
+        sttTimer?.purge() // 타이머 관련 자원 정리
+        sttTimer = null // 타이머 초기화
+    }
+
+
+    private fun updateUIWithSTTResult(sttResult: String) {
+        runOnUiThread {
+            binding.tvCRS.text = sttResult
+        }
+    }
+
     private fun generateTtsApi(line: String) {
         //API 요청을 위한 스레드 생성
         GlobalScope.launch(Dispatchers.IO) {
@@ -441,21 +491,25 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
             ConversationTime = FileFormats.timeFormat.format(currentTime),
             isLeft = isMine
         )
-        conversationCameraAdapter.addItemAndScroll(conversationCameraModel, recyclerView)
+        runOnUiThread {
+            // 여기에서 UI 업데이트 수행, 예: RecyclerView에 항목 추가
+            conversationCameraAdapter.addItemAndScroll(conversationCameraModel, recyclerView)
+        }
+
     }
 
 
     // STT 결과 생성 시 호출되는 메서드
-    fun handleSTTResult(sttResult: String, isMine: Boolean) {
-
-        val currentTime = System.currentTimeMillis()
-        val conversationCameraModel = ConversationCameraModel(
-            ConversationText = sttResult,
-            ConversationTime = FileFormats.timeFormat.format(currentTime),
-            isLeft = isMine
-        )
-        conversationCameraAdapter.addItemAndScroll(conversationCameraModel, recyclerView)
-    }
+//    fun handleSTTResult(sttResult: String, isMine: Boolean) {
+//
+//        val currentTime = System.currentTimeMillis()
+//        val conversationCameraModel = ConversationCameraModel(
+//            ConversationText = sttResult,
+//            ConversationTime = FileFormats.timeFormat.format(currentTime),
+//            isLeft = isMine
+//        )
+//        conversationCameraAdapter.addItemAndScroll(conversationCameraModel, recyclerView)
+//    }
 
     // RecyclerView를 스크롤하는 코드
     fun scrollToLatestItem() {
@@ -646,13 +700,20 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
         launch {
             val input : ByteBuffer = handSignHelper.Solution()
             val output = Array(1) {
-                FloatArray(2) { 0.0f }
+                FloatArray(handSignHelper.dataSize()) { 0.0f }
             }
+
+            input.rewind() // ByteBuffer를 읽기 위해 포인터 위치를 초기화합니다.
 
             tflite!!.run(input, output)
 
+            //Log.d("Result", "${output[0][0]} ${output[0][1]} ${output[0][2]} ${output[0][3]} ${output[0][4]} ${output[0][5]} ${output[0][6]} ${output[0][7]} ${output[0][8]} ${output[0][9]} ${output[0][10]} ${output[0][11]} ${output[0][12]} ${output[0][13]} ${output[0][14]}")
+
+            //Log.d("Result", "${output[0][0]} ${output[0][1]}")
             val result = handSignHelper.wordQueueManager(output[0].toList().toTypedArray())
-//            Log.d("Result", result)
+
+
+            Log.d("Result", result)
         }
     }
 
