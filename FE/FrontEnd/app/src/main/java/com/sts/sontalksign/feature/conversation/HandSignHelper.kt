@@ -22,15 +22,15 @@ class HandSignHelper() {
             add(FloatArray(265) {0f})
         }
     }
-    //var signWords : Array<String> = arrayOf("가다", "강아지", "단추", "덥다", "돼지", "먹다", "물음표", "반갑다", "아침", "오늘", "오후", "저녁", "졸리다", "좋다", "할아버지"            )
-    var signWords : Array<String> = arrayOf("석사", "연구")
+    var signWords : Array<String> = arrayOf("가다", "강아지", "단추", "덥다", "돼지", "먹다", "물음표", "반갑다", "아침", "오늘", "오후", "저녁", "졸리다", "좋다", "할아버지"            )
+    //var signWords : Array<String> = arrayOf("석사", "연구")
     var wordQueue : Array<String> = arrayOf("", "1", "2", "3", "4", "5", "6", "7")
     val wordCounterMap : MutableMap<String, Int> = mutableMapOf("" to 0, "1" to 0, "2" to 0, "3" to 0, "4" to 0, "5" to 0, "6" to 0, "7" to 0)
 
     val signWordSize : Int = signWords.size
 
     /** 변경해보며 적용해 봐야하는 임계값들 */
-    val probabilityThreshold: Float = 0.5f
+    val probabilityThreshold: Float = 0.8f
     val counterThreshold: Int = 5
 
     /** PoseLandmark 정형화 - 11개의 Face, 22개의 Body */
