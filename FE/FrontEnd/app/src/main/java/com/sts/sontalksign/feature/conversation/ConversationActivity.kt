@@ -70,6 +70,9 @@ import java.io.FileOutputStream
 import java.io.FileReader
 import java.io.FileWriter
 import java.lang.ref.WeakReference
+import java.nio.ByteBuffer
+import java.nio.ByteOrder
+import java.nio.channels.FileChannel
 import java.util.Timer
 import java.util.TimerTask
 import java.util.concurrent.ExecutorService
@@ -694,7 +697,7 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
         launch {
             val input : ByteBuffer = handSignHelper.Solution()
             val output = Array(1) {
-                FloatArray(2) { 0.0f }
+                FloatArray(handSignHelper.dataSize()) { 0.0f }
             }
 
             tflite!!.run(input, output)
