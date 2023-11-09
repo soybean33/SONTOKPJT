@@ -2,6 +2,7 @@ package com.sts.sontalksign.feature.conversation
 
 import ConversationCameraAdapter
 import android.Manifest
+import android.animation.ArgbEvaluator
 import android.animation.ValueAnimator
 import android.annotation.SuppressLint
 import android.content.Context
@@ -10,6 +11,7 @@ import android.content.res.AssetFileDescriptor
 import android.content.res.AssetManager
 import android.content.res.Configuration
 import android.graphics.Bitmap
+import android.graphics.Color
 import android.graphics.Rect
 import android.media.AudioAttributes
 import android.media.MediaPlayer
@@ -852,23 +854,50 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
     private fun updateUI(newLayoutInfo: WindowLayoutInfo) {
         var oldLayoutHeight : Int ?= null
         var newLayoutHeight : Int ?= null
+        var oldBackgroundColor : Int ?= null
+        var newBackgroundColor : Int ?= null
+        var oldTextColor : Int ?= null
+        var newTextColor : Int ?= null
         if(newLayoutInfo.displayFeatures[0].toString().contains("HALF_OPENED")) {
-            oldLayoutHeight = dpToPx(500)
+            oldLayoutHeight = dpToPx(700)
             newLayoutHeight = dpToPx(400)
+            oldBackgroundColor = Color.WHITE
+            newBackgroundColor = Color.BLACK
+            oldTextColor = Color.BLACK
+            newTextColor = Color.WHITE
         } else if(newLayoutInfo.displayFeatures[0].toString().contains("FLAT")) {
             oldLayoutHeight = dpToPx(400)
-            newLayoutHeight = dpToPx(500)
+            newLayoutHeight = dpToPx(700)
+            oldBackgroundColor = Color.BLACK
+            newBackgroundColor = Color.WHITE
+            oldTextColor = Color.WHITE
+            newTextColor = Color.BLACK
         }
 
-        val animator = ValueAnimator.ofInt(oldLayoutHeight!!, newLayoutHeight!!)
-        animator.addUpdateListener { animation ->
+        val heightAnimator = ValueAnimator.ofInt(oldLayoutHeight!!, newLayoutHeight!!)
+        heightAnimator.addUpdateListener { animation ->
             val value = animation.animatedValue as Int
             binding.cameraContainer.layoutParams.height = value
             binding.cameraContainer.requestLayout()
         }
+        val bgColorAnimator = ValueAnimator.ofObject(ArgbEvaluator(), oldBackgroundColor!!, newBackgroundColor!!)
+        bgColorAnimator.addUpdateListener { animation ->
+            val value = animation.animatedValue as Int
+            binding.clConversation.setBackgroundColor(value)
+        }
+        val txtColorAnimator = ValueAnimator.ofObject(ArgbEvaluator(), oldTextColor!!, newTextColor!!)
+        txtColorAnimator.addUpdateListener {animation ->
+            val value = animation.animatedValue as Int
+            binding.etTextConversation.setTextColor(value)
+            binding.etTextConversation.setHintTextColor(value)
+        }
 
-        animator.duration = 500
-        animator.start()
+        heightAnimator.duration = 500
+        bgColorAnimator.duration = 500
+        txtColorAnimator.duration = 500
+        heightAnimator.start()
+        bgColorAnimator.start()
+        txtColorAnimator.start()
     }
 
     private fun dpToPx(dp: Int) : Int {
