@@ -152,6 +152,7 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
 
     /** Foldable 반응형 */
     private lateinit var windowInfoTracker: WindowInfoTracker
+//    private var isFolded: Boolean = false
 
     /**  CSR 상태에 대한 동작, clientReady, audioRecording, partialResult, final Result, recognitionError, clientInactive */
     private fun handleMessage(msg: Message) {
@@ -270,8 +271,6 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
             }
         }
 
-
-
         /** 카메라 권한 요청 */
         if(allPermissionsGranted()) {
 
@@ -326,10 +325,10 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
                 // if the device has a supported GPU, add the GPU delegate
                 val delegateOptions = compatList.bestOptionsForThisDevice
                 addDelegate(GpuDelegate(delegateOptions))
-                Log.d("GPU/CPU", "GGGGGGGGGGGGGGGGGGGG")
+//                Log.d("GPU/CPU", "GGGGGGGGGGGGGGGGGGGG")
             } else {
                 setNumThreads(4)
-                Log.d("GPU/CPU", "CCCCCCCCCCCCCCCCCCC")
+//                Log.d("GPU/CPU", "CCCCCCCCCCCCCCCCCCC")
             }
         }
 
@@ -353,7 +352,6 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
      * line: 입력으로 들어온 문장
      */
     private fun generateTtsApi(line: String) {
-
         //API 요청을 위한 스레드 생성
         GlobalScope.launch(Dispatchers.IO) {
             try {
@@ -459,7 +457,6 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
         conversationCameraAdapter.addItemAndScroll(conversationCameraModel, recyclerView)
     }
 
-
     // RecyclerView를 스크롤하는 코드
     fun scrollToLatestItem() {
         val itemCount = conversationCameraAdapter.itemCount
@@ -488,6 +485,7 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
         conversationCameraAdapter.notifyDataSetChanged()
         scrollToLatestItem()
     }
+
     // 오류 메시지를 표시하는 메서드
     fun showErrorMessage(message: String) {
         // 오류 메시지를 사용자에게 표시하거나 다른 조치를 취하십시오.
@@ -495,8 +493,7 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
         Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
     }
 
-
-    //파일 쓰기
+    /** 파일 쓰기 */
     private fun writeTextFile(result: String) {
         val dir = File(directory)
 
@@ -538,24 +535,27 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
         return result.toString()
     }
 
-    //대화 종료 처리 함수
+    /** 대화 종료 처리 함수 */
     private fun stopConversation() {
         Log.d(TAG, "stopConversation() START")
 
-        //녹음하기 선택 시 - 팝업 발생 및 대화 내용 저장
+        /** 녹음하기를 선택한 경우 - 팝업 발생 및 대화 내용 저장 */
         if(isNowRecording) {
             val cForm = CustomForm(this)
             cForm.show()
             cForm.setOnBtnStoreClickedListener(object: CustomForm.onBtnStoreClickedListener {
                 override fun onBtnStoreClicked(title: String, tags: String) {
-                    val rConversation = title + "\nTAGS_" + tags + "\n" + textList //{제목\n태그인덱스\n대화내용} 형식
-                    writeTextFile(rConversation) //대화 종료 전 기록에 쌓인 대화 내용을 저장
+                    /** 대화 종료 전 기록에 쌓인 대화 내용을 저장 */
+                    /** {제목\n태그인덱스\n대화내용} 형식 */
+                    val rConversation = title + "\nTAGS_" + tags + "\n" + textList
+                    writeTextFile(rConversation)
                     finish()
                 }
             })
         }
-        else { //녹음하기 미선택 시 - "대화 종료" 질의 팝업 발생
+        else { /** 녹음하기를 미선택한 경우 - "대화 종료" 질의 팝업 발생 */
             //TODO: : "대화를 종료하시겠습니까?" 팝업 생성 및 발생
+
         }
     }
 
@@ -582,40 +582,40 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
 
     @SuppressLint("UnsafeOptInUsageError")
     private fun bindCameraUseCases() {
-        //카메라 프리뷰 초기화 및 설정
-        //CameraProvider
+        /** 카메라 프리뷰 초기화 및 설정 */
         val cameraProvider = cameraProvider ?: throw IllegalStateException("Camera initialization failed.")
 
         val cameraSelector =
-            CameraSelector.Builder().requireLensFacing(cameraFacing).build() //전면 카메라를 기본으로 선택
+            CameraSelector.Builder().requireLensFacing(cameraFacing).build() /** 전면 카메라를 기본으로 선택 */
 
         preview = Preview.Builder().setTargetAspectRatio(AspectRatio.RATIO_4_3)
             .setTargetRotation(binding.pvCamera.display.rotation)
             .build()
 
-        // ImageAnalysis. Using RGBA 8888 to match how our models work
+        /** ImageAnalysis. Using RGBA 8888 to match how our models work */
         imageAnalyzer =
             ImageAnalysis.Builder().setTargetAspectRatio(AspectRatio.RATIO_4_3)
                 .setTargetRotation(binding.pvCamera.display.rotation)
                 .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
                 .setOutputImageFormat(ImageAnalysis.OUTPUT_IMAGE_FORMAT_RGBA_8888)
                 .build()
-                // The analyzer can then be assigned to the instance
                 .also {
+                    /** analyzer 할당 */
                     it.setAnalyzer(backgroundBothExecutor) {image ->
                         mediaPipeSequence(image)
-                        //detectBoth(image)
                     }
                 }
 
-        cameraProvider.unbindAll() //바인딩된 항목 전체 제거
+        /** 바인딩된 항목 전체 제거 */
+        cameraProvider.unbindAll()
 
         try {
-            //카메라 관련 객체 바인딩
+            /** 카메라 관련 객체 바인딩 */
             camera = cameraProvider.bindToLifecycle(this, cameraSelector, preview, imageAnalyzer)
             preview?.setSurfaceProvider(binding.pvCamera.surfaceProvider)
         } catch(exc: Exception) {
-            Log.e(TAG, "Use case binding failed", exc) //앱에 더이상 포커스 없는 경우 등의 실패 케이스 처리
+            /** 실패 케이스 - 앱 내 포커스가 더이상 없는 경우 등 */
+            Log.e(TAG, "Use case binding failed", exc)
         }
     }
 
@@ -652,31 +652,20 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
             tflite!!.run(input, output)
 
             val result = handSignHelper.wordQueueManager(output[0].toList().toTypedArray())
-            Log.d("Result", result)
+//            Log.d("Result", result)
         }
     }
 
+    /** ImageAnalyzer에 대한 처리 시작 */
     private fun mediaPipeSequence(imageProxy: ImageProxy) = runBlocking {
+        /** Z Flip 접힌 상태에서만 동작 */
+//        if(!isFolded) {
+//            Log.d("isFolded TAG", "Phone is Folded!!")
+//            return@runBlocking
+//        }
+
         mediaPipe(imageProxy)
-
         mediaPipeProcess()
-    }
-
-    private fun detectBoth(imageProxy: ImageProxy) {
-        val frameTime = SystemClock.uptimeMillis()
-
-        val bitmapBuffer =
-            Bitmap.createBitmap(
-                imageProxy.width,
-                imageProxy.height,
-                Bitmap.Config.ARGB_8888
-            )
-
-        imageProxy.use { bitmapBuffer.copyPixelsFromBuffer(imageProxy.planes[0].buffer) }
-        imageProxy.close()
-
-        detectPose(imageProxy, bitmapBuffer, frameTime)
-        detectHand(imageProxy, bitmapBuffer, frameTime)
     }
 
     private fun detectPose(imageProxy: ImageProxy, bitmapBuffer: Bitmap, frameTime: Long) {
@@ -704,7 +693,7 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
                     isFrontCamera = cameraFacing == CameraSelector.LENS_FACING_FRONT,
                     frameTime = frameTime
                 )
-            }
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             }
         } catch (exec: Exception) {
             Log.d("detectHand: ", exec.message.toString())
         }
@@ -716,9 +705,7 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
             binding.pvCamera.display.rotation
     }
 
-    // Update UI after pose have been detected. Extracts original
-    // image height/width to scale and place the landmarks properly through
-    // OverlayView
+    /** PoseLandmarker 결과 */
     override fun onPoseResults(
         resultBundle: PoseLandmarkerHelper.ResultBundle
     ) {
@@ -726,6 +713,7 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
             if (binding != null) {
                 handSignHelper.initPose(resultBundle)
 
+                /** OverlayView에 필수 정보 전달 */
                 binding.poseOverlay.setResults(
                     resultBundle.results.first(),
                     resultBundle.inputImageHeight,
@@ -733,7 +721,7 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
                     RunningMode.LIVE_STREAM
                 )
 
-                // Force a redraw
+                /** 갱신 */
                 binding.poseOverlay.invalidate()
             }
         }
@@ -750,9 +738,7 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
         }
     }
 
-    // Update UI after hand have been detected. Extracts original
-    // image height/width to scale and place the landmarks properly through
-    // OverlayView
+    /** HandLandmarker 결과 */
     override fun onHandResults(
         resultBundle: HandLandmarkerHelper.ResultBundle
     ) {
@@ -762,7 +748,7 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
 
                 handSignHelper.initHand(resultBundle)
                 
-                // Pass necessary information to OverlayView for drawing on the canvas
+                /** OverlayView에 필수 정보 전달 */
                 binding.handOverlay.setResults(
                     resultBundle.results.first(),
                     resultBundle.inputImageHeight,
@@ -770,7 +756,7 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
                     RunningMode.LIVE_STREAM
                 )
 
-                // Force a redraw
+                /** 갱신 */
                 binding.handOverlay.invalidate()
             }
         }
@@ -787,6 +773,7 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
         }
     }
 
+    /** Z Flip 모델 Foldable H/W 감지 */
     private fun onWindowLayoutInfoChange() {
         lifecycleScope.launch(Dispatchers.Main) {
             lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
@@ -798,6 +785,11 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
         }
     }
 
+    /** Z Flip 모델 반응형 처리
+     * 1) Camera Preview의 Height
+     * 2) Layout의 Background Color
+     * 3) EditText의 Text Color
+     * */
     private fun updateUI(newLayoutInfo: WindowLayoutInfo) {
         var oldLayoutHeight : Int ?= null
         var newLayoutHeight : Int ?= null
@@ -807,31 +799,42 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
         var newTextColor : Int ?= null
         if(newLayoutInfo.displayFeatures[0].toString().contains("HALF_OPENED")) {
             oldLayoutHeight = dpToPx(700)
-            newLayoutHeight = dpToPx(400)
+            newLayoutHeight = newLayoutInfo.displayFeatures[0].bounds.bottom
             oldBackgroundColor = Color.WHITE
             newBackgroundColor = Color.BLACK
             oldTextColor = Color.BLACK
             newTextColor = Color.WHITE
+
+//            isFolded = true
+            binding.tvAlertUnfolded.visibility = View.GONE
         } else if(newLayoutInfo.displayFeatures[0].toString().contains("FLAT")) {
-            oldLayoutHeight = dpToPx(400)
+            oldLayoutHeight = newLayoutInfo.displayFeatures[0].bounds.bottom
             newLayoutHeight = dpToPx(700)
             oldBackgroundColor = Color.BLACK
             newBackgroundColor = Color.WHITE
             oldTextColor = Color.WHITE
             newTextColor = Color.BLACK
+
+//            isFolded = false
+            binding.tvAlertUnfolded.visibility = View.VISIBLE
         }
 
+        /** Camera Preview의 Height */
         val heightAnimator = ValueAnimator.ofInt(oldLayoutHeight!!, newLayoutHeight!!)
         heightAnimator.addUpdateListener { animation ->
             val value = animation.animatedValue as Int
             binding.cameraContainer.layoutParams.height = value
             binding.cameraContainer.requestLayout()
         }
+
+        /** Layout의 Background Color */
         val bgColorAnimator = ValueAnimator.ofObject(ArgbEvaluator(), oldBackgroundColor!!, newBackgroundColor!!)
         bgColorAnimator.addUpdateListener { animation ->
             val value = animation.animatedValue as Int
             binding.clConversation.setBackgroundColor(value)
         }
+
+        /** EditText의 Text Color */
         val txtColorAnimator = ValueAnimator.ofObject(ArgbEvaluator(), oldTextColor!!, newTextColor!!)
         txtColorAnimator.addUpdateListener {animation ->
             val value = animation.animatedValue as Int
@@ -847,18 +850,19 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
         txtColorAnimator.start()
     }
 
+    /** Camera Preview의 Height - dp 단위를 px로 변경 */
     private fun dpToPx(dp: Int) : Int {
         val scale = resources.displayMetrics.density
         return (dp * scale + 0.5f).toInt()
     }
 
-    //카메라 권한
+    /** 필수 권한 확인 및 요청 */
     private fun allPermissionsGranted() = REQUIRED_PERMISSIONS.all {
         ContextCompat.checkSelfPermission(
             baseContext, it) == PackageManager.PERMISSION_GRANTED
     }
 
-    //카메라 권한 요청 처리
+    /** 카메라 권한 요청 처리 */
     override fun onRequestPermissionsResult(
         requestCode: Int, permissions: Array<out String>, grantResults: IntArray
     ) {
@@ -894,7 +898,7 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
     override fun onResume() {
         super.onResume()
         
-        //MediaPipe 초기 설정
+        /** MediaPipe 초기 설정 */
         backgroundBothExecutor.execute {
             if(this::poseLandmarkerHelper.isInitialized) {
                 if(poseLandmarkerHelper.isClose()) {
@@ -909,7 +913,7 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
             }
         }
         
-        //STT 초기 설정
+        /** STT 초기 설정 */
         mResult = ""
         binding.tvCRS.text = ""
         binding.btnCRS.setText(R.string.str_start)
@@ -924,7 +928,7 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
             viewModel.setMinPosePresenceConfidence(poseLandmarkerHelper.minPosePresenceConfidence)
             viewModel.setPoseDelegate(poseLandmarkerHelper.currentDelegate)
 
-            // Close the PoseLandmarkerHelper and release resources
+            /** Close the PoseLandmarkerHelper and release resources */
             backgroundBothExecutor.execute { poseLandmarkerHelper.clearPoseLandmarker() }
         }
 
@@ -935,7 +939,7 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
             viewModel.setMinHandPresenceConfidence(handLandmarkerHelper.minHandPresenceConfidence)
             viewModel.setHandDelegate(handLandmarkerHelper.currentDelegate)
 
-            // Close the HandLandmarkerHelper and release resources
+            /** Close the HandLandmarkerHelper and release resources */
             backgroundBothExecutor.execute { handLandmarkerHelper.clearHandLandmarker() }
         }
     }
