@@ -62,6 +62,7 @@
         android:id="@+id/et_text_conversation"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
         android:ems="10"
         android:hint="텍스트를 입력하세요"
         android:inputType="text"
@@ -97,25 +98,5 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/btn_stop_conversation" />
-
-    <Button
-        android:id="@+id/btn_CRS"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:text="Button"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/tv_CRS" />
-
-    <TextView
-        android:id="@+id/tv_HandSign"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginEnd="24dp"
-        android:text="TextView"
-        android:textColor="#FFFFFF"
-        app:layout_constraintBottom_toBottomOf="@+id/tv_CRS"
-        app:layout_constraintEnd_toStartOf="@+id/tv_CRS" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
