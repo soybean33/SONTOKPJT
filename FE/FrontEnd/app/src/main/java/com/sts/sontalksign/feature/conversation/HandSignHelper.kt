@@ -51,6 +51,8 @@ class HandSignHelper() {
         }
     }
 
+    
+
     /** Hand Landmark 정형화 */
     fun initHand(handResultBundle: HandLandmarkerHelper.ResultBundle) {
         when(handResultBundle.results.first().handednesses().size) {
@@ -268,7 +270,7 @@ class HandSignHelper() {
         return dotProduct
     }
 
-    fun Solution() : ByteBuffer{
+    fun Solution() : ArrayList<FloatArray> {
         val result = FloatArray(265) {0f}
 
         /** leftHand 데이터 - point와 angle */
@@ -307,11 +309,11 @@ class HandSignHelper() {
             result[255 + i] = resultPose[i]
         }
 
-
         frameDeque.add(result)
         frameDeque.removeFirst() /** 먼저 추가하고 제거하는 것이 outofbound를 방지할 수 있을 듯 */
 
-        return convertArrayToByteBuffer(frameDeque)
+        //return convertArrayToByteBuffer(frameDeque)
+        return frameDeque
     }
 
     private fun convertArrayToByteBuffer(inputData: ArrayList<FloatArray>) : ByteBuffer {
