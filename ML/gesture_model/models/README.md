@@ -85,3 +85,31 @@
 
 - calculate angle as `float32`
 - epoach : 200
+
+## v10
+
+- 30s dataset(repeated)
+- 20 labels
+  - ['', '가다', '감사합니다', '강아지', '덥다', '돼지', '먹다', '무엇', '반갑다', '석사', '아침', '안녕하세요', '연구','오늘', '오후', '저녁', '졸리다', '좋다', '질문', '할아버지']
+- use mediapipe pose heavy model
+- hand & pose 결과가 없어도 프레임에 포함
+
+### v9_1
+
+- calculate angle as `float16`
+- epoach : 100
+
+### v9_2
+
+- calculate angle as `float16`
+- epoach : 200
+
+### v9_3
+
+- calculate angle as `float32`
+- epoach : 100
+
+### v9_4
+
+- calculate angle as `float32`
+- epoach : 200
