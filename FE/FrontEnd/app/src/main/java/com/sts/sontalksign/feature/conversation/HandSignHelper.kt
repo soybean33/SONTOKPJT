@@ -14,15 +14,14 @@ class HandSignHelper() {
 
     var returnArray : Array<Double> = emptyArray()
 
-
-
     /** model 입력 데이터 관련 변수 */
     val frameDeque = ArrayList<FloatArray>().apply {
         repeat(5) {
             add(FloatArray(265) {0f})
         }
     }
-    var signWords : Array<String> = arrayOf("1", "가다", "감사합니다", "강아지", "덥다", "돼지", "먹다", "무엇", "반갑다", "석사", "아침", "안녕하세요", "연구", "오늘", "오후", "저녁", "졸리다", "좋다", "질문", "할아버지")
+    var signWords : Array<String> = arrayOf("1", "강아지", "석사", "연구", "오늘")
+//    var signWords : Array<String> = arrayOf("1", "가다", "감사합니다", "강아지", "덥다", "돼지", "먹다", "무엇", "반갑다", "석사", "아침", "안녕하세요", "연구", "오늘", "오후", "저녁", "졸리다", "좋다", "질문", "할아버지")
     var wordQueue : Array<String> = arrayOf("", "1", "2", "3", "4", "5", "6", "7")
     val wordCounterMap : MutableMap<String, Int> = mutableMapOf("" to 0, "1" to 0, "2" to 0, "3" to 0, "4" to 0, "5" to 0, "6" to 0, "7" to 0)
 
@@ -30,7 +29,7 @@ class HandSignHelper() {
 
     /** 변경해보며 적용해 봐야하는 임계값들 */
     val probabilityThreshold: Float = 0.8f
-    val counterThreshold: Int = 15
+    val counterThreshold: Int = 5
 
     /** PoseLandmark 정형화 - 11개의 Face, 22개의 Body */
     fun initPose(poseResultBundle: PoseLandmarkerHelper.ResultBundle) {
@@ -49,6 +48,7 @@ class HandSignHelper() {
 //                }
             }
         }
+        //Log.d("POSE", "${pose[20][0]} ${pose[20][1]} ${pose[20][2]}")
         //Log.d("POSE", "${pose[20][0]} ${pose[20][1]} ${pose[20][2]}, ${pose[21][0]} ${pose[21][1]} ${pose[21][2]}, ${pose[22][0]} ${pose[22][1]} ${pose[22][2]}, ${pose[23][0]} ${pose[23][1]} ${pose[23][2]}")
     }
 
@@ -261,6 +261,7 @@ class HandSignHelper() {
             angles[i] = acos(dotProduct)
         }
 
+        //Log.d("POSE", "${angles[0]} ${angles[1]} ${angles[2]} ${angles[3]} ${angles[4]} ${angles[5]} ${angles[6]} ${angles[7]} ${angles[8]} ${angles[9]} ")
         return angles
     }
 
@@ -283,7 +284,7 @@ class HandSignHelper() {
 
         val resultLeftHand = calHand(leftHand)
         for(i in 0 until 15) {
-            result[i + 63] = resultLeftHand[i]
+            result[i + 63] = (resultLeftHand[i]  * (180.0 / Math.PI)).toFloat()
         }
 
         /** rightHand 데이터 - point와 angle */
@@ -295,8 +296,10 @@ class HandSignHelper() {
 
         val resultRightHand = calHand(rightHand)
         for(i in 0 until 15) {
-            result[i + 141] = resultRightHand[i]
+            result[i + 141] = (resultRightHand[i] * (180.0 / Math.PI)).toFloat()
         }
+
+        //Log.d("HAND", "${result[141]} ${result[142]} ${result[143]} ${result[144]} ${result[145]} ${result[146]} ${result[147]} ${result[148]} ${result[149]} ${result[150]} ${result[151]} ${result[152]} ${result[153]} ${result[154]} ${result[155]} ")
 
         /** pose 데이터 - point와 angle */
         for(i in 0 until 33) {
@@ -307,7 +310,7 @@ class HandSignHelper() {
 
         val resultPose = calPose(pose)
         for(i in 0 until 10) {
-            result[255 + i] = resultPose[i]
+            result[255 + i] = (resultPose[i] * (180.0 / Math.PI)).toFloat()
         }
 
         frameDeque.add(result)

@@ -720,7 +720,7 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
 
             tflite!!.run(input3DArray, output)
 
-            Log.d("Result", "${output[0][0]},${output[0][1]},${output[0][2]},${output[0][3]},${output[0][4]},${output[0][5]},${output[0][6]},${output[0][7]},${output[0][8]},${output[0][9]},${output[0][10]},${output[0][11]},${output[0][12]},${output[0][13]},${output[0][14]},${output[0][15]},${output[0][16]},${output[0][17]},${output[0][18]},${output[0][19]}")
+            //Log.d("Result", "${output[0][0]},${output[0][1]},${output[0][2]},${output[0][3]},${output[0][4]}")
 
             val result = handSignHelper.wordQueueManager(output[0].toList().toTypedArray())
 
