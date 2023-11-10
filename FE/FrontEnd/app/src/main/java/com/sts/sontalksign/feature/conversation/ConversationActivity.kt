@@ -47,6 +47,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.window.layout.WindowInfoTracker
 import androidx.window.layout.WindowLayoutInfo
+import com.google.android.material.internal.ViewUtils.dpToPx
 
 import com.google.mediapipe.tasks.vision.core.RunningMode
 import com.naver.speech.clientapi.SpeechRecognitionResult
@@ -156,23 +157,62 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
 
     /** Foldable 반응형 */
     private lateinit var windowInfoTracker: WindowInfoTracker
-//    private var isFolded: Boolean = false
+
+    private var sttFlag: Boolean = false
+    private val sttHandler = Handler()  // Handler 객체 생성
+
+    private val sttRunnable = object : Runnable {
+        override fun run() {
+            if (!sttFlag) {
+                if (!naverRecognizer!!.getSpeechRecognizer().isRunning) {
+                    // Start button is pushed when SpeechRecognizer's state is inactive.
+                    // Run SpeechRecongizer by calling recognize().
+                    mResult = ""
+                    binding.tvCRS.text = "Connecting..."
+                    naverRecognizer!!.recognize()
+                    sttFlag = true // 사용자가 말하고 있는 동안 STT 활성화 상태로 설정
+                } else {
+                    Log.d(TAG, "stop and wait Final Result")
+                    naverRecognizer!!.getSpeechRecognizer().stop()
+                    sttFlag = false // 사용자의 말이 끝나면 STT 비활성화 상태로 설정
+                }
+
+                if (sttFlag) {
+                    fetchSTTResult { sttResult ->
+                        val isMine = false
+                        startSTT(sttResult, isMine)
+                        sttFlag = false // 사용자의 말이 끝나면 STT 비활성화 상태로 설정
+                    }
+                }
+
+                // Schedule the next execution of this runnable
+                sttHandler.postDelayed(this, 7000)
+            }
+        }
+    }
 
     /**  CSR 상태에 대한 동작, clientReady, audioRecording, partialResult, final Result, recognitionError, clientInactive */
     private fun handleMessage(msg: Message) {
         when (msg.what) {
             R.id.clientReady -> {
+                sttFlag = false
                 binding.tvCRS.text = "Connected"
                 audioWriter = AudioWriterPCM(
                     filesDir.absolutePath + "/NaverSpeechTest")
                 audioWriter!!.open("Test")
             }
-            R.id.audioRecording -> audioWriter?.write(msg.obj as ShortArray)
+            R.id.audioRecording -> {
+                sttFlag = true
+                audioWriter?.write(msg.obj as ShortArray)
+
+            }
             R.id.partialResult -> {
+                sttFlag = false
                 mResult = msg.obj as String
                 binding.tvCRS.text = mResult
             }
             R.id.finalResult -> {
+                sttFlag = false
                 val speechRecognitionResult = msg.obj as SpeechRecognitionResult
                 val results = speechRecognitionResult.results
 
@@ -189,6 +229,7 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
                 binding.tvCRS.text = results[0].toString()
             }
             R.id.recognitionError -> {
+                sttFlag = false
                 audioWriter?.close()
                 mResult = "Error code : ${msg.obj}"
                 binding.tvCRS.text = mResult
@@ -196,6 +237,7 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
 //                binding.btnCRS.isEnabled = true
             }
             R.id.clientInactive -> {
+                sttFlag = false
                 audioWriter?.close()
 //                binding.btnCRS.setText(R.string.str_start)
 //                binding.btnCRS.isEnabled = true
@@ -207,6 +249,8 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
         super.onCreate(savedInstanceState)
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         setContentView(binding.root)
+
+
 
         /** Foldable 반응 tracker */
         windowInfoTracker = WindowInfoTracker.getOrCreate(this@ConversationActivity)
@@ -323,38 +367,14 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
 
         tflite = getTfliteInterpreter()
 
+        sttHandler.postDelayed(sttRunnable, 0)
 
-        val sttHandler = Handler()  // Handler 객체 생성
-
-        val sttRunnable = object : Runnable {
-            override fun run() {
-                if (!naverRecognizer!!.getSpeechRecognizer().isRunning) {
-                    // Start button is pushed when SpeechRecognizer's state is inactive.
-                    // Run SpeechRecongizer by calling recognize().
-                    mResult = ""
-                    binding.tvCRS.text = "Connecting..."
-//                    binding.btnCRS.setText(R.string.str_stop)
-                    naverRecognizer!!.recognize()
-                } else {
-                    Log.d(TAG, "stop and wait Final Result")
-                    binding.tvCRS.isEnabled = false
-                    naverRecognizer!!.getSpeechRecognizer().stop()
-                }
-
-                fetchSTTResult { sttResult ->
-                    val isMine = false
-                    startSTT(sttResult, isMine)
-                }
-                sttHandler.postDelayed(this, 7000)
-            }
-        }
-        sttHandler.postDelayed(sttRunnable, 7000)
     }
 
+
+
     private fun fetchSTTResult(callback: (String) -> Unit) {
-        // 네이버 STT API 호출 및 결과를 callback 함수를 통해 전달
-        // 네이버 STT API 호출 및 결과를 callback 함수를 통해 전달
-        // 이 부분에서 STT API를 호출하고 결과를 callback으로 전달하는 로직을 추가해야 합니다.
+
     }
 
     private fun getTfliteInterpreter() : Interpreter {
