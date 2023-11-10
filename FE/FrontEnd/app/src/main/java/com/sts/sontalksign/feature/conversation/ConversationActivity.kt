@@ -690,9 +690,7 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
     private suspend fun mediaPipeProcess() = coroutineScope {
         launch {
             val inputArrayList: ArrayList<FloatArray> = handSignHelper.Solution()
-
             val inputArray: Array<FloatArray> = inputArrayList.toTypedArray()
-
             val input3DArray: Array<Array<FloatArray>> = arrayOf(inputArray)
 
 
@@ -700,17 +698,13 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
                 FloatArray(handSignHelper.dataSize()) { 0.0f }
             }
 
-            //input.rewind() // ByteBuffer를 읽기 위해 포인터 위치를 초기화합니다.
-
             tflite!!.run(input3DArray, output)
 
             Log.d("Result", "${output[0][0]},${output[0][1]},${output[0][2]},${output[0][3]},${output[0][4]},${output[0][5]},${output[0][6]},${output[0][7]},${output[0][8]},${output[0][9]},${output[0][10]},${output[0][11]},${output[0][12]},${output[0][13]},${output[0][14]},${output[0][15]},${output[0][16]},${output[0][17]},${output[0][18]},${output[0][19]}")
 
-            //Log.d("Result", "${output[0][0]} ${output[0][1]}")
             val result = handSignHelper.wordQueueManager(output[0].toList().toTypedArray())
 
-
-            // Log.d("Result", result)
+            //Log.d("Result", result)
             delay(33)
         }
     }

@@ -29,8 +29,8 @@ class HandSignHelper() {
     val signWordSize : Int = signWords.size
 
     /** 변경해보며 적용해 봐야하는 임계값들 */
-    val probabilityThreshold: Float = 0.5f
-    val counterThreshold: Int = 10
+    val probabilityThreshold: Float = 0.8f
+    val counterThreshold: Int = 15
 
     /** PoseLandmark 정형화 - 11개의 Face, 22개의 Body */
     fun initPose(poseResultBundle: PoseLandmarkerHelper.ResultBundle) {
@@ -49,9 +49,10 @@ class HandSignHelper() {
 //                }
             }
         }
+        //Log.d("POSE", "${pose[20][0]} ${pose[20][1]} ${pose[20][2]}, ${pose[21][0]} ${pose[21][1]} ${pose[21][2]}, ${pose[22][0]} ${pose[22][1]} ${pose[22][2]}, ${pose[23][0]} ${pose[23][1]} ${pose[23][2]}")
     }
 
-    
+
 
     /** Hand Landmark 정형화 */
     fun initHand(handResultBundle: HandLandmarkerHelper.ResultBundle) {
@@ -316,18 +317,18 @@ class HandSignHelper() {
         return frameDeque
     }
 
-    private fun convertArrayToByteBuffer(inputData: ArrayList<FloatArray>) : ByteBuffer {
-        var byteBuffer: ByteBuffer = ByteBuffer.allocate(5 * 265 * 4)   /** 5개의 265 길이의 Byte 크기(4) */
-        byteBuffer.order(ByteOrder.nativeOrder())
-
-        for(i in 0 until 5) {
-            for(j in 0 until 265) {
-                byteBuffer.putFloat(inputData[i][j])
-            }
-        }
-
-        return byteBuffer
-    }
+//    private fun convertArrayToByteBuffer(inputData: ArrayList<FloatArray>) : ByteBuffer {
+//        var byteBuffer: ByteBuffer = ByteBuffer.allocate(5 * 265 * 4)   /** 5개의 265 길이의 Byte 크기(4) */
+//        byteBuffer.order(ByteOrder.nativeOrder())
+//
+//        for(i in 0 until 5) {
+//            for(j in 0 until 265) {
+//                byteBuffer.putFloat(inputData[i][j])
+//            }
+//        }
+//
+//        return byteBuffer
+//    }
 
     private fun getWordIndex(predictionResult: Array<Float>): Int {
         var maxIndex: Int = 0
@@ -392,7 +393,7 @@ class HandSignHelper() {
         return ""
     }
 
-    public fun dataSize() : Int {
+    fun dataSize() : Int {
         return signWordSize
     }
 }
