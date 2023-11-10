@@ -44,5 +44,10 @@
 - 하나의 형태소에 대해 여러 수어 영상이 올 수 있도록 형태소(actions)를 dictionary로 변경
 - MediaPipe 설정 한 번만 하도록 수정
 - video capture를 1개만 사용하도록 변경
-- input을 받아 dataset type 설정 가능(train / test)
+- input을 받아 dataset type 설정 가능(train / test, default: train)
+
+## v8
+
+- 빈 문자열도 가능하도록 action 추출 로직 수정
+- input을 받아 MediaPipe pose model bundle 설정 가능(lite / full / heavy, default: heavy)
 
