@@ -47,6 +47,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.window.layout.WindowInfoTracker
 import androidx.window.layout.WindowLayoutInfo
+import com.google.android.material.internal.ViewUtils.dpToPx
 
 import com.google.mediapipe.tasks.vision.core.RunningMode
 import com.naver.speech.clientapi.SpeechRecognitionResult
@@ -175,7 +176,6 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
 
     /** Foldable 반응형 */
     private lateinit var windowInfoTracker: WindowInfoTracker
-//    private var isFolded: Boolean = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -665,22 +665,22 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
     /** MediaPipe의 결과를 ML에 적용 */
     private suspend fun mediaPipeProcess() = coroutineScope {
         launch {
-            val input: ByteBuffer = handSignHelper.Solution()
+            val inputArrayList: ArrayList<FloatArray> = handSignHelper.Solution()
+            val inputArray: Array<FloatArray> = inputArrayList.toTypedArray()
+            val input3DArray: Array<Array<FloatArray>> = arrayOf(inputArray)
+
             val output = Array(1) {
                 FloatArray(handSignHelper.dataSize()) { 0.0f }
             }
 
-            input.rewind() // ByteBuffer를 읽기 위해 포인터 위치를 초기화합니다.
+            tflite!!.run(input3DArray, output)
 
-            tflite!!.run(input, output)
+            //Log.d("Result", "${output[0][0]},${output[0][1]},${output[0][2]},${output[0][3]},${output[0][4]}")
 
-            //Log.d("Result", "${output[0][0]} ${output[0][1]} ${output[0][2]} ${output[0][3]} ${output[0][4]} ${output[0][5]} ${output[0][6]} ${output[0][7]} ${output[0][8]} ${output[0][9]} ${output[0][10]} ${output[0][11]} ${output[0][12]} ${output[0][13]} ${output[0][14]}")
-
-            //Log.d("Result", "${output[0][0]} ${output[0][1]}")
             val result = handSignHelper.wordQueueManager(output[0].toList().toTypedArray())
 
-
-//            Log.d("Result", result)
+            //Log.d("Result", result)
+            delay(33)
         }
     }
 
