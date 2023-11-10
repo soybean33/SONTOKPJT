@@ -94,22 +94,22 @@
 - use mediapipe pose heavy model
 - hand & pose 결과가 없어도 프레임에 포함
 
-### v9_1
+### v10_1
 
 - calculate angle as `float16`
 - epoach : 100
 
-### v9_2
+### v10_2
 
 - calculate angle as `float16`
 - epoach : 200
 
-### v9_3
+### v10_3
 
 - calculate angle as `float32`
 - epoach : 100
 
-### v9_4
+### v10_4
 
 - calculate angle as `float32`
 - epoach : 200
