@@ -8,67 +8,52 @@ import kotlin.math.acos
 class HandSignHelper() {
     private val TAG : String = "HandSignHelper"
 
-    var leftHand : Array<Array<Float>> = Array(21) {Array(3) {0f}}
-    var rightHand: Array<Array<Float>> = Array(21) {Array(3) {0f}}
-    var pose: Array<Array<Float>> = Array(33) {Array(3) {0f}}
-
-    var returnArray : Array<Double> = emptyArray()
-
+    var leftHand : Array<Array<Float>> = Array(21) {Array(3) {0f}} /** 왼손 RAW 좌표 */
+    var rightHand: Array<Array<Float>> = Array(21) {Array(3) {0f}} /** 오른손 RAW 좌표 */
+    var pose: Array<Array<Float>> = Array(33) {Array(3) {0f}} /** 포즈 RAW 좌표 */
+    
     /** model 입력 데이터 관련 변수 */
+    /** model에 들어가는 입력값은 frameDeque[5][265] 크기의 2차원 배열을 한차원 감싼 형태 */
     val frameDeque = ArrayList<FloatArray>().apply {
         repeat(5) {
             add(FloatArray(265) {0f})
         }
     }
-    var signWords : Array<String> = arrayOf("1", "강아지", "석사", "연구", "오늘")
-//    var signWords : Array<String> = arrayOf("1", "가다", "감사합니다", "강아지", "덥다", "돼지", "먹다", "무엇", "반갑다", "석사", "아침", "안녕하세요", "연구", "오늘", "오후", "저녁", "졸리다", "좋다", "질문", "할아버지")
+    
+    /** 확률을 출력되는 값으로 변경 */
+    var signWords : Array<String> = arrayOf("", "강아지", "석사", "연구", "오늘")
+    val signWordSize : Int = signWords.size
     var wordQueue : Array<String> = arrayOf("", "1", "2", "3", "4", "5", "6", "7")
     val wordCounterMap : MutableMap<String, Int> = mutableMapOf("" to 0, "1" to 0, "2" to 0, "3" to 0, "4" to 0, "5" to 0, "6" to 0, "7" to 0)
-
-    val signWordSize : Int = signWords.size
 
     /** 변경해보며 적용해 봐야하는 임계값들 */
     val probabilityThreshold: Float = 0.8f
     val counterThreshold: Int = 5
 
-    /** PoseLandmark 정형화 - 11개의 Face, 22개의 Body */
+    /** PoseLandmark 정형화 - 33개의 Pose = 11개의 Face + 22개의 Body */
     fun initPose(poseResultBundle: PoseLandmarkerHelper.ResultBundle) {
         if(poseResultBundle.results.first().landmarks().size == 1) {
-            for(i in 0 until 33) {
-                /** 카메라 밖으로 나갔다면, 즉 presence 값이 0.5보다 작다면 0으로 처리 */
-//                if(poseResultBundle.results.first().landmarks()[0][i].presence().orElse(0f) < 0.5) {
-//                    pose[i][0] = 0f
-//                    pose[i][1] = 0f
-//                    pose[i][2] = 0f
-//
-//                } else {
-                    pose[i][0] = poseResultBundle.results.first().landmarks()[0][i].x()
-                    pose[i][1] = poseResultBundle.results.first().landmarks()[0][i].y()
-                    pose[i][2] = poseResultBundle.results.first().landmarks()[0][i].z()
-//                }
+            for(i in 0 until 33) {                
+                pose[i][0] = poseResultBundle.results.first().landmarks()[0][i].x()
+                pose[i][1] = poseResultBundle.results.first().landmarks()[0][i].y()
+                pose[i][2] = poseResultBundle.results.first().landmarks()[0][i].z()
             }
         }
-        //Log.d("POSE", "${pose[20][0]} ${pose[20][1]} ${pose[20][2]}")
-        //Log.d("POSE", "${pose[20][0]} ${pose[20][1]} ${pose[20][2]}, ${pose[21][0]} ${pose[21][1]} ${pose[21][2]}, ${pose[22][0]} ${pose[22][1]} ${pose[22][2]}, ${pose[23][0]} ${pose[23][1]} ${pose[23][2]}")
     }
 
-
-
-    /** Hand Landmark 정형화 */
+    /** Hand Landmark 정형화 - 21개의 Hand * 2 */
     fun initHand(handResultBundle: HandLandmarkerHelper.ResultBundle) {
         when(handResultBundle.results.first().handednesses().size) {
             /** 한손 입력 */
             1 -> {
                 /** 오른손 입력이 들어왔다면 */
-                if (handResultBundle.results.first()
-                        .handednesses()[0][0].categoryName() == "Right"
-                ) {
+                if (handResultBundle.results.first().handednesses()[0][0].categoryName() == "Right") {
                     for (i in 0 until 21) {
                         rightHand[i][0] = handResultBundle.results.first().landmarks()[0][i].x()
                         rightHand[i][1] = handResultBundle.results.first().landmarks()[0][i].y()
                         rightHand[i][2] = handResultBundle.results.first().landmarks()[0][i].z()
                     }
-                } else {
+                } else { /** 왼손 입력이 들어왔다면 */
                     for (i in 0 until 21) {
                         leftHand[i][0] = handResultBundle.results.first().landmarks()[0][i].x()
                         leftHand[i][1] = handResultBundle.results.first().landmarks()[0][i].y()
@@ -87,48 +72,36 @@ class HandSignHelper() {
                 if (handA.equals(handB)) {
                     if (handA.equals("Left")) { /** 두 손 모두 왼손 인 경우 */
                         /**  score가 더 높은 쪽이 왼손 */
-                        if (scoreA >= scoreB) {
+                        if (scoreA >= scoreB) { /** scoreA가 더 크거나 같다면 0번 인덱스가 왼손 */
                             for (i in 0 until 21) {
-                                leftHand[i][0] =
-                                    handResultBundle.results.first().landmarks()[0][i].x()
-                                leftHand[i][1] =
-                                    handResultBundle.results.first().landmarks()[0][i].y()
-                                leftHand[i][2] =
-                                    handResultBundle.results.first().landmarks()[0][i].z()
+                                leftHand[i][0] = handResultBundle.results.first().landmarks()[0][i].x()
+                                leftHand[i][1] = handResultBundle.results.first().landmarks()[0][i].y()
+                                leftHand[i][2] = handResultBundle.results.first().landmarks()[0][i].z()
                             }
-                        } else {
+                        } else { /** scoreB가 더 크다면 1번 인덱스가 왼손 */
                             for (i in 0 until 21) {
-                                leftHand[i][0] =
-                                    handResultBundle.results.first().landmarks()[1][i].x()
-                                leftHand[i][1] =
-                                    handResultBundle.results.first().landmarks()[1][i].y()
-                                leftHand[i][2] =
-                                    handResultBundle.results.first().landmarks()[1][i].z()
+                                leftHand[i][0] = handResultBundle.results.first().landmarks()[1][i].x()
+                                leftHand[i][1] = handResultBundle.results.first().landmarks()[1][i].y()
+                                leftHand[i][2] = handResultBundle.results.first().landmarks()[1][i].z()
                             }
                         }
                     } else {    /** 두 손 모두 오른손 인 경우 */
-                        if (scoreA >= scoreB) {
+                        if (scoreA >= scoreB) { /** scoreA가 더 크거나 같다면 0번 인덱스가 오른손 */
                             for (i in 0 until 21) {
-                                rightHand[i][0] =
-                                    handResultBundle.results.first().landmarks()[0][i].x()
-                                rightHand[i][1] =
-                                    handResultBundle.results.first().landmarks()[0][i].y()
-                                rightHand[i][2] =
-                                    handResultBundle.results.first().landmarks()[0][i].z()
+                                rightHand[i][0] = handResultBundle.results.first().landmarks()[0][i].x()
+                                rightHand[i][1] = handResultBundle.results.first().landmarks()[0][i].y()
+                                rightHand[i][2] = handResultBundle.results.first().landmarks()[0][i].z()
                             }
-                        } else {
+                        } else {    /** scoreB가 더 크다면 1번 인덱스가 오른손 */
                             for (i in 0 until 21) {
-                                rightHand[i][0] =
-                                    handResultBundle.results.first().landmarks()[1][i].x()
-                                rightHand[i][1] =
-                                    handResultBundle.results.first().landmarks()[1][i].y()
-                                rightHand[i][2] =
-                                    handResultBundle.results.first().landmarks()[1][i].z()
+                                rightHand[i][0] = handResultBundle.results.first().landmarks()[1][i].x()
+                                rightHand[i][1] = handResultBundle.results.first().landmarks()[1][i].y()
+                                rightHand[i][2] = handResultBundle.results.first().landmarks()[1][i].z()
                             }
                         }
                     }
-                } else {
-                    if (handA.equals("Left")) {
+                } else {    /** 다른손이 입력된 경우 */
+                    if (handA.equals("Left")) { /** 0번 인덱스가 왼손 */
                         for (i in 0 until 21) {
                             leftHand[i][0] = handResultBundle.results.first().landmarks()[0][i].x()
                             leftHand[i][1] = handResultBundle.results.first().landmarks()[0][i].y()
@@ -140,7 +113,7 @@ class HandSignHelper() {
                             rightHand[i][2] = handResultBundle.results.first().landmarks()[1][i].z()
                         }
 
-                    } else {
+                    } else { /** 1번 인덱스가 오른손 */
                         for (i in 0 until 21) {
                             rightHand[i][0] = handResultBundle.results.first().landmarks()[0][i].x()
                             rightHand[i][1] = handResultBundle.results.first().landmarks()[0][i].y()
@@ -163,9 +136,9 @@ class HandSignHelper() {
         val startJoints = intArrayOf(0, 1, 2, 3, 0, 5, 6, 7, 0, 9, 10, 11, 0, 13, 14, 15, 0, 17, 18, 19)
         val destJoints = intArrayOf(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20)
 
-        val hand_v1 = calculateIdx(hand, startJoints)
-        val hand_v2 = calculateIdx(hand, destJoints)
-        var hand_v = Array(20) { Array(3) { 0f } }  /** 3차원의 20개의 점 */
+        val hand_v1 : Array<Array<Float>> = calculateIdx(hand, startJoints)
+        val hand_v2 : Array<Array<Float>> = calculateIdx(hand, destJoints)
+        var hand_v = Array(20) { Array(3) { 0f } }  /** 3개의 20개의 점 */
 
         /** 크기 구하기 */
         for (i in 0 until 20) {
@@ -184,13 +157,15 @@ class HandSignHelper() {
         return calculateHandAngles(hand_v)
     }
 
+    /** PoseLandmarker 필요한 데이터로 변경 */
     private  fun calPose(pose: Array<Array<Float>>) : FloatArray{
+        /** 각도를 구할 15개의 점 */
         val startJoints = intArrayOf(0, 4, 5, 6, 0, 1, 2, 3, 14, 12, 24, 13, 11, 23)
         val destJoints = intArrayOf(4, 5, 6, 8, 1, 2, 3, 7, 16, 14, 12, 15, 13, 11)
 
-        val pose_v1 = calculateIdx(pose, startJoints)
-        val pose_v2 = calculateIdx(pose, destJoints)
-        var pose_v = Array(14) { Array(3) { 0f } }
+        val pose_v1:  Array<Array<Float>> = calculateIdx(pose, startJoints)
+        val pose_v2:  Array<Array<Float>> = calculateIdx(pose, destJoints)
+        var pose_v = Array(14) { Array(3) { 0f } }  /** 3개의 15개의 점 */
 
         /** 크기 구하기 */
         for (i in 0 until 14) {
@@ -223,17 +198,13 @@ class HandSignHelper() {
     /** 정규화 함수 */
     private inline fun vectorNorm(vector: Array<Float>): Float {
         var sum = 0f
-        for (element in vector) {
-            sum += element * element
-        }
+        for (element in vector) { sum += element * element }
         return kotlin.math.sqrt(sum)
     }
 
     /** 벡터 나눗셈 */
     private inline fun vectorDivideInPlace(vector: Array<Float>, scalar: Float) {
-        for (i in vector.indices) {
-            vector[i] /= scalar
-        }
+        for (i in vector.indices) { vector[i] /= scalar } /** 참조에 의한 전달 */
     }
 
     /** 손 벡터 내적 */
@@ -261,7 +232,6 @@ class HandSignHelper() {
             angles[i] = acos(dotProduct)
         }
 
-        //Log.d("POSE", "${angles[0]} ${angles[1]} ${angles[2]} ${angles[3]} ${angles[4]} ${angles[5]} ${angles[6]} ${angles[7]} ${angles[8]} ${angles[9]} ")
         return angles
     }
 
@@ -299,8 +269,6 @@ class HandSignHelper() {
             result[i + 141] = (resultRightHand[i] * (180.0 / Math.PI)).toFloat()
         }
 
-        //Log.d("HAND", "${result[141]} ${result[142]} ${result[143]} ${result[144]} ${result[145]} ${result[146]} ${result[147]} ${result[148]} ${result[149]} ${result[150]} ${result[151]} ${result[152]} ${result[153]} ${result[154]} ${result[155]} ")
-
         /** pose 데이터 - point와 angle */
         for(i in 0 until 33) {
             for(j in 0 until 3) {
@@ -316,22 +284,8 @@ class HandSignHelper() {
         frameDeque.add(result)
         frameDeque.removeFirst() /** 먼저 추가하고 제거하는 것이 outofbound를 방지할 수 있을 듯 */
 
-        //return convertArrayToByteBuffer(frameDeque)
         return frameDeque
     }
-
-//    private fun convertArrayToByteBuffer(inputData: ArrayList<FloatArray>) : ByteBuffer {
-//        var byteBuffer: ByteBuffer = ByteBuffer.allocate(5 * 265 * 4)   /** 5개의 265 길이의 Byte 크기(4) */
-//        byteBuffer.order(ByteOrder.nativeOrder())
-//
-//        for(i in 0 until 5) {
-//            for(j in 0 until 265) {
-//                byteBuffer.putFloat(inputData[i][j])
-//            }
-//        }
-//
-//        return byteBuffer
-//    }
 
     private fun getWordIndex(predictionResult: Array<Float>): Int {
         var maxIndex: Int = 0
