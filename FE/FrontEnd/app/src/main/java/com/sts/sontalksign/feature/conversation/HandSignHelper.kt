@@ -21,7 +21,7 @@ class HandSignHelper() {
     }
     
     /** 확률을 출력되는 값으로 변경 */
-    var signWords : Array<String> = arrayOf("", "강아지", "석사", "연구", "오늘")
+    var signWords : Array<String> = arrayOf("1", "석사", "연구", "오늘")
     val signWordSize : Int = signWords.size
     var wordQueue : Array<String> = arrayOf("", "1", "2", "3", "4", "5", "6", "7")
     val wordCounterMap : MutableMap<String, Int> = mutableMapOf("" to 0, "1" to 0, "2" to 0, "3" to 0, "4" to 0, "5" to 0, "6" to 0, "7" to 0)
@@ -329,7 +329,7 @@ class HandSignHelper() {
             result[i + 99] = (resultRightHand[i] * (180.0 / Math.PI)).toFloat()
         }
 
-        Log.d("Angle", "${result[99]}, ${result[100]}, ${result[101]}, ${result[102]}, ${result[103]}, ${result[104]}, ${result[105]}, ${result[106]}, ${result[107]}, ${result[108]}, ${result[109]}, ${result[110]}, ${result[111]}, ${result[112]}, ${result[113]}")
+        //Log.d("Angle", "${result[99]}, ${result[100]}, ${result[101]}, ${result[102]}, ${result[103]}, ${result[104]}, ${result[105]}, ${result[106]}, ${result[107]}, ${result[108]}, ${result[109]}, ${result[110]}, ${result[111]}, ${result[112]}, ${result[113]}")
 
         /** pose 데이터 - point와 angle */
         for(i in 0 until 33) {
