@@ -1,6 +1,7 @@
 package com.sts.sontalksign.feature.common
 
 import android.app.Dialog
+import android.content.Intent
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.util.Log
@@ -12,11 +13,14 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.GridLayoutManager
 import com.sts.sontalksign.databinding.CustomFormBinding
 import com.sts.sontalksign.databinding.CustomNoRecordFormBinding
+import com.sts.sontalksign.feature.conversation.ConversationActivity
+import com.sts.sontalksign.feature.conversation.ConversationFragment
+import com.sts.sontalksign.feature.history.HistoryDetailActivity
 
 class CustomNoRecordForm(private val context : AppCompatActivity) {
     private lateinit var binding: CustomNoRecordFormBinding
-    private val fDialog = Dia log(context)
-    private lateinit var onClickListener: CustomForm.onBtnStoreClickedListener
+    private val fDialog = Dialog(context)
+
 
 
 
@@ -31,22 +35,22 @@ class CustomNoRecordForm(private val context : AppCompatActivity) {
 
         /*버튼의 클릭 이벤트 처리*/
         //저장 버튼
-        binding.btnStore.setOnClickListener {
-            Log.d("CustomForm", "btnStore is clicked")
-            onClickListener.onBtnStoreClicked(
+        binding.btnDismiss.setOnClickListener {
+            Log.d("btnDismiss", "btnDismiss is clicked")
+            val intent = Intent(binding.root.context, ConversationFragment::class.java)
 
-            )
+            binding.root.context.startActivity(intent)
+            fDialog.dismiss()
+        }
+
+        binding.btnCancel.setOnClickListener {
+
             fDialog.dismiss()
         }
 
         //TODO: 타이틀 말고 입력칸 클릭시 이벤트 처리
         //태그 CustomInput
-        binding.ciTagConversation.setOnClickListener {
-            Log.d(TAG, "CustomInput is Clicked!!")
-            if (binding.rvTagList.visibility == View.GONE) {
-                binding.rvTagList.visibility = View.VISIBLE
-            }
-        }
+
     }
 
 }
