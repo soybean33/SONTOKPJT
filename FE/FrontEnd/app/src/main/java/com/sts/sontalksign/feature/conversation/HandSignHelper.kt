@@ -33,16 +33,31 @@ class HandSignHelper() {
     /** PoseLandmark 정형화 - 33개의 Pose = 11개의 Face + 22개의 Body */
     fun initPose(poseResultBundle: PoseLandmarkerHelper.ResultBundle) {
         if(poseResultBundle.results.first().landmarks().size == 1) {
+            var poseFlag = true
             for(i in 0 until 33) {                
                 pose[i][0] = poseResultBundle.results.first().landmarks()[0][i].x()
                 pose[i][1] = poseResultBundle.results.first().landmarks()[0][i].y()
                 pose[i][2] = poseResultBundle.results.first().landmarks()[0][i].z()
+                if(pose[i][0] < 0 || pose[i][1] < 0 || pose[i][0] > 1 || pose[i][1] > 1) {
+                    poseFlag = false
+                    break
+                }
+            }
+
+            if(!poseFlag){
+                for(i in 0 until 33) {
+                    for(j in 0 until  3) {
+                        pose[i][j] = 0f
+                    }
+                }
             }
         }
     }
 
     /** Hand Landmark 정형화 - 21개의 Hand * 2 */
     fun initHand(handResultBundle: HandLandmarkerHelper.ResultBundle) {
+        var leftHandFlag = true
+        var rightHandflag = true
         when(handResultBundle.results.first().handednesses().size) {
             /** 한손 입력 */
             1 -> {
@@ -52,12 +67,20 @@ class HandSignHelper() {
                         rightHand[i][0] = handResultBundle.results.first().landmarks()[0][i].x()
                         rightHand[i][1] = handResultBundle.results.first().landmarks()[0][i].y()
                         rightHand[i][2] = handResultBundle.results.first().landmarks()[0][i].z()
+                        if(rightHand[i][0] < 0 || rightHand[i][1] < 0 || rightHand[i][0] > 1 || rightHand[i][0] > 1) {
+                            rightHandflag = false
+                            break
+                        }
                     }
                 } else { /** 왼손 입력이 들어왔다면 */
                     for (i in 0 until 21) {
                         leftHand[i][0] = handResultBundle.results.first().landmarks()[0][i].x()
                         leftHand[i][1] = handResultBundle.results.first().landmarks()[0][i].y()
                         leftHand[i][2] = handResultBundle.results.first().landmarks()[0][i].z()
+                        if(leftHand[i][0] < 0 || leftHand[i][1] < 0 || leftHand[i][0] > 1 || leftHand[i][0] > 1) {
+                            leftHandFlag = false
+                            break
+                        }
                     }
                 }
             }
@@ -77,12 +100,20 @@ class HandSignHelper() {
                                 leftHand[i][0] = handResultBundle.results.first().landmarks()[0][i].x()
                                 leftHand[i][1] = handResultBundle.results.first().landmarks()[0][i].y()
                                 leftHand[i][2] = handResultBundle.results.first().landmarks()[0][i].z()
+                                if(leftHand[i][0] < 0 || leftHand[i][1] < 0 || leftHand[i][0] > 1 || leftHand[i][0] > 1) {
+                                    leftHandFlag = false
+                                    break
+                                }
                             }
                         } else { /** scoreB가 더 크다면 1번 인덱스가 왼손 */
                             for (i in 0 until 21) {
                                 leftHand[i][0] = handResultBundle.results.first().landmarks()[1][i].x()
                                 leftHand[i][1] = handResultBundle.results.first().landmarks()[1][i].y()
                                 leftHand[i][2] = handResultBundle.results.first().landmarks()[1][i].z()
+                                if(leftHand[i][0] < 0 || leftHand[i][1] < 0 || leftHand[i][0] > 1 || leftHand[i][0] > 1) {
+                                    leftHandFlag = false
+                                    break
+                                }
                             }
                         }
                     } else {    /** 두 손 모두 오른손 인 경우 */
@@ -91,12 +122,20 @@ class HandSignHelper() {
                                 rightHand[i][0] = handResultBundle.results.first().landmarks()[0][i].x()
                                 rightHand[i][1] = handResultBundle.results.first().landmarks()[0][i].y()
                                 rightHand[i][2] = handResultBundle.results.first().landmarks()[0][i].z()
+                                if(rightHand[i][0] < 0 || rightHand[i][1] < 0 || rightHand[i][0] > 1 || rightHand[i][0] > 1) {
+                                    rightHandflag = false
+                                    break
+                                }
                             }
                         } else {    /** scoreB가 더 크다면 1번 인덱스가 오른손 */
                             for (i in 0 until 21) {
                                 rightHand[i][0] = handResultBundle.results.first().landmarks()[1][i].x()
                                 rightHand[i][1] = handResultBundle.results.first().landmarks()[1][i].y()
                                 rightHand[i][2] = handResultBundle.results.first().landmarks()[1][i].z()
+                                if(rightHand[i][0] < 0 || rightHand[i][1] < 0 || rightHand[i][0] > 1 || rightHand[i][0] > 1) {
+                                    rightHandflag = false
+                                    break
+                                }
                             }
                         }
                     }
@@ -106,11 +145,19 @@ class HandSignHelper() {
                             leftHand[i][0] = handResultBundle.results.first().landmarks()[0][i].x()
                             leftHand[i][1] = handResultBundle.results.first().landmarks()[0][i].y()
                             leftHand[i][2] = handResultBundle.results.first().landmarks()[0][i].z()
+                            if(leftHand[i][0] < 0 || leftHand[i][1] < 0 || leftHand[i][0] > 1 || leftHand[i][0] > 1) {
+                                leftHandFlag = false
+                                break
+                            }
                         }
                         for (i in 0 until 21) {
                             rightHand[i][0] = handResultBundle.results.first().landmarks()[1][i].x()
                             rightHand[i][1] = handResultBundle.results.first().landmarks()[1][i].y()
                             rightHand[i][2] = handResultBundle.results.first().landmarks()[1][i].z()
+                            if(leftHand[i][0] < 0 || leftHand[i][1] < 0 || leftHand[i][0] > 1 || leftHand[i][0] > 1) {
+                                leftHandFlag = false
+                                break
+                            }
                         }
 
                     } else { /** 1번 인덱스가 오른손 */
@@ -118,13 +165,37 @@ class HandSignHelper() {
                             rightHand[i][0] = handResultBundle.results.first().landmarks()[0][i].x()
                             rightHand[i][1] = handResultBundle.results.first().landmarks()[0][i].y()
                             rightHand[i][2] = handResultBundle.results.first().landmarks()[0][i].z()
+                            if(rightHand[i][0] < 0 || rightHand[i][1] < 0 || rightHand[i][0] > 1 || rightHand[i][0] > 1) {
+                                rightHandflag = false
+                                break
+                            }
                         }
                         for (i in 0 until 21) {
                             leftHand[i][0] = handResultBundle.results.first().landmarks()[1][i].x()
                             leftHand[i][1] = handResultBundle.results.first().landmarks()[1][i].y()
                             leftHand[i][2] = handResultBundle.results.first().landmarks()[1][i].z()
+                            if(leftHand[i][0] < 0 || leftHand[i][1] < 0 || leftHand[i][0] > 1 || leftHand[i][0] > 1) {
+                                leftHandFlag = false
+                                break
+                            }
                         }
                     }
+                }
+            }
+        }
+
+        if(!leftHandFlag) {
+            for(i in 0 until 21) {
+                for(j in 0 until  3) {
+                    leftHand[i][j] = 0f
+                }
+            }
+        }
+
+        if(!rightHandflag) {
+            for(i in 0 until 21) {
+                for(j in 0 until  3) {
+                    rightHand[i][j] = 0f
                 }
             }
         }
