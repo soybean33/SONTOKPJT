@@ -6,6 +6,18 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:background="@drawable/form_outline" >
 
+    <Button
+        android:id="@+id/btn_cancel_store"
+        android:layout_width="43dp"
+        android:layout_height="22dp"
+        android:text="취소"
+        android:textSize="16sp"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        android:layout_marginTop="19dp"
+        android:layout_marginLeft="28dp"
+        android:background="#00ff0000" />
+
     <TextView
         android:id="@+id/tv_form_title"
         android:layout_width="120dp"
@@ -50,13 +62,28 @@
             app:inputTitle="@string/input_title"
             />
 
-        <com.sts.sontalksign.feature.common.CustomInput.CustomInputTag
-            android:id="@+id/ci_tag_conversation"
+        <FrameLayout
+            android:id="@+id/fl_tag_list"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="13dp"
-            app:inputTitle="@string/input_tag"
-            />
+            android:layout_marginTop="13dp">
+
+            <com.sts.sontalksign.feature.common.CustomInput.CustomInputTag
+                android:id="@+id/ci_tag_conversation"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:inputTitle="@string/input_tag"
+                />
+
+            <GridView
+                android:id="@+id/gv_selected_tag_list"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="7dp"
+                android:numColumns="5"
+                />
+
+        </FrameLayout>
 
         <androidx.recyclerview.widget.RecyclerView
             android:layout_width="match_parent"
@@ -64,7 +91,9 @@
             android:id="@+id/rv_tag_list"
             app:layoutManager="androidx.recyclerview.widget.GridLayoutManager"
             android:orientation="horizontal"
-            tools:listitem="@layout/history_tag_item"/>
+            tools:listitem="@layout/history_tag_item"
+            android:layout_gravity="center"
+            android:layout_marginTop="10dp"/>
     </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
