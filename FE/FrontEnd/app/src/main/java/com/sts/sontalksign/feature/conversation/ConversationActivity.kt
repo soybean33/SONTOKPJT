@@ -674,23 +674,24 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
                 val inputArray: Array<FloatArray> = inputArrayList.toTypedArray()
                 val input3DArray: Array<Array<FloatArray>> = arrayOf(inputArray)
 
-            val output = Array(1) {
-                FloatArray(handSignHelper.dataSize()) { 0.0f }
-            }
-
-            tflite!!.run(input3DArray, output)
-
-            Log.d("Result", "${output[0][0]}\t\t${output[0][1]}\t\t${output[0][2]}\t\t${output[0][3]}")
-
-            val result = handSignHelper.wordQueueManager(output[0].toList().toTypedArray())
-
-            if(result != "" && result != "1") {
-                withContext(Main) {
-                    binding.tvCRS.text = result
+                val output = Array(1) {
+                    FloatArray(handSignHelper.dataSize()) { 0.0f }
                 }
 
-            //Log.d("Result", result)
-            //delay(33)
+                tflite!!.run(input3DArray, output)
+
+                Log.d("Result", "${output[0][0]}\t\t${output[0][1]}\t\t${output[0][2]}\t\t${output[0][3]}")
+
+                val result = handSignHelper.wordQueueManager(output[0].toList().toTypedArray())
+
+                if(result != "" && result != "1") {
+                    withContext(Main) {
+                        binding.tvCRS.text = result
+                    }
+                }
+            } catch(exec: Exception) {
+                Log.d("mediaPipeProcess", exec.message.toString())
+            }
         }
     }
 
