@@ -1,6 +1,7 @@
 package com.sts.sontalksign.feature.conversation
 
 import ConversationCameraAdapter
+import CustomNoRecordForm
 import android.Manifest
 import android.animation.ArgbEvaluator
 import android.animation.ValueAnimator
@@ -48,6 +49,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.window.layout.WindowInfoTracker
 import androidx.window.layout.WindowLayoutInfo
+import com.google.android.material.internal.ViewUtils.dpToPx
 
 import com.google.mediapipe.tasks.vision.core.RunningMode
 import com.naver.speech.clientapi.SpeechRecognitionResult
@@ -556,30 +558,17 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
                 }
             })
         } else {
-            // Create and show a confirmation dialog to end the conversation
-            val dialog = Dialog(this)
-            dialog.requestWindowFeature(Window.FEATURE_NO_TITLE)
-            dialog.setContentView(R.layout.custom_no_record_form) // Assuming you have a layout file named custom_confirm_dialog.xml
-            dialog.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+            // When recording is not happening and "End conversation?" popup should be shown
+            val nForm = CustomNoRecordForm(this)
+            nForm.show()
+            nForm.setOnBtnDismissCancelClickedListener(object : CustomNoRecordForm.OnBtnDismissCancelClickedListener {
+                override fun onBtnDismissCancelClicked() {
+                    // This will be called when the dismiss or cancel button is clicked
+                    finish()
+                }
 
-            // Set up the buttons and their click listeners
-            val btnConfirm = dialog.findViewById<Button>(R.id.btn_dismiss) // Assuming you have a button named btnConfirmEnd in your dialog
-            val btnCancel = dialog.findViewById<Button>(R.id.btn_cancel) // Assuming you have a button named btnCancelEnd in your dialog
-
-            btnConfirm.setOnClickListener {
-                Log.d("btnDismiss", "btnDismiss is clicked")
-                val intent = Intent(binding.root.context, ConversationFragment::class.java)
-
-                binding.root.context.startActivity(intent)
-                dialog.dismiss()
             }
-
-            btnCancel.setOnClickListener {
-
-                dialog.dismiss()
-            }
-
-            dialog.show()
+            )
         }
     }
 
