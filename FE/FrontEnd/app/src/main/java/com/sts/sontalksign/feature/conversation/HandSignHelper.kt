@@ -67,7 +67,7 @@ class HandSignHelper() {
                         rightHand[i][0] = handResultBundle.results.first().landmarks()[0][i].x()
                         rightHand[i][1] = handResultBundle.results.first().landmarks()[0][i].y()
                         rightHand[i][2] = handResultBundle.results.first().landmarks()[0][i].z()
-                        if(rightHand[i][0] < 0 || rightHand[i][1] < 0 || rightHand[i][0] > 1 || rightHand[i][0] > 1) {
+                        if(rightHand[i][0] < 0 || rightHand[i][1] < 0 || rightHand[i][0] > 1 || rightHand[i][1] > 1) {
                             rightHandflag = false
                             break
                         }
@@ -77,7 +77,7 @@ class HandSignHelper() {
                         leftHand[i][0] = handResultBundle.results.first().landmarks()[0][i].x()
                         leftHand[i][1] = handResultBundle.results.first().landmarks()[0][i].y()
                         leftHand[i][2] = handResultBundle.results.first().landmarks()[0][i].z()
-                        if(leftHand[i][0] < 0 || leftHand[i][1] < 0 || leftHand[i][0] > 1 || leftHand[i][0] > 1) {
+                        if(leftHand[i][0] < 0 || leftHand[i][1] < 0 || leftHand[i][0] > 1 || leftHand[i][1] > 1) {
                             leftHandFlag = false
                             break
                         }
@@ -100,7 +100,7 @@ class HandSignHelper() {
                                 leftHand[i][0] = handResultBundle.results.first().landmarks()[0][i].x()
                                 leftHand[i][1] = handResultBundle.results.first().landmarks()[0][i].y()
                                 leftHand[i][2] = handResultBundle.results.first().landmarks()[0][i].z()
-                                if(leftHand[i][0] < 0 || leftHand[i][1] < 0 || leftHand[i][0] > 1 || leftHand[i][0] > 1) {
+                                if(leftHand[i][0] < 0 || leftHand[i][1] < 0 || leftHand[i][0] > 1 || leftHand[i][1] > 1) {
                                     leftHandFlag = false
                                     break
                                 }
@@ -110,7 +110,7 @@ class HandSignHelper() {
                                 leftHand[i][0] = handResultBundle.results.first().landmarks()[1][i].x()
                                 leftHand[i][1] = handResultBundle.results.first().landmarks()[1][i].y()
                                 leftHand[i][2] = handResultBundle.results.first().landmarks()[1][i].z()
-                                if(leftHand[i][0] < 0 || leftHand[i][1] < 0 || leftHand[i][0] > 1 || leftHand[i][0] > 1) {
+                                if(leftHand[i][0] < 0 || leftHand[i][1] < 0 || leftHand[i][0] > 1 || leftHand[i][1] > 1) {
                                     leftHandFlag = false
                                     break
                                 }
@@ -122,7 +122,7 @@ class HandSignHelper() {
                                 rightHand[i][0] = handResultBundle.results.first().landmarks()[0][i].x()
                                 rightHand[i][1] = handResultBundle.results.first().landmarks()[0][i].y()
                                 rightHand[i][2] = handResultBundle.results.first().landmarks()[0][i].z()
-                                if(rightHand[i][0] < 0 || rightHand[i][1] < 0 || rightHand[i][0] > 1 || rightHand[i][0] > 1) {
+                                if(rightHand[i][0] < 0 || rightHand[i][1] < 0 || rightHand[i][0] > 1 || rightHand[i][1] > 1) {
                                     rightHandflag = false
                                     break
                                 }
@@ -132,7 +132,7 @@ class HandSignHelper() {
                                 rightHand[i][0] = handResultBundle.results.first().landmarks()[1][i].x()
                                 rightHand[i][1] = handResultBundle.results.first().landmarks()[1][i].y()
                                 rightHand[i][2] = handResultBundle.results.first().landmarks()[1][i].z()
-                                if(rightHand[i][0] < 0 || rightHand[i][1] < 0 || rightHand[i][0] > 1 || rightHand[i][0] > 1) {
+                                if(rightHand[i][0] < 0 || rightHand[i][1] < 0 || rightHand[i][0] > 1 || rightHand[i][1] > 1) {
                                     rightHandflag = false
                                     break
                                 }
@@ -145,7 +145,7 @@ class HandSignHelper() {
                             leftHand[i][0] = handResultBundle.results.first().landmarks()[0][i].x()
                             leftHand[i][1] = handResultBundle.results.first().landmarks()[0][i].y()
                             leftHand[i][2] = handResultBundle.results.first().landmarks()[0][i].z()
-                            if(leftHand[i][0] < 0 || leftHand[i][1] < 0 || leftHand[i][0] > 1 || leftHand[i][0] > 1) {
+                            if(leftHand[i][0] < 0 || leftHand[i][1] < 0 || leftHand[i][0] > 1 || leftHand[i][1] > 1) {
                                 leftHandFlag = false
                                 break
                             }
@@ -154,7 +154,7 @@ class HandSignHelper() {
                             rightHand[i][0] = handResultBundle.results.first().landmarks()[1][i].x()
                             rightHand[i][1] = handResultBundle.results.first().landmarks()[1][i].y()
                             rightHand[i][2] = handResultBundle.results.first().landmarks()[1][i].z()
-                            if(leftHand[i][0] < 0 || leftHand[i][1] < 0 || leftHand[i][0] > 1 || leftHand[i][0] > 1) {
+                            if(leftHand[i][0] < 0 || leftHand[i][1] < 0 || leftHand[i][0] > 1 || leftHand[i][1] > 1) {
                                 leftHandFlag = false
                                 break
                             }
@@ -165,7 +165,7 @@ class HandSignHelper() {
                             rightHand[i][0] = handResultBundle.results.first().landmarks()[0][i].x()
                             rightHand[i][1] = handResultBundle.results.first().landmarks()[0][i].y()
                             rightHand[i][2] = handResultBundle.results.first().landmarks()[0][i].z()
-                            if(rightHand[i][0] < 0 || rightHand[i][1] < 0 || rightHand[i][0] > 1 || rightHand[i][0] > 1) {
+                            if(rightHand[i][0] < 0 || rightHand[i][1] < 0 || rightHand[i][0] > 1 || rightHand[i][1] > 1) {
                                 rightHandflag = false
                                 break
                             }
@@ -174,7 +174,7 @@ class HandSignHelper() {
                             leftHand[i][0] = handResultBundle.results.first().landmarks()[1][i].x()
                             leftHand[i][1] = handResultBundle.results.first().landmarks()[1][i].y()
                             leftHand[i][2] = handResultBundle.results.first().landmarks()[1][i].z()
-                            if(leftHand[i][0] < 0 || leftHand[i][1] < 0 || leftHand[i][0] > 1 || leftHand[i][0] > 1) {
+                            if(leftHand[i][0] < 0 || leftHand[i][1] < 0 || leftHand[i][0] > 1 || leftHand[i][1] > 1) {
                                 leftHandFlag = false
                                 break
                             }
