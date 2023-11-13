@@ -152,6 +152,7 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
 
     /** MediaPlayer 관련 변수(Naver Clova TTS API) */
     private lateinit var mediaPlayer: MediaPlayer
+    private var isTTSPlaying: Boolean = false
 
     /** naverspeech-sdk-android(CLOVA Speech Recognition(CSR)) */
     private var handler: RecognitionHandler? = null
@@ -343,6 +344,10 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
     /** SST 백그라운드 실행 초기 설정 */
     fun startSTT(sttResult: String, isMine: Boolean) {
         if(sttResult.isNullOrBlank()) return
+        if(isTTSPlaying) {
+            isTTSPlaying = false
+            return
+        }
 
         val currentTime = System.currentTimeMillis()
         val conversationCameraModel = ConversationCameraModel(
@@ -364,6 +369,7 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
                     .execute() //API 요청
 
                 if (response.isSuccessful) {
+                    isTTSPlaying = true
                     val body = response.body()
                     if (body != null) {
                         //응답 결과를 임시 저장
