@@ -51,3 +51,7 @@
 - 빈 문자열도 가능하도록 action 추출 로직 수정
 - input을 받아 MediaPipe pose model bundle 설정 가능(lite / full / heavy, default: heavy)
 
+## v8_1
+
+- hand landmark가 없을 경우도 frame_data 저장
+
