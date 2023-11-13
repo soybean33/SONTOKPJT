@@ -154,3 +154,44 @@
 
 - calculate angle as `float32`
 - epoach : 200
+
+## v12
+
+- 30s dataset(repeated)
+- 4 labels
+
+  - ['', '석사', '연구', '오늘']
+
+- use mediapipe pose heavy model
+- `z` 축 값 무시
+-
+
+### v11_1
+
+- calculate angle as `float16`
+- epoach : 100
+
+### v11_2
+
+- calculate angle as `float16`
+- epoach : 150
+
+### v11_3
+
+- calculate angle as `float16`
+- epoach : 200
+
+### v11_4
+
+- calculate angle as `float32`
+- epoach : 100
+
+### v11_5
+
+- calculate angle as `float32`
+- epoach : 150
+
+### v11_6
+
+- calculate angle as `float32`
+- epoach : 200
