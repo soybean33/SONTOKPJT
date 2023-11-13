@@ -563,6 +563,17 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
         } else {
             /** 녹음하기를 미선택한 경우 - "대화 종료" 질의 팝업 발생 */
             //TODO: : "대화를 종료하시겠습니까?" 팝업 생성 및 발생
+            val nForm = CustomForm(this)
+            nForm.show()
+            nForm.setOnBtnStoreClickedListener(object: CustomForm.onBtnStoreClickedListener {
+                override fun onBtnStoreClicked(title: String, tags: String) {
+                    /** 대화 종료 전 기록에 쌓인 대화 내용을 저장 */
+                    /** {제목\n태그인덱스\n대화내용} 형식 */
+                    val rConversation = title + "\nTAGS_" + tags + "\n" + textList
+                    writeTextFile(rConversation)
+                    finish()
+                }
+            })
 
         }
     }
