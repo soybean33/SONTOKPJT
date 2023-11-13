@@ -5,27 +5,29 @@ import android.Manifest
 import android.animation.ArgbEvaluator
 import android.animation.ValueAnimator
 import android.annotation.SuppressLint
+import android.app.Dialog
 import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.content.res.AssetFileDescriptor
 import android.content.res.AssetManager
 import android.content.res.Configuration
 import android.graphics.Bitmap
 import android.graphics.Color
-import android.graphics.Rect
+import android.graphics.drawable.ColorDrawable
 import android.media.AudioAttributes
 import android.media.MediaPlayer
 import android.os.Build
 import android.os.Bundle
 import android.os.Handler
-import android.os.Looper
 import android.os.Message
 import android.os.SystemClock
 import android.util.Log
 import android.view.View
-import android.view.ViewGroup
+import android.view.Window
 import android.view.WindowManager
 import android.view.inputmethod.EditorInfo
+import android.widget.Button
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.camera.core.AspectRatio
@@ -35,7 +37,6 @@ import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.ImageProxy
 import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
-import androidx.constraintlayout.widget.ConstraintSet
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.Lifecycle
@@ -47,7 +48,6 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.window.layout.WindowInfoTracker
 import androidx.window.layout.WindowLayoutInfo
-import com.google.android.material.internal.ViewUtils.dpToPx
 
 import com.google.mediapipe.tasks.vision.core.RunningMode
 import com.naver.speech.clientapi.SpeechRecognitionResult
@@ -57,19 +57,15 @@ import com.sts.sontalksign.feature.apis.NaverAPI
 import com.sts.sontalksign.feature.common.CustomForm
 import com.sts.sontalksign.feature.utils.AudioWriterPCM
 import com.sts.sontalksign.global.FileFormats
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Dispatchers.Main
 import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import org.tensorflow.lite.Interpreter
-import org.tensorflow.lite.gpu.CompatibilityList
-import org.tensorflow.lite.gpu.GpuDelegate
 import java.io.BufferedReader
 import java.io.BufferedWriter
 import java.io.File
@@ -81,9 +77,6 @@ import java.lang.ref.WeakReference
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import java.nio.channels.FileChannel
-import java.util.Timer
-import java.util.TimerTask
-import java.util.concurrent.Executor
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
@@ -561,20 +554,30 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
                 }
             })
         } else {
-            /** 녹음하기를 미선택한 경우 - "대화 종료" 질의 팝업 발생 */
-            //TODO: : "대화를 종료하시겠습니까?" 팝업 생성 및 발생
-            val nForm = CustomForm(this)
-            nForm.show()
-            nForm.setOnBtnStoreClickedListener(object: CustomForm.onBtnStoreClickedListener {
-                override fun onBtnStoreClicked(title: String, tags: String) {
-                    /** 대화 종료 전 기록에 쌓인 대화 내용을 저장 */
-                    /** {제목\n태그인덱스\n대화내용} 형식 */
-                    val rConversation = title + "\nTAGS_" + tags + "\n" + textList
-                    writeTextFile(rConversation)
-                    finish()
-                }
-            })
+            // Create and show a confirmation dialog to end the conversation
+            val dialog = Dialog(this)
+            dialog.requestWindowFeature(Window.FEATURE_NO_TITLE)
+            dialog.setContentView(R.layout.custom_no_record_form) // Assuming you have a layout file named custom_confirm_dialog.xml
+            dialog.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
 
+            // Set up the buttons and their click listeners
+            val btnConfirm = dialog.findViewById<Button>(R.id.btn_dismiss) // Assuming you have a button named btnConfirmEnd in your dialog
+            val btnCancel = dialog.findViewById<Button>(R.id.btn_cancel) // Assuming you have a button named btnCancelEnd in your dialog
+
+            btnConfirm.setOnClickListener {
+                Log.d("btnDismiss", "btnDismiss is clicked")
+                val intent = Intent(binding.root.context, ConversationFragment::class.java)
+
+                binding.root.context.startActivity(intent)
+                dialog.dismiss()
+            }
+
+            btnCancel.setOnClickListener {
+
+                dialog.dismiss()
+            }
+
+            dialog.show()
         }
     }
 
