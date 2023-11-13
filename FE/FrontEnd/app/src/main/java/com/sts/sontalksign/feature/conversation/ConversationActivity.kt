@@ -58,11 +58,13 @@ import com.sts.sontalksign.feature.common.CustomForm
 import com.sts.sontalksign.feature.utils.AudioWriterPCM
 import com.sts.sontalksign.global.FileFormats
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Dispatchers.Main
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
 import org.tensorflow.lite.Interpreter
 import java.io.BufferedReader
 import java.io.BufferedWriter
@@ -289,11 +291,9 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
     private suspend fun playSTT() = coroutineScope {
         if (!naverRecognizer!!.getSpeechRecognizer().isRunning) {
             mResult = ""
-            binding.tvCRS.text = "Connecting..."
             naverRecognizer!!.recognize()
         } else {
             Log.d(TAG, "stop and wait Final Result")
-            binding.tvCRS.isEnabled = false
             naverRecognizer!!.getSpeechRecognizer().stop()
         }
     }
@@ -303,7 +303,6 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
         when (msg.what) {
             /** 음성 인식을 시작할 준비가 완료된 경우 */
             R.id.clientReady -> {
-                binding.tvCRS.text = "Connected"
                 audioWriter = AudioWriterPCM(
                     filesDir.absolutePath + "/NaverSpeechTest"
                 )
@@ -316,7 +315,6 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
             /** 처리가 되고 있는 도중에 결과를 받은 경우 */
             R.id.partialResult -> {
                 mResult = msg.obj as String
-                binding.tvCRS.text = mResult
             }
             /** 최종 인식이 완료되면 유사 결과를 모두 보여줌 */
             R.id.finalResult -> {
@@ -324,13 +322,11 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
                 val results = speechRecognitionResult.results
                 val result = results[0].toString()
                 startSTT(result, false) // 이 부분을 변경
-                binding.tvCRS.text = result
             }
             /** 인식 오류가 발생한 경우 */
             R.id.recognitionError -> {
                 audioWriter?.close()
                 mResult = "Error code : ${msg.obj}"
-                binding.tvCRS.text = mResult
             }
             /** 음성 인식 비활성화 상태인 경우 */
             R.id.clientInactive -> {
@@ -344,6 +340,8 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
 
     /** SST 백그라운드 실행 초기 설정 */
     fun startSTT(sttResult: String, isMine: Boolean) {
+        if(sttResult.isNullOrBlank()) return
+
         val currentTime = System.currentTimeMillis()
         val conversationCameraModel = ConversationCameraModel(
             ConversationText = sttResult,
@@ -693,6 +691,12 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
 
             val result = handSignHelper.wordQueueManager(output[0].toList().toTypedArray())
 
+            if(result != "" && result != "1") {
+                withContext(Main) {
+                    binding.tvCRS.text = result
+                }
+            }
+
             //Log.d("Result", result)
             delay(33)
         }
@@ -834,7 +838,7 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
         var newTextColor: Int? = null
         if (newLayoutInfo.displayFeatures[0].toString().contains("HALF_OPENED")) {
             oldLayoutHeight = dpToPx(700)
-            newLayoutHeight = newLayoutInfo.displayFeatures[0].bounds.bottom
+            newLayoutHeight = (newLayoutInfo.displayFeatures[0].bounds.bottom * 0.9).toInt()
             oldBackgroundColor = Color.WHITE
             newBackgroundColor = Color.BLACK
             oldTextColor = Color.BLACK
@@ -843,7 +847,7 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
 //            isFolded = true
             binding.tvAlertUnfolded.visibility = View.GONE
         } else if (newLayoutInfo.displayFeatures[0].toString().contains("FLAT")) {
-            oldLayoutHeight = newLayoutInfo.displayFeatures[0].bounds.bottom
+            oldLayoutHeight = (newLayoutInfo.displayFeatures[0].bounds.bottom * 0.9).toInt()
             newLayoutHeight = dpToPx(700)
             oldBackgroundColor = Color.BLACK
             newBackgroundColor = Color.WHITE
@@ -954,9 +958,6 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
 
         /** STT 초기 설정 */
         mResult = ""
-        binding.tvCRS.text = ""
-//        binding.btnCRS.setText(R.string.str_start)
-//        binding.btnCRS.isEnabled = true
     }
 
     override fun onPause() {
