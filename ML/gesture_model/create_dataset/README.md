@@ -55,3 +55,13 @@
 
 - hand landmark가 없을 경우도 frame_data 저장
 
+## v9
+
+- 정규화 로직 변경
+
+## v10
+
+- hand landmarks, pose landmarks에서 z값 제거
+- 라벨이 빈 값인 경우 → 두 손 데이터를 0으로 채워서 저장
+- 라벨이 빈 값이 아닌 경우 → 손이 하나라도 인식된 경우에만 데이터 저장
+
