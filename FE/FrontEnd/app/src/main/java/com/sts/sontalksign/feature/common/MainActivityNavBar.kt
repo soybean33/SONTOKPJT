@@ -119,13 +119,14 @@ class MainActivityNavBar : AppCompatActivity() {
         val prTagFile = File(tagFileDirectory, FileFormats.tagFileName)
         if(!prTagFile.exists()) {
             prTagFile.createNewFile()
+            
+            val writer = FileWriter(prTagFile)
+            //쓰기 속도 향상
+            val tbuffer = BufferedWriter(writer)
+            tbuffer.write("0 안부\n1 점심\n2 식사\n3 커피\n4 친구\n5 여행\n6 공부\n7 운동")
+            tbuffer.close()
+            writer.close()
         }
-
-//        val writer = FileWriter(prTagFile)
-//        //쓰기 속도 향상
-//        val tbuffer = BufferedWriter(writer)
-//        tbuffer.write("0 TEST\n1 테스트\n2 테스트입니다\n3 TESTTEST\n4 TEST일걸")
-//        tbuffer.close()
 
         //파일 읽기 - 한줄씩 읽어서 TAG 정보 저장
         val reader = FileReader(prTagFile)
@@ -142,7 +143,6 @@ class MainActivityNavBar : AppCompatActivity() {
         }
         buffer.close()
         reader.close()
-
 
         //시스템 TAG 색상 초기 설정(SET)
         val cList = resources.getIntArray(R.array.tagColorArr)
