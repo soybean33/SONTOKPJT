@@ -67,8 +67,8 @@ dependencies {
 
     // 텐서플로우 라이트
     implementation 'org.tensorflow:tensorflow-lite-select-tf-ops:+'
-    implementation 'org.tensorflow:tensorflow-lite:2.13.0'
-    implementation 'org.tensorflow:tensorflow-lite-gpu:2.13.0'
+    implementation 'org.tensorflow:tensorflow-lite:2.14.0'
+    implementation 'org.tensorflow:tensorflow-lite-gpu:2.14.0'
 
     // Jetpack WindowManager - Foldable 처리
     implementation "androidx.window:window:1.1.0"
