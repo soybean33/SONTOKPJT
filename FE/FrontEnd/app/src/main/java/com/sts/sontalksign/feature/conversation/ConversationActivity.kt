@@ -1,6 +1,7 @@
 package com.sts.sontalksign.feature.conversation
 
 import ConversationCameraAdapter
+import CustomNoRecordForm
 import android.Manifest
 import android.animation.ArgbEvaluator
 import android.animation.ValueAnimator
@@ -48,6 +49,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.window.layout.WindowInfoTracker
 import androidx.window.layout.WindowLayoutInfo
+import com.google.android.material.internal.ViewUtils.dpToPx
 
 import com.google.mediapipe.tasks.vision.core.RunningMode
 import com.naver.speech.clientapi.SpeechRecognitionResult
@@ -557,30 +559,17 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
                 }
             })
         } else {
-            // Create and show a confirmation dialog to end the conversation
-            val dialog = Dialog(this)
-            dialog.requestWindowFeature(Window.FEATURE_NO_TITLE)
-            dialog.setContentView(R.layout.custom_no_record_form) // Assuming you have a layout file named custom_confirm_dialog.xml
-            dialog.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+            // When recording is not happening and "End conversation?" popup should be shown
+            val nForm = CustomNoRecordForm(this)
+            nForm.show()
+            nForm.setOnBtnDismissCancelClickedListener(object : CustomNoRecordForm.OnBtnDismissCancelClickedListener {
+                override fun onBtnDismissCancelClicked() {
+                    // This will be called when the dismiss or cancel button is clicked
+                    finish()
+                }
 
-            // Set up the buttons and their click listeners
-            val btnConfirm = dialog.findViewById<Button>(R.id.btn_dismiss) // Assuming you have a button named btnConfirmEnd in your dialog
-            val btnCancel = dialog.findViewById<Button>(R.id.btn_cancel) // Assuming you have a button named btnCancelEnd in your dialog
-
-            btnConfirm.setOnClickListener {
-                Log.d("btnDismiss", "btnDismiss is clicked")
-                val intent = Intent(binding.root.context, ConversationFragment::class.java)
-
-                binding.root.context.startActivity(intent)
-                dialog.dismiss()
             }
-
-            btnCancel.setOnClickListener {
-
-                dialog.dismiss()
-            }
-
-            dialog.show()
+            )
         }
     }
 
@@ -685,27 +674,23 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
                 val inputArray: Array<FloatArray> = inputArrayList.toTypedArray()
                 val input3DArray: Array<Array<FloatArray>> = arrayOf(inputArray)
 
-                val output = Array(1) {
-                    FloatArray(handSignHelper.dataSize()) { 0.0f }
-                }
-
-                tflite!!.run(input3DArray, output)
-
-                //Log.d("Result", "${output[0][0]},${output[0][1]},${output[0][2]},${output[0][3]},${output[0][4]}")
-
-                val result = handSignHelper.wordQueueManager(output[0].toList().toTypedArray())
-
-                if(result != "" && result != "1") {
-                    withContext(Main) {
-                        binding.tvCRS.text = result
-                    }
-                }
-
-                //Log.d("Result", result)
-                delay(33)
-            } catch(exec: Exception) {
-                Log.d("mediaPipeProcess", exec.message.toString())
+            val output = Array(1) {
+                FloatArray(handSignHelper.dataSize()) { 0.0f }
             }
+
+            tflite!!.run(input3DArray, output)
+
+            Log.d("Result", "${output[0][0]}\t\t${output[0][1]}\t\t${output[0][2]}\t\t${output[0][3]}")
+
+            val result = handSignHelper.wordQueueManager(output[0].toList().toTypedArray())
+
+            if(result != "" && result != "1") {
+                withContext(Main) {
+                    binding.tvCRS.text = result
+                }
+
+            //Log.d("Result", result)
+            //delay(33)
         }
     }
 
