@@ -544,13 +544,16 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
         if (isNowRecording) {
             val cForm = CustomForm(this)
             cForm.show()
-            cForm.setOnBtnStoreClickedListener(object : CustomForm.onBtnStoreClickedListener {
+            cForm.setOnBtnClickedListener(object : CustomForm.onBtnClickedListener {
                 override fun onBtnStoreClicked(title: String, tags: String) {
                     /** 대화 종료 전 기록에 쌓인 대화 내용을 저장 */
                     /** {제목\n태그인덱스\n대화내용} 형식 */
                     val rConversation = title + "\nTAGS_" + tags + "\n" + textList
                     writeTextFile(rConversation)
                     finish()
+                }
+                override fun onBtnCancelStoreClicked() {
+
                 }
             })
         } else {
@@ -677,28 +680,32 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
     /** MediaPipe의 결과를 ML에 적용 */
     private suspend fun mediaPipeProcess() = coroutineScope {
         launch {
-            val inputArrayList: ArrayList<FloatArray> = handSignHelper.Solution()
-            val inputArray: Array<FloatArray> = inputArrayList.toTypedArray()
-            val input3DArray: Array<Array<FloatArray>> = arrayOf(inputArray)
+            try {
+                val inputArrayList: ArrayList<FloatArray> = handSignHelper.Solution()
+                val inputArray: Array<FloatArray> = inputArrayList.toTypedArray()
+                val input3DArray: Array<Array<FloatArray>> = arrayOf(inputArray)
 
-            val output = Array(1) {
-                FloatArray(handSignHelper.dataSize()) { 0.0f }
-            }
-
-            tflite!!.run(input3DArray, output)
-
-            //Log.d("Result", "${output[0][0]},${output[0][1]},${output[0][2]},${output[0][3]},${output[0][4]}")
-
-            val result = handSignHelper.wordQueueManager(output[0].toList().toTypedArray())
-
-            if(result != "" && result != "1") {
-                withContext(Main) {
-                    binding.tvCRS.text = result
+                val output = Array(1) {
+                    FloatArray(handSignHelper.dataSize()) { 0.0f }
                 }
-            }
 
-            //Log.d("Result", result)
-            delay(33)
+                tflite!!.run(input3DArray, output)
+
+                //Log.d("Result", "${output[0][0]},${output[0][1]},${output[0][2]},${output[0][3]},${output[0][4]}")
+
+                val result = handSignHelper.wordQueueManager(output[0].toList().toTypedArray())
+
+                if(result != "" && result != "1") {
+                    withContext(Main) {
+                        binding.tvCRS.text = result
+                    }
+                }
+
+                //Log.d("Result", result)
+                delay(33)
+            } catch(exec: Exception) {
+                Log.d("mediaPipeProcess", exec.message.toString())
+            }
         }
     }
 
