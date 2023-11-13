@@ -340,6 +340,8 @@ class HandSignHelper() {
             result[i + 141] = (resultRightHand[i] * (180.0 / Math.PI)).toFloat()
         }
 
+        Log.d("Angle", "${result[141]}, ${result[142]}, ${result[143]}, ${result[144]}, ${result[145]}, ${result[146]}, ${result[147]}, ${result[148]}, ${result[149]}, ${result[150]}, ${result[151]}, ${result[152]}, ${result[153]}, ${result[154]}, ${result[155]}")
+
         /** pose 데이터 - point와 angle */
         for(i in 0 until 33) {
             for(j in 0 until 3) {

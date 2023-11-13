@@ -698,7 +698,7 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
             }
 
             //Log.d("Result", result)
-            delay(33)
+            //delay(33)
         }
     }
 
