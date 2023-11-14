@@ -59,9 +59,12 @@ import com.sts.sontalksign.feature.apis.NaverAPI
 import com.sts.sontalksign.feature.common.CustomForm
 import com.sts.sontalksign.feature.utils.AudioWriterPCM
 import com.sts.sontalksign.global.FileFormats
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Dispatchers.Default
 import kotlinx.coroutines.Dispatchers.Main
 import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -637,15 +640,24 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
 
     /******** MediaPipe 관련 함수 ********/
     /** ImageAnalyzer에 대한 처리 시작 */
-    private fun mediaPipeSequence(imageProxy: ImageProxy) = runBlocking {
+    private fun mediaPipeSequence(imageProxy: ImageProxy) {
         /** Z Flip 접힌 상태에서만 동작 */
 //        if(!isFolded) {
 //            Log.d("isFolded TAG", "Phone is Folded!!")
 //            return@runBlocking
 //        }
 
-        mediaPipe(imageProxy)
-        mediaPipeProcess()
+        var ret: String = ""
+        CoroutineScope(Default).launch {
+            mediaPipe(imageProxy)
+            ret = mediaPipeProcess()
+
+        }
+        CoroutineScope(Main).launch {
+            if(ret != "" && ret != "1") {
+                binding.tvCRS.text = ret
+            }
+        }
     }
 
     /** imageProxy 처리 */
@@ -662,7 +674,6 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
         imageProxy.use { bitmapBuffer.copyPixelsFromBuffer(imageProxy.planes[0].buffer) }
         imageProxy.close()
 
-
         launch {
             detectPose(imageProxy, bitmapBuffer, frameTime)
         }
@@ -673,32 +684,33 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
     }
 
     /** MediaPipe의 결과를 ML에 적용 */
-    private suspend fun mediaPipeProcess() = coroutineScope {
-        launch {
-            try {
-                val inputArrayList: ArrayList<FloatArray> = handSignHelper.Solution()
-                val inputArray: Array<FloatArray> = inputArrayList.toTypedArray()
-                val input3DArray: Array<Array<FloatArray>> = arrayOf(inputArray)
+    private fun mediaPipeProcess(): String {
+        val inputArrayList: ArrayList<FloatArray> = handSignHelper.Solution()
+        val inputArray: Array<FloatArray> = inputArrayList.toTypedArray()
+        val input3DArray: Array<Array<FloatArray>> = arrayOf(inputArray)
 
-                val output = Array(1) {
-                    FloatArray(handSignHelper.dataSize()) { 0.0f }
-                }
-
-                tflite!!.run(input3DArray, output)
-
-                Log.d("Result", "${output[0][0]}\t\t${output[0][1]}\t\t${output[0][2]}\t\t${output[0][3]}")
-
-                val result = handSignHelper.wordQueueManager(output[0].toList().toTypedArray())
-
-                if(result != "" && result != "1") {
-                    withContext(Main) {
-                        binding.tvCRS.text = result
-                    }
-                }
-            } catch(exec: Exception) {
-                Log.d("mediaPipeProcess", exec.message.toString())
-            }
+        val output = Array(1) {
+            FloatArray(handSignHelper.dataSize()) { 0.0f }
         }
+
+        tflite!!.run(input3DArray, output)
+
+        Log.d("Result", "${output[0][0]}\t\t${output[0][1]}\t\t${output[0][2]}\t\t${output[0][3]}")
+
+        return handSignHelper.wordQueueManager(output[0].toList().toTypedArray())
+//
+//        CoroutineScope(Dispatchers.Main).launch {
+//            CoroutineScope(Dispatchers.Default).async {
+//
+//            }.await()
+//
+//            if(result != "" && result != "1") {
+//                binding.tvCRS.text = result
+////                withContext(Main) {
+////
+////                }
+//            }
+//        }
     }
 
     /** MediaPipe - Pose 감지 */
