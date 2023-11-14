@@ -849,6 +849,7 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
 
 //            isFolded = true
             binding.tvAlertUnfolded.visibility = View.GONE
+            binding.vBackgroundConversation.visibility = View.VISIBLE
         } else if (newLayoutInfo.displayFeatures[0].toString().contains("FLAT")) {
             oldLayoutHeight = (newLayoutInfo.displayFeatures[0].bounds.bottom * 0.9).toInt()
             newLayoutHeight = dpToPx(700)
@@ -859,6 +860,7 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
 
 //            isFolded = false
             binding.tvAlertUnfolded.visibility = View.VISIBLE
+            binding.vBackgroundConversation.visibility = View.GONE
         }
 
         /** Camera Preview의 Height */
