@@ -19,12 +19,12 @@ class ConversationCameraAdapter(private val conversationCameraList: ArrayList<Co
             if (isLeftMessage) {
                 binding.llhHistoryConversationText.gravity = Gravity.END
                 binding.tvHistoryConversationText.setTextSize(TypedValue.COMPLEX_UNIT_SP, 20f)
-                binding.llhHistoryConversationText.alpha = 0.5f // 투명도를 0.5로 설정
+                binding.llhHistoryConversationText.alpha = 0.8f // 투명도를 0.8로 설정
 //                binding.tvHistoryConversationText.setPadding(0, 0, 0, 10) // 10dp padding at the bottom
             } else {
                 binding.llhHistoryConversationText.gravity = Gravity.START
                 binding.tvHistoryConversationText.setTextSize(TypedValue.COMPLEX_UNIT_SP, 20f)
-                binding.llhHistoryConversationText.alpha = 0.5f // 투명도를 0.5로 설정
+                binding.llhHistoryConversationText.alpha = 0.8f // 투명도를 0.8로 설정
 //                binding.tvHistoryConversationText.setPadding(0, 0, 0, 10) // 10dp padding at the bottom
 
             }
