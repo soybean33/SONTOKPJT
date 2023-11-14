@@ -687,7 +687,7 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
                 tflite!!.run(input3DArray, output)
 
                 /** 확률 로그 시작 */
-                val precision = 2 // 원하는 소수점 아래 자릿수
+                val precision = 3 // 원하는 소수점 아래 자릿수
 
                 val resultStringBuilder = StringBuilder("")
                 for (i in 0 until handSignHelper.dataSize()) {
