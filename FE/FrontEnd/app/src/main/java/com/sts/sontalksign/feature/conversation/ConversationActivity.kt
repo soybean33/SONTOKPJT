@@ -280,7 +280,7 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
 
     /******** CSR 관련 함수 ********/
     private fun startSTTCoroutine() {
-        lifecycleScope.launch(Dispatchers.Main) {
+        lifecycleScope.launch(Dispatchers.Default) {
             lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 startSTTRoutine()
             }
