@@ -692,7 +692,7 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
                 val resultStringBuilder = StringBuilder("")
                 for (i in 0 until handSignHelper.dataSize()) {
                     val formattedValue = String.format("%.${precision}f", output[0][i])
-                    resultStringBuilder.append("$formattedValue\t\t")
+                    resultStringBuilder.append("$formattedValue\t")
                 }
 
                 Log.d("Result", resultStringBuilder.toString())
