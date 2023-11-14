@@ -166,32 +166,73 @@
 - `z` 축 값 무시
 -
 
-### v11_1
+### v12_1
 
 - calculate angle as `float16`
 - epoach : 100
 
-### v11_2
+### v12_2
 
 - calculate angle as `float16`
 - epoach : 150
 
-### v11_3
+### v12_3
 
 - calculate angle as `float16`
 - epoach : 200
 
-### v11_4
+### v12_4
 
 - calculate angle as `float32`
 - epoach : 100
 
-### v11_5
+### v12_5
 
 - calculate angle as `float32`
 - epoach : 150
 
-### v11_6
+### v12_6
+
+- calculate angle as `float32`
+- epoach : 200
+
+## v13
+
+- 60s dataset(repeated)
+- 17 labels
+
+  - ["", "감사합니다", "경험", "끝내다", "담그다", "담당", "먹다", "무엇", "발표", "보다", "수제비", "에", "오늘", "정말", "제", "질문", "집", "책"]
+
+- use mediapipe pose heavy model
+- `z` 축 값 무시
+- `"책"` 데이터 셋 무시당함
+
+### v13_1
+
+- calculate angle as `float16`
+- epoach : 100
+
+### v13_2
+
+- calculate angle as `float16`
+- epoach : 150
+
+### v13_3
+
+- calculate angle as `float16`
+- epoach : 200
+
+### v13_4
+
+- calculate angle as `float32`
+- epoach : 100
+
+### v13_5
+
+- calculate angle as `float32`
+- epoach : 150
+
+### v13_6
 
 - calculate angle as `float32`
 - epoach : 200
