@@ -686,7 +686,17 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
 
                 tflite!!.run(input3DArray, output)
 
-                Log.d("Result", "${output[0][0]}\t\t${output[0][1]}\t\t${output[0][2]}\t\t${output[0][3]}")
+                /** 확률 로그 시작 */
+                val precision = 2 // 원하는 소수점 아래 자릿수
+
+                val resultStringBuilder = StringBuilder("")
+                for (i in 0 until handSignHelper.dataSize()) {
+                    val formattedValue = String.format("%.${precision}f", output[0][i])
+                    resultStringBuilder.append("$formattedValue\t\t")
+                }
+
+                Log.d("Result", resultStringBuilder.toString())
+                /** 확률 로그 끝 */
 
                 val result = handSignHelper.wordQueueManager(output[0].toList().toTypedArray())
 
