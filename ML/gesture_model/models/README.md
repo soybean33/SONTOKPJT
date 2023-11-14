@@ -236,3 +236,43 @@
 
 - calculate angle as `float32`
 - epoach : 200
+
+## v14
+
+- 60s dataset(repeated) with z flip
+- 17 labels
+
+  - ["", "감사합니다", "경험", "끝내다", "담그다", "담당", "먹다", "무엇", "발표", "보다", "수제비", "에", "오늘", "정말", "제", "질문", "집", "책"]
+
+- use mediapipe pose heavy model
+- `z` 축 값 무시
+
+### v14_1
+
+- calculate angle as `float16`
+- epoach : 100
+
+### v14_2
+
+- calculate angle as `float16`
+- epoach : 150
+
+### v14_3
+
+- calculate angle as `float16`
+- epoach : 200
+
+### v14_4
+
+- calculate angle as `float32`
+- epoach : 100
+
+### v14_5
+
+- calculate angle as `float32`
+- epoach : 150
+
+### v14_6
+
+- calculate angle as `float32`
+- epoach : 200
