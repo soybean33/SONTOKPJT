@@ -305,7 +305,7 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
     }
 
     /**  CSR 상태에 대한 동작 - clientReady, audioRecording, partialResult, final Result, recognitionError, clientInactive */
-    private fun handleMessage(msg: Message) : Int {
+    private fun handleMessage(msg: Message): Int {
         when (msg.what) {
             /** 음성 인식을 시작할 준비가 완료된 경우 */
             R.id.clientReady -> {
@@ -346,8 +346,8 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
 
     /** SST 백그라운드 실행 초기 설정 */
     fun startSTT(sttResult: String, isMine: Boolean) {
-        if(sttResult.isNullOrBlank()) return
-        if(isTTSPlaying) {
+        if (sttResult.isNullOrBlank()) return
+        if (isTTSPlaying) {
             isTTSPlaying = false
             return
         }
@@ -563,6 +563,7 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
                     writeTextFile(rConversation)
                     finish()
                 }
+
                 override fun onBtnCancelStoreClicked() {
 
                 }
@@ -571,7 +572,8 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
             // When recording is not happening and "End conversation?" popup should be shown
             val nForm = CustomNoRecordForm(this)
             nForm.show()
-            nForm.setOnBtnDismissCancelClickedListener(object : CustomNoRecordForm.OnBtnDismissCancelClickedListener {
+            nForm.setOnBtnDismissCancelClickedListener(object :
+                CustomNoRecordForm.OnBtnDismissCancelClickedListener {
                 override fun onBtnDismissCancelClicked() {
                     // This will be called when the dismiss or cancel button is clicked
                     finish()
@@ -654,7 +656,7 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
 
         }
         CoroutineScope(Main).launch {
-            if(ret != "" && ret != "1") {
+            if (ret != "" && ret != "1") {
                 binding.tvCRS.text = ret
             }
         }
@@ -689,13 +691,20 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
         val inputArray: Array<FloatArray> = inputArrayList.toTypedArray()
         val input3DArray: Array<Array<FloatArray>> = arrayOf(inputArray)
 
-        val output = Array(1) {
-            FloatArray(handSignHelper.dataSize()) { 0.0f }
-        }
+        val output = Array(1) { FloatArray(handSignHelper.dataSize()) { 0.0f } }
 
         tflite!!.run(input3DArray, output)
 
-        Log.d("Result", "${output[0][0]}\t\t${output[0][1]}\t\t${output[0][2]}\t\t${output[0][3]}")
+        /** 확률 로그 시작 */
+        val precision = 3 // 원하는 소수점 아래 자릿수
+
+        val resultStringBuilder = StringBuilder("")
+        for (i in 0 until handSignHelper.dataSize()) {
+            val formattedValue = String.format("%.${precision}f", output[0][i])
+            resultStringBuilder.append("$formattedValue\t")
+        }
+        Log.d("Result", resultStringBuilder.toString())
+        /** 확률 로그 끝 */
 
         return handSignHelper.wordQueueManager(output[0].toList().toTypedArray())
 //
@@ -842,7 +851,7 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
      * */
     private fun updateUI(newLayoutInfo: WindowLayoutInfo) {
         /** foldable 폰이 아닌 경우 UI 갱신 불가 */
-        if(newLayoutInfo.displayFeatures.isNullOrEmpty()) return
+        if (newLayoutInfo.displayFeatures.isNullOrEmpty()) return
 
         var oldLayoutHeight: Int? = null
         var newLayoutHeight: Int? = null
@@ -885,7 +894,11 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
 
         /** Layout의 Background Color */
         val bgColorAnimator =
-            ValueAnimator.ofObject(ArgbEvaluator(), oldBackgroundColor!!, newBackgroundColor!!)
+            ValueAnimator.ofObject(
+                ArgbEvaluator(),
+                oldBackgroundColor!!,
+                newBackgroundColor!!
+            )
         bgColorAnimator.addUpdateListener { animation ->
             val value = animation.animatedValue as Int
             binding.clConversation.setBackgroundColor(value)
@@ -930,7 +943,11 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
             if (allPermissionsGranted()) {
                 setUpCamera()
             } else {
-                Toast.makeText(this, "Permissions not granted by the user.", Toast.LENGTH_SHORT)
+                Toast.makeText(
+                    this,
+                    "Permissions not granted by the user.",
+                    Toast.LENGTH_SHORT
+                )
                     .show()
                 finish()
             }
