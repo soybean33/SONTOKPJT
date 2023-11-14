@@ -54,7 +54,7 @@
             android:background="@color/subgray"
             android:paddingVertical="15dp"
             android:gravity="center"
-            />
+            android:visibility="gone" />
     </androidx.coordinatorlayout.widget.CoordinatorLayout>
 
 

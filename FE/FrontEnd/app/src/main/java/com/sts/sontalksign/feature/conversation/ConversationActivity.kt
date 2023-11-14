@@ -829,12 +829,16 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
      * 3) EditText의 Text Color
      * */
     private fun updateUI(newLayoutInfo: WindowLayoutInfo) {
+        /** foldable 폰이 아닌 경우 UI 갱신 불가 */
+        if(newLayoutInfo.displayFeatures.isNullOrEmpty()) return
+
         var oldLayoutHeight: Int? = null
         var newLayoutHeight: Int? = null
         var oldBackgroundColor: Int? = null
         var newBackgroundColor: Int? = null
         var oldTextColor: Int? = null
         var newTextColor: Int? = null
+
         if (newLayoutInfo.displayFeatures[0].toString().contains("HALF_OPENED")) {
             oldLayoutHeight = dpToPx(700)
             newLayoutHeight = (newLayoutInfo.displayFeatures[0].bounds.bottom * 0.9).toInt()
