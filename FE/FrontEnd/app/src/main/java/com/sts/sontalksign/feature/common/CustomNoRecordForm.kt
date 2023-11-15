@@ -2,7 +2,6 @@ import android.app.Dialog
 import android.graphics.drawable.ColorDrawable
 import android.view.Window
 import androidx.appcompat.app.AppCompatActivity
-import com.google.mediapipe.util.proto.ColorProto.Color
 import com.sts.sontalksign.databinding.CustomNoRecordFormBinding
 
 class CustomNoRecordForm(private val context: AppCompatActivity) {
