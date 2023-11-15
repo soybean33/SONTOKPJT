@@ -629,9 +629,9 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
         /** Z Flip 접힌 상태에서만 동작 */
         var ret: String = ""
         CoroutineScope(Default).launch {
-            mediaPipe(imageProxy)
-            ret = mediaPipeProcess()
-
+            val result = mediaPipe(imageProxy)
+            val ret = mediaPipeProcess(result)
+            Log.d("asdf", ret)
         }
         CoroutineScope(Main).launch {
             if (ret != "" && ret != "1") {
@@ -641,30 +641,29 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
     }
 
     /** imageProxy 처리 */
-    private suspend fun mediaPipe(imageProxy: ImageProxy) = coroutineScope {
+    private suspend fun mediaPipe(imageProxy: ImageProxy): String = coroutineScope {
         val frameTime = SystemClock.uptimeMillis()
-
-        val bitmapBuffer =
-            Bitmap.createBitmap(
-                imageProxy.width,
-                imageProxy.height,
-                Bitmap.Config.ARGB_8888
-            )
+        val bitmapBuffer = Bitmap.createBitmap(
+            imageProxy.width,
+            imageProxy.height,
+            Bitmap.Config.ARGB_8888
+        )
 
         imageProxy.use { bitmapBuffer.copyPixelsFromBuffer(imageProxy.planes[0].buffer) }
         imageProxy.close()
 
-        launch {
-            detectPose(imageProxy, bitmapBuffer, frameTime)
-        }.
+        val poseResult = async { detectPose(imageProxy, bitmapBuffer, frameTime) }
+        val handResult = async { detectHand(imageProxy, bitmapBuffer, frameTime) }
 
-        launch {
-            detectHand(imageProxy, bitmapBuffer, frameTime)
-        }
+        // await() 함수를 사용하여 각각의 작업이 완료될 때까지 기다립니다.
+        val poseOutput = poseResult.await()
+        val handOutput = handResult.await()
+
+        "$poseOutput $handOutput"
     }
 
     /** MediaPipe의 결과를 ML에 적용 */
-    private fun mediaPipeProcess(): String {
+    private fun mediaPipeProcess(input: String): String {
         val inputArrayList: ArrayList<FloatArray> = handSignHelper.Solution()
         val inputArray: Array<FloatArray> = inputArrayList.toTypedArray()
         val input3DArray: Array<Array<FloatArray>> = arrayOf(inputArray)
@@ -673,37 +672,22 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
 
         tflite!!.run(input3DArray, output)
 
-        /** 확률 로그 시작 */
-        val precision = 3 // 원하는 소수점 아래 자릿수
-
+        // 확률 로그 작업
+        val precision = 3
         val resultStringBuilder = StringBuilder("")
         for (i in 0 until handSignHelper.dataSize()) {
             val formattedValue = String.format("%.${precision}f", output[0][i])
             resultStringBuilder.append("$formattedValue\t")
         }
         Log.d("Result", resultStringBuilder.toString())
-        /** 확률 로그 끝 */
 
         return handSignHelper.wordQueueManager(output[0].toList().toTypedArray())
-//
-//        CoroutineScope(Dispatchers.Main).launch {
-//            CoroutineScope(Dispatchers.Default).async {
-//
-//            }.await()
-//
-//            if(result != "" && result != "1") {
-//                binding.tvCRS.text = result
-////                withContext(Main) {
-////
-////                }
-//            }
-//        }
     }
 
     /** MediaPipe - Pose 감지 */
-    private fun detectPose(imageProxy: ImageProxy, bitmapBuffer: Bitmap, frameTime: Long) {
-        try {
-            if (this::poseLandmarkerHelper.isInitialized) {
+    private suspend fun detectPose(imageProxy: ImageProxy, bitmapBuffer: Bitmap, frameTime: Long): String {
+        return try {
+            if (this@ConversationActivity::poseLandmarkerHelper.isInitialized) {
                 poseLandmarkerHelper.detectLiveStream(
                     imageProxy = imageProxy,
                     bitmapBuffer = bitmapBuffer,
@@ -711,16 +695,19 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
                     frameTime = frameTime
                 )
             }
-
+            // 결과를 리턴하거나 필요한 다른 작업을 수행할 수 있습니다.
+            "Pose detection complete"
         } catch (exec: Exception) {
             Log.d("detectPose: ", exec.message.toString())
+            // 예외가 발생한 경우에 대한 처리를 수행할 수 있습니다.
+            "Pose detection failed"
         }
     }
 
     /** MediaPipe - Hand 감지 */
-    private fun detectHand(imageProxy: ImageProxy, bitmapBuffer: Bitmap, frameTime: Long) {
-        try {
-            if (this::handLandmarkerHelper.isInitialized) {
+    private suspend fun detectHand(imageProxy: ImageProxy, bitmapBuffer: Bitmap, frameTime: Long): String {
+        return try {
+            if (this@ConversationActivity::poseLandmarkerHelper.isInitialized) {
                 handLandmarkerHelper.detectLiveStream(
                     imageProxy = imageProxy,
                     bitmapBuffer = bitmapBuffer,
@@ -728,8 +715,12 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
                     frameTime = frameTime
                 )
             }
+            // 결과를 리턴하거나 필요한 다른 작업을 수행할 수 있습니다.
+            "Hand detection complete"
         } catch (exec: Exception) {
             Log.d("detectHand: ", exec.message.toString())
+            // 예외가 발생한 경우에 대한 처리를 수행할 수 있습니다.
+            "Hand detection failed"
         }
     }
 
