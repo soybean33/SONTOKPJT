@@ -6,16 +6,16 @@ import android.Manifest
 import android.animation.ArgbEvaluator
 import android.animation.ValueAnimator
 import android.annotation.SuppressLint
-import android.app.Dialog
+
 import android.content.Context
-import android.content.Intent
+
 import android.content.pm.PackageManager
 import android.content.res.AssetFileDescriptor
 import android.content.res.AssetManager
 import android.content.res.Configuration
 import android.graphics.Bitmap
 import android.graphics.Color
-import android.graphics.drawable.ColorDrawable
+
 import android.media.AudioAttributes
 import android.media.MediaPlayer
 import android.os.Build
@@ -25,7 +25,7 @@ import android.os.Message
 import android.os.SystemClock
 import android.util.Log
 import android.view.View
-import android.view.Window
+
 import android.view.WindowManager
 import android.view.inputmethod.EditorInfo
 import android.widget.Button
@@ -49,7 +49,6 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.window.layout.WindowInfoTracker
 import androidx.window.layout.WindowLayoutInfo
-import com.google.android.material.internal.ViewUtils.dpToPx
 
 import com.google.mediapipe.tasks.vision.core.RunningMode
 import com.naver.speech.clientapi.SpeechRecognitionResult
@@ -66,7 +65,6 @@ import kotlinx.coroutines.Dispatchers.Main
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
@@ -176,6 +174,7 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
     /** Foldable 반응형 */
     private lateinit var windowInfoTracker: WindowInfoTracker
 
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
@@ -211,6 +210,30 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
         /** "대화 종료" 버튼 클릭 */
         binding.btnStopConversation.setOnClickListener {
             stopConversation()
+        }
+
+        binding.btnEarlyUse1.setOnClickListener {
+            var earlyUse1 = "안녕하세요! 이 기기를 통해 의사소통을 하려고 합니다. 말씀하시면 텍스트를 통해 제가 볼 수 있어요."
+            addTextLine(earlyUse1, false)
+            generateTtsApi(earlyUse1)
+        }
+
+        binding.btnEarlyUse2.setOnClickListener {
+            var earlyUse1 = "네"
+            addTextLine(earlyUse1, false)
+            generateTtsApi(earlyUse1)
+        }
+
+        binding.btnEarlyUse3.setOnClickListener {
+            var earlyUse1 = "아니오"
+            addTextLine(earlyUse1, false)
+            generateTtsApi(earlyUse1)
+        }
+
+        binding.btnEarlyUse4.setOnClickListener {
+            var earlyUse1 = "감사합니다"
+            addTextLine(earlyUse1, false)
+            generateTtsApi(earlyUse1)
         }
 
         /** 대화내용 저장 */
