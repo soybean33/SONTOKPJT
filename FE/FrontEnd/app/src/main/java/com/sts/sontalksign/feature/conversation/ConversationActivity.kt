@@ -643,11 +643,6 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
     /** ImageAnalyzer에 대한 처리 시작 */
     private fun mediaPipeSequence(imageProxy: ImageProxy) {
         /** Z Flip 접힌 상태에서만 동작 */
-//        if(!isFolded) {
-//            Log.d("isFolded TAG", "Phone is Folded!!")
-//            return@runBlocking
-//        }
-
         CoroutineScope(Main).launch {
             var ret: String = ""
             CoroutineScope(Default).async {
@@ -662,7 +657,7 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
     }
 
     /** imageProxy 처리 */
-    private suspend fun mediaPipe(imageProxy: ImageProxy) = coroutineScope {
+    private suspend fun mediaPipe(imageProxy: ImageProxy): String = coroutineScope {
         val frameTime = SystemClock.uptimeMillis()
         val bitmapBuffer = Bitmap.createBitmap(
             imageProxy.width,
@@ -673,27 +668,15 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
         imageProxy.use { bitmapBuffer.copyPixelsFromBuffer(imageProxy.planes[0].buffer) }
         imageProxy.close()
 
-//        val poseResult = async { detectPose(imageProxy, bitmapBuffer, frameTime) }
-//        val handResult = async { detectHand(imageProxy, bitmapBuffer, frameTime) }
-//
-//        // await() 함수를 사용하여 각각의 작업이 완료될 때까지 기다립니다.
-//        val poseOutput = poseResult.await()
-//        val handOutput = handResult.await()
-//
-//        "$poseOutput $handOutput"
+        val poseResult = async { detectPose(imageProxy, bitmapBuffer, frameTime) }
+        val handResult = async { detectHand(imageProxy, bitmapBuffer, frameTime) }
 
-        launch {
-            detectPose(imageProxy, bitmapBuffer, frameTime)
-            detectHand(imageProxy, bitmapBuffer, frameTime)
-        }.onJoin
+        // await() 함수를 사용하여 각각의 작업이 완료될 때까지 기다립니다.
+        val poseOutput = poseResult.await()
+        val handOutput = handResult.await()
 
-//        launch {
-//            detectPose(imageProxy, bitmapBuffer, frameTime)
-//        }
-//
-//        launch {
-//            detectHand(imageProxy, bitmapBuffer, frameTime)
-//        }
+        // 여기에서 poseOutput, handOutput을 조합하거나 다른 작업을 수행할 수 있습니다.
+        "$poseOutput $handOutput"
     }
 
     /** MediaPipe의 결과를 ML에 적용 */
