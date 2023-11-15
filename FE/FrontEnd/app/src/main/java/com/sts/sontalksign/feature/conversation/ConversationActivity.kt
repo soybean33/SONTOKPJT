@@ -271,7 +271,7 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
             )
         }
 
-        tflite = getTfliteInterpreter()
+        getTfliteInterpreter()
 
         /** CSR 관련 처리 */
         handler = RecognitionHandler(this)
@@ -424,12 +424,28 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
 
     /******** ML Model 관련 함수 ********/
     /** Tensorflow Lite 모델의 Interpreter 초기 설정 */
-    private fun getTfliteInterpreter(): Interpreter {
-        val model: ByteBuffer = loadModelFile(this).apply {
-            order(ByteOrder.nativeOrder())
-        }
-        interpreter = Interpreter(model)
-        return interpreter!!
+    private fun getTfliteInterpreter() { //: Interpreter {
+//        val model: ByteBuffer = loadModelFile(this).apply {
+//            order(ByteOrder.nativeOrder())
+//        }
+        tflite = Interpreter(loadModelFile(this))
+
+//        val compatList = CompatibilityList()
+//        val options = Interpreter.Options().apply{
+//            if(compatList.isDelegateSupportedOnThisDevice){
+//                // if the device has a supported GPU, add the GPU delegate
+//                val delegateOptions = compatList.bestOptionsForThisDevice
+//                addDelegate(GpuDelegate(delegateOptions))
+//                Log.d("GPU/CPU", "GGGGGGGGGGGGGGGGGGGG")
+//            } else {
+//                setNumThreads(4)
+//                Log.d("GPU/CPU", "CCCCCCCCCCCCCCCCCCC")
+//            }
+//        }
+//
+//        interpreter = Interpreter(model, options)
+//        interpreter = Interpreter(model)
+//        return interpreter!!
     }
 
     /** MODEL FILE 초기 로드 */
@@ -627,13 +643,18 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
     /** ImageAnalyzer에 대한 처리 시작 */
     private fun mediaPipeSequence(imageProxy: ImageProxy) {
         /** Z Flip 접힌 상태에서만 동작 */
-        var ret: String = ""
-        CoroutineScope(Default).launch {
-            val result = mediaPipe(imageProxy)
-            val ret = mediaPipeProcess(result)
-            Log.d("asdf", ret)
-        }
+//        if(!isFolded) {
+//            Log.d("isFolded TAG", "Phone is Folded!!")
+//            return@runBlocking
+//        }
+
         CoroutineScope(Main).launch {
+            var ret: String = ""
+            CoroutineScope(Default).async {
+                mediaPipe(imageProxy)
+                ret = mediaPipeProcess()
+            }.await()
+
             if (ret != "" && ret != "1") {
                 binding.tvCRS.text = ret
             }
@@ -641,7 +662,7 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
     }
 
     /** imageProxy 처리 */
-    private suspend fun mediaPipe(imageProxy: ImageProxy): String = coroutineScope {
+    private suspend fun mediaPipe(imageProxy: ImageProxy) = coroutineScope {
         val frameTime = SystemClock.uptimeMillis()
         val bitmapBuffer = Bitmap.createBitmap(
             imageProxy.width,
@@ -652,18 +673,31 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
         imageProxy.use { bitmapBuffer.copyPixelsFromBuffer(imageProxy.planes[0].buffer) }
         imageProxy.close()
 
-        val poseResult = async { detectPose(imageProxy, bitmapBuffer, frameTime) }
-        val handResult = async { detectHand(imageProxy, bitmapBuffer, frameTime) }
+//        val poseResult = async { detectPose(imageProxy, bitmapBuffer, frameTime) }
+//        val handResult = async { detectHand(imageProxy, bitmapBuffer, frameTime) }
+//
+//        // await() 함수를 사용하여 각각의 작업이 완료될 때까지 기다립니다.
+//        val poseOutput = poseResult.await()
+//        val handOutput = handResult.await()
+//
+//        "$poseOutput $handOutput"
 
-        // await() 함수를 사용하여 각각의 작업이 완료될 때까지 기다립니다.
-        val poseOutput = poseResult.await()
-        val handOutput = handResult.await()
+        launch {
+            detectPose(imageProxy, bitmapBuffer, frameTime)
+            detectHand(imageProxy, bitmapBuffer, frameTime)
+        }.onJoin
 
-        "$poseOutput $handOutput"
+//        launch {
+//            detectPose(imageProxy, bitmapBuffer, frameTime)
+//        }
+//
+//        launch {
+//            detectHand(imageProxy, bitmapBuffer, frameTime)
+//        }
     }
 
     /** MediaPipe의 결과를 ML에 적용 */
-    private fun mediaPipeProcess(input: String): String {
+    private fun mediaPipeProcess(): String {
         val inputArrayList: ArrayList<FloatArray> = handSignHelper.Solution()
         val inputArray: Array<FloatArray> = inputArrayList.toTypedArray()
         val input3DArray: Array<Array<FloatArray>> = arrayOf(inputArray)
@@ -679,8 +713,10 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
             val formattedValue = String.format("%.${precision}f", output[0][i])
             resultStringBuilder.append("$formattedValue\t")
         }
+
         Log.d("Result", resultStringBuilder.toString())
 
+        /** 확률 로그 끝 */
         return handSignHelper.wordQueueManager(output[0].toList().toTypedArray())
     }
 
