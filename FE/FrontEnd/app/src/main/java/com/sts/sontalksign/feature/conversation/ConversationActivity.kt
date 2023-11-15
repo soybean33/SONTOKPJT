@@ -173,8 +173,6 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
     private val conversationCamera: ArrayList<ConversationCameraModel> = ArrayList()
     private lateinit var recyclerView: RecyclerView // RecyclerView 선언
 
-    var printResult: String = "dd"
-
     /** Foldable 반응형 */
     private lateinit var windowInfoTracker: WindowInfoTracker
 
@@ -430,21 +428,6 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
         val model: ByteBuffer = loadModelFile(this).apply {
             order(ByteOrder.nativeOrder())
         }
-
-//        val compatList = CompatibilityList()
-//        val options = Interpreter.Options().apply{
-//            if(compatList.isDelegateSupportedOnThisDevice){
-//                // if the device has a supported GPU, add the GPU delegate
-//                val delegateOptions = compatList.bestOptionsForThisDevice
-//                addDelegate(GpuDelegate(delegateOptions))
-//                Log.d("GPU/CPU", "GGGGGGGGGGGGGGGGGGGG")
-//            } else {
-//                setNumThreads(4)
-//                Log.d("GPU/CPU", "CCCCCCCCCCCCCCCCCCC")
-//            }
-//        }
-//
-//        interpreter = Interpreter(model, options)
         interpreter = Interpreter(model)
         return interpreter!!
     }
@@ -644,11 +627,6 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
     /** ImageAnalyzer에 대한 처리 시작 */
     private fun mediaPipeSequence(imageProxy: ImageProxy) {
         /** Z Flip 접힌 상태에서만 동작 */
-//        if(!isFolded) {
-//            Log.d("isFolded TAG", "Phone is Folded!!")
-//            return@runBlocking
-//        }
-
         var ret: String = ""
         CoroutineScope(Default).launch {
             mediaPipe(imageProxy)
@@ -678,7 +656,7 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
 
         launch {
             detectPose(imageProxy, bitmapBuffer, frameTime)
-        }
+        }.
 
         launch {
             detectHand(imageProxy, bitmapBuffer, frameTime)
