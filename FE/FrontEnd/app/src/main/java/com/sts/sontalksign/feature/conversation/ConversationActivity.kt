@@ -172,6 +172,7 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
     /** Foldable 반응형 */
     private lateinit var windowInfoTracker: WindowInfoTracker
 
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
@@ -207,6 +208,30 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
         /** "대화 종료" 버튼 클릭 */
         binding.btnStopConversation.setOnClickListener {
             stopConversation()
+        }
+
+        binding.btnEarlyUse1.setOnClickListener {
+            var earlyUse1 = "안녕하세요! 이 기기를 통해 의사소통을 하려고 합니다. 말씀하시면 텍스트를 통해 제가 볼 수 있어요."
+            addTextLine(earlyUse1, false)
+            generateTtsApi(earlyUse1)
+        }
+
+        binding.btnEarlyUse2.setOnClickListener {
+            var earlyUse1 = "네"
+            addTextLine(earlyUse1, false)
+            generateTtsApi(earlyUse1)
+        }
+
+        binding.btnEarlyUse3.setOnClickListener {
+            var earlyUse1 = "아니오"
+            addTextLine(earlyUse1, false)
+            generateTtsApi(earlyUse1)
+        }
+
+        binding.btnEarlyUse4.setOnClickListener {
+            var earlyUse1 = "감사합니다"
+            addTextLine(earlyUse1, false)
+            generateTtsApi(earlyUse1)
         }
 
         /** 대화내용 저장 */
