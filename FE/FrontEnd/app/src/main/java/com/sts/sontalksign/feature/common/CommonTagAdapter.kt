@@ -13,13 +13,21 @@ import androidx.cardview.widget.CardView
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.sts.sontalksign.R
+import com.sts.sontalksign.feature.conversation.ConversationActivity
 import org.w3c.dom.Text
 
 /**
  * 대화내용 저장 FORM에서 사용하는 TAG 리스트의 Adapter
  * tags에는 현재 저장된 개인의 태그 정보가 저장되어 있습니다.
  */
-class CommonTagAdapter(private val tags: MutableList<CommonTagItem>) : RecyclerView.Adapter<CommonTagAdapter.ViewHolder>() {
+class CommonTagAdapter(private val tags: MutableList<CommonTagItem>, private val mListener: UpdateRvListener) : RecyclerView.Adapter<CommonTagAdapter.ViewHolder>() {
+//    private val mListener: UpdateRvListener by lazy {
+//        uListener
+//    }
+    private val selectedTags: ArrayList<CommonTagItem> by lazy {
+        ArrayList<CommonTagItem>()
+}
+
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val view = LayoutInflater.from(parent.context).inflate(R.layout.history_tag_item, parent, false)
         return ViewHolder(view)
@@ -37,6 +45,11 @@ class CommonTagAdapter(private val tags: MutableList<CommonTagItem>) : RecyclerV
 //        holder.itemView.layoutParams = layoutParams
     }
 
+    fun addItem(item: CommonTagItem) {
+        tags.add(item)
+        notifyItemInserted(itemCount)
+    }
+
     override fun getItemCount(): Int {
         return tags.size
     }
@@ -52,6 +65,8 @@ class CommonTagAdapter(private val tags: MutableList<CommonTagItem>) : RecyclerV
                 val selectedItem = tags[adapterPosition]
                 tags.removeAt(adapterPosition)
                 notifyItemRemoved(adapterPosition)
+
+                mListener.onUpdateSelectedTagRv(selectedItem)
             }
         }
     }
