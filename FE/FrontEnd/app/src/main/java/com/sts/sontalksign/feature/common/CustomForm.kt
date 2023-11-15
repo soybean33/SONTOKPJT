@@ -6,6 +6,7 @@ import android.graphics.drawable.ColorDrawable
 import android.util.Log
 import android.view.View
 import android.view.Window
+import android.widget.Adapter
 import android.widget.AdapterView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
@@ -20,11 +21,21 @@ class CustomForm(private val context : AppCompatActivity) {
     private val TAG: String = "CustomForm"
 
     private val tagAdapter: CommonTagAdapter by lazy {
-        CommonTagAdapter(TagSingleton.tagList)
+        CommonTagAdapter(ArrayList(TagSingleton.tagList.toList()), rvListener)
     }
 
-    private val selectedTagAdapter: SelectedTagAdapter by lazy {
-        SelectedTagAdapter(ArrayList<CommonTagItem>())
+    val selectedTagAdapter: SelectedTagAdapter by lazy {
+        SelectedTagAdapter(ArrayList<CommonTagItem>(), rvListener)
+    }
+
+    private val rvListener: UpdateRvListener = object : UpdateRvListener {
+        override fun onUpdateSelectedTagRv(item: CommonTagItem) {
+            selectedTagAdapter.addSelectedItem(item)
+        }
+
+        override fun onUpdateUnselectedTagRv(item: CommonTagItem) {
+            tagAdapter.addItem(item)
+        }
     }
 
     fun show() {
@@ -40,7 +51,7 @@ class CustomForm(private val context : AppCompatActivity) {
         //저장 버튼
         binding.btnStore.setOnClickListener {
             Log.d("CustomForm", "btnStore is clicked")
-            onClickListener.onBtnStoreClicked(binding.ciTitleConversation.etInputContent.text.toString(), binding.ciTagConversation.etInputContent.text.toString())
+            onClickListener.onBtnStoreClicked(binding.ciTitleConversation.etInputContent.text.toString(), selectedTagAdapter.getSelectedTagList())
             fDialog.dismiss()
         }
 
@@ -63,6 +74,7 @@ class CustomForm(private val context : AppCompatActivity) {
     fun loadTagView() {
         val layoutManager = GridLayoutManager(this.context, 5)
         binding.rvTagList.layoutManager = layoutManager
+
 //        layoutManager.spanSizeLookup = object : GridLayoutManager.SpanSizeLookup() {
 //            var sumLen : Int = 0
 //            var rowPos : Int = 0
@@ -84,7 +96,7 @@ class CustomForm(private val context : AppCompatActivity) {
 //        }
 
         binding.rvTagList.adapter = tagAdapter
-
+        binding.rvSelectedTagList.adapter = selectedTagAdapter
     }
 
     /**

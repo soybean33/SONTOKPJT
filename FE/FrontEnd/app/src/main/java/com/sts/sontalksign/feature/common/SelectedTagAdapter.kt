@@ -13,13 +13,14 @@ import androidx.cardview.widget.CardView
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.sts.sontalksign.R
+import kotlinx.coroutines.selects.select
 import org.w3c.dom.Text
 
 /**
  * 대화내용 저장 FORM에서 사용하는 TAG 리스트의 Adapter
  * tags에는 현재 저장된 개인의 태그 정보가 저장되어 있습니다.
  */
-class SelectedTagAdapter(private val selectedTags: MutableList<CommonTagItem>) : RecyclerView.Adapter<SelectedTagAdapter.ViewHolder>() {
+class SelectedTagAdapter(private val selectedTags: MutableList<CommonTagItem>, private val mListener: UpdateRvListener) : RecyclerView.Adapter<SelectedTagAdapter.ViewHolder>() {
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val view = LayoutInflater.from(parent.context).inflate(R.layout.history_tag_item, parent, false)
         return ViewHolder(view)
@@ -35,6 +36,16 @@ class SelectedTagAdapter(private val selectedTags: MutableList<CommonTagItem>) :
 
     fun addSelectedItem(item: CommonTagItem) {
         selectedTags.add(item)
+        notifyItemInserted(itemCount)
+    }
+
+    fun getSelectedTagList() : String {
+        var selected: String = ""
+        for (tag in selectedTags) {
+            selected += "_${tag.tagInd}"
+        }
+
+        return selected
     }
 
     inner class ViewHolder(view : View) : RecyclerView.ViewHolder(view) {
@@ -45,9 +56,11 @@ class SelectedTagAdapter(private val selectedTags: MutableList<CommonTagItem>) :
             tagView.setCardBackgroundColor(TagSingleton.colorList[item.tagInd.toInt() % TagSingleton.colorList.size]) //MaterialCardView의 배경색상 지정
             tagContent.text = item.tagText //TextView의 텍스트 지정
             tagView.setOnClickListener { tag: View ->
-                val selectedItem = selectedTags[adapterPosition]
-                selectedTags.add(selectedItem)
-                notifyItemInserted(adapterPosition)
+                val disSelectedItem = selectedTags[adapterPosition]
+                selectedTags.removeAt(adapterPosition)
+                notifyItemRemoved(adapterPosition)
+
+                mListener.onUpdateUnselectedTagRv(disSelectedItem)
             }
         }
     }

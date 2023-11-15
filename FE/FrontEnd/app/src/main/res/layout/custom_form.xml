@@ -75,20 +75,24 @@
                 app:inputTitle="@string/input_tag"
                 />
 
-            <GridView
-                android:id="@+id/gv_selected_tag_list"
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rv_selected_tag_list"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="7dp"
-                android:numColumns="5"
+                android:layout_marginTop="14dp"
+                app:layoutManager="androidx.recyclerview.widget.GridLayoutManager"
+                android:orientation="horizontal"
+                tools:listitem="@layout/history_tag_item"
+                android:layout_gravity="left"
+                android:layout_marginLeft="10dp"
                 />
 
         </FrameLayout>
 
         <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rv_tag_list"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:id="@+id/rv_tag_list"
             app:layoutManager="androidx.recyclerview.widget.GridLayoutManager"
             android:orientation="horizontal"
             tools:listitem="@layout/history_tag_item"

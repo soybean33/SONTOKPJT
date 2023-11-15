@@ -3,6 +3,7 @@ import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.core.view.marginLeft
+import androidx.core.view.marginRight
 import androidx.recyclerview.widget.RecyclerView
 import com.sts.sontalksign.databinding.HistoryConversationBinding
 import com.sts.sontalksign.feature.conversation.ConversationCameraModel
@@ -20,11 +21,13 @@ class ConversationCameraAdapter(private val conversationCameraList: ArrayList<Co
                 binding.llhHistoryConversationText.gravity = Gravity.END
                 binding.tvHistoryConversationText.setTextSize(TypedValue.COMPLEX_UNIT_SP, 20f)
                 binding.llhHistoryConversationText.alpha = 0.8f // 투명도를 0.8로 설정
+                binding.tvHistoryConversationText.gravity = Gravity.RIGHT //오른쪽 정렬
 //                binding.tvHistoryConversationText.setPadding(0, 0, 0, 10) // 10dp padding at the bottom
             } else {
                 binding.llhHistoryConversationText.gravity = Gravity.START
                 binding.tvHistoryConversationText.setTextSize(TypedValue.COMPLEX_UNIT_SP, 20f)
                 binding.llhHistoryConversationText.alpha = 0.8f // 투명도를 0.8로 설정
+                binding.tvHistoryConversationText.gravity = Gravity.LEFT //왼쪽 정렬
 //                binding.tvHistoryConversationText.setPadding(0, 0, 0, 10) // 10dp padding at the bottom
 
             }

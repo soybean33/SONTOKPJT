@@ -558,7 +558,7 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
                 override fun onBtnStoreClicked(title: String, tags: String) {
                     /** 대화 종료 전 기록에 쌓인 대화 내용을 저장 */
                     /** {제목\n태그인덱스\n대화내용} 형식 */
-                    val rConversation = title + "\nTAGS_" + tags + "\n" + textList
+                    val rConversation = title + "\nTAGS" + tags + "\n" + textList
                     writeTextFile(rConversation)
                     finish()
                 }
