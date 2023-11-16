@@ -11,11 +11,13 @@ class HandSignHelper() {
     var leftHand : Array<Array<Float>> = Array(21) {Array(2) {0f}} /** 왼손 RAW 좌표 */
     var rightHand: Array<Array<Float>> = Array(21) {Array(2) {0f}} /** 오른손 RAW 좌표 */
     var pose: Array<Array<Float>> = Array(33) {Array(2) {0f}} /** 포즈 RAW 좌표 */
+
+    var lag: Int = 3
     
     /** model 입력 데이터 관련 변수 */
     /** model에 들어가는 입력값은 frameDeque[5][190] 크기의 2차원 배열을 한차원 감싼 형태 */
     val frameDeque = ArrayList<FloatArray>().apply {
-        repeat(5) {
+        repeat(lag) {
             add(FloatArray(190) {0f})
         }
     }
@@ -328,8 +330,6 @@ class HandSignHelper() {
         for(i in 0 until 15) {
             result[i + 99] = (resultRightHand[i] * (180.0 / Math.PI)).toFloat()
         }
-
-        //Log.d("Angle", "${result[99]}, ${result[100]}, ${result[101]}, ${result[102]}, ${result[103]}, ${result[104]}, ${result[105]}, ${result[106]}, ${result[107]}, ${result[108]}, ${result[109]}, ${result[110]}, ${result[111]}, ${result[112]}, ${result[113]}")
 
         /** pose 데이터 - point와 angle */
         for(i in 0 until 33) {
