@@ -12,7 +12,7 @@ class HandSignHelper() {
     var rightHand: Array<Array<Float>> = Array(21) {Array(2) {0f}} /** 오른손 RAW 좌표 */
     var pose: Array<Array<Float>> = Array(33) {Array(2) {0f}} /** 포즈 RAW 좌표 */
 
-    var lag: Int = 5
+    var lag: Int = 1
     
     /** model 입력 데이터 관련 변수 */
     /** model에 들어가는 입력값은 frameDeque[5][190] 크기의 2차원 배열을 한차원 감싼 형태 */
@@ -23,7 +23,7 @@ class HandSignHelper() {
     }
     
     /** 확률을 출력되는 값으로 변경 */
-    var signWords : Array<String> = arrayOf(".", "감사합니다", "경험", "끝내다", "담그다", "담당", "먹다", "무엇", "발표", "보다", "수제비", "에", "오늘", "정말", "제", "질문", "집", "책")
+    var signWords : Array<String> = arrayOf("", ".", "끝내다", "담당", "발표", "제", "준비", "?")
     val signWordSize : Int = signWords.size
     var wordQueue : Array<String> = arrayOf(".", "1", "2", "3", "4", "5", "6", "7")
     val wordCounterMap : MutableMap<String, Int> = mutableMapOf("." to 0, "1" to 0, "2" to 0, "3" to 0, "4" to 0, "5" to 0, "6" to 0, "7" to 0)
