@@ -49,6 +49,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.window.layout.WindowInfoTracker
 import androidx.window.layout.WindowLayoutInfo
+import com.google.android.material.internal.ViewUtils.dpToPx
 
 import com.google.mediapipe.tasks.vision.core.RunningMode
 import com.naver.speech.clientapi.SpeechRecognitionResult
@@ -173,6 +174,9 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
 
     /** Foldable 반응형 */
     private lateinit var windowInfoTracker: WindowInfoTracker
+
+    private var sign: String = ""
+    private var preret: String = ""
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -681,7 +685,6 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
             }
         }
     }
-
     /** imageProxy 처리 */
     private suspend fun mediaPipe(imageProxy: ImageProxy) = coroutineScope {
         val frameTime = SystemClock.uptimeMillis()
