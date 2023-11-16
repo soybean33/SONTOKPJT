@@ -102,3 +102,9 @@
 - MediaPipe Hand 각도 데이터 추출
 - MediaPipe Pose 각도 데이터 추출
 
+## 23.11.16
+
+### Today I Did
+
+- 수어 영상 촬영 및 데이터 생성
+
