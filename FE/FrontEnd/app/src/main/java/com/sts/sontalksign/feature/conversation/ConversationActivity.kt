@@ -451,28 +451,8 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
 
     /******** ML Model 관련 함수 ********/
     /** Tensorflow Lite 모델의 Interpreter 초기 설정 */
-    private fun getTfliteInterpreter() { //: Interpreter {
-//        val model: ByteBuffer = loadModelFile(this).apply {
-//            order(ByteOrder.nativeOrder())
-//        }
+    private fun getTfliteInterpreter() {
         tflite = Interpreter(loadModelFile(this))
-
-//        val compatList = CompatibilityList()
-//        val options = Interpreter.Options().apply{
-//            if(compatList.isDelegateSupportedOnThisDevice){
-//                // if the device has a supported GPU, add the GPU delegate
-//                val delegateOptions = compatList.bestOptionsForThisDevice
-//                addDelegate(GpuDelegate(delegateOptions))
-//                Log.d("GPU/CPU", "GGGGGGGGGGGGGGGGGGGG")
-//            } else {
-//                setNumThreads(4)
-//                Log.d("GPU/CPU", "CCCCCCCCCCCCCCCCCCC")
-//            }
-//        }
-//
-//        interpreter = Interpreter(model, options)
-//        interpreter = Interpreter(model)
-//        return interpreter!!
     }
 
     /** MODEL FILE 초기 로드 */
