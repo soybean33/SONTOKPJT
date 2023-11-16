@@ -12,7 +12,7 @@ class HandSignHelper() {
     var rightHand: Array<Array<Float>> = Array(21) {Array(2) {0f}} /** 오른손 RAW 좌표 */
     var pose: Array<Array<Float>> = Array(33) {Array(2) {0f}} /** 포즈 RAW 좌표 */
 
-    var lag: Int = 3
+    var lag: Int = 5
     
     /** model 입력 데이터 관련 변수 */
     /** model에 들어가는 입력값은 frameDeque[5][190] 크기의 2차원 배열을 한차원 감싼 형태 */
@@ -344,7 +344,7 @@ class HandSignHelper() {
         }
 
         frameDeque.add(result)
-        frameDeque.removeFirst() /** 먼저 추가하고 제거하는 것이 outofbound를 방지할 수 있을 듯 */
+        frameDeque.removeFirst() /** 먼저 추가하고 제거하는 것이 out of bound를 방지할 수 있을 듯 */
 
         return frameDeque
     }
