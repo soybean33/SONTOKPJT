@@ -19,9 +19,7 @@
         android:layout_marginVertical="5dp"
         android:background="@drawable/rounded_conversation_item"
         android:fontFamily="@font/line_seed_kr_bd"
-        android:gravity="center"
         android:padding="15dp"
         android:text="메시지 텍스트"
         android:textColor="@color/black" />
-
 </LinearLayout>
