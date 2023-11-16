@@ -276,3 +276,279 @@
 
 - calculate angle as `float32`
 - epoach : 200
+
+## v14
+
+- 60s dataset(repeated) with z flip
+- 17 labels
+
+  - ["", "감사합니다", "경험", "끝내다", "담그다", "담당", "먹다", "무엇", "발표", "보다", "수제비", "에", "오늘", "정말", "제", "질문", "집", "책"]
+
+- use mediapipe pose heavy model
+- `z` 축 값 무시
+- leg 분할 테스트
+
+### 1 leg
+
+#### v14_1
+
+- calculate angle as `float16`
+- epoach : 100
+
+#### v14_2
+
+- calculate angle as `float16`
+- epoach : 150
+
+#### v14_3
+
+- calculate angle as `float16`
+- epoach : 200
+
+#### v14_4
+
+- calculate angle as `float32`
+- epoach : 100
+
+#### v14_5
+
+- calculate angle as `float32`
+- epoach : 150
+
+#### v14_6
+
+- calculate angle as `float32`
+- epoach : 200
+
+### 3 leg
+
+#### v14_1
+
+- calculate angle as `float16`
+- epoach : 100
+
+#### v14_2
+
+- calculate angle as `float16`
+- epoach : 150
+
+#### v14_3
+
+- calculate angle as `float16`
+- epoach : 200
+
+#### v14_4
+
+- calculate angle as `float32`
+- epoach : 100
+
+#### v14_5
+
+- calculate angle as `float32`
+- epoach : 150
+
+#### v14_6
+
+- calculate angle as `float32`
+- epoach : 200
+
+### 5 leg
+
+#### v14_1
+
+- calculate angle as `float16`
+- epoach : 100
+
+#### v14_2
+
+- calculate angle as `float16`
+- epoach : 150
+
+#### v14_3
+
+- calculate angle as `float16`
+- epoach : 200
+
+#### v14_4
+
+- calculate angle as `float32`
+- epoach : 100
+
+#### v14_5
+
+- calculate angle as `float32`
+- epoach : 150
+
+#### v14_6
+
+- calculate angle as `float32`
+- epoach : 200
+
+### 10 leg
+
+#### v14_1
+
+- calculate angle as `float16`
+- epoach : 100
+
+#### v14_2
+
+- calculate angle as `float16`
+- epoach : 150
+
+#### v14_3
+
+- calculate angle as `float16`
+- epoach : 200
+
+#### v14_4
+
+- calculate angle as `float32`
+- epoach : 100
+
+#### v14_5
+
+- calculate angle as `float32`
+- epoach : 150
+
+#### v14_6
+
+- calculate angle as `float32`
+- epoach : 200
+
+
+
+## v15
+
+- 여러개의 파일로 구성
+- '' 값과 '.' 포함
+- 8 labels
+
+  - ["", ".", "끝내다", "담당", "발표", "제", "준비", "?"]
+
+- use mediapipe pose heavy model
+- `z` 축 값 무시
+- leg 분할
+
+### 1 leg
+#### v15_1
+
+- calculate angle as `float16`
+- epoach : 100
+
+#### v15_2
+
+- calculate angle as `float16`
+- epoach : 150
+
+#### v15_3
+
+- calculate angle as `float16`
+- epoach : 200
+
+#### v15_4
+
+- calculate angle as `float32`
+- epoach : 100
+
+#### v15_5
+
+- calculate angle as `float32`
+- epoach : 150
+
+#### v15_6
+
+- calculate angle as `float32`
+- epoach : 200
+### 3 legs
+#### v15_1
+
+- calculate angle as `float16`
+- epoach : 100
+
+#### v15_2
+
+- calculate angle as `float16`
+- epoach : 150
+
+#### v15_3
+
+- calculate angle as `float16`
+- epoach : 200
+
+#### v15_4
+
+- calculate angle as `float32`
+- epoach : 100
+
+#### v15_5
+
+- calculate angle as `float32`
+- epoach : 150
+
+#### v15_6
+
+- calculate angle as `float32`
+- epoach : 200
+### 5 legs
+#### v15_1
+
+- calculate angle as `float16`
+- epoach : 100
+
+#### v15_2
+
+- calculate angle as `float16`
+- epoach : 150
+
+#### v15_3
+
+- calculate angle as `float16`
+- epoach : 200
+
+#### v15_4
+
+- calculate angle as `float32`
+- epoach : 100
+
+#### v15_5
+
+- calculate angle as `float32`
+- epoach : 150
+
+#### v15_6
+
+- calculate angle as `float32`
+- epoach : 200
+### 10 legs
+#### v15_1
+
+- calculate angle as `float16`
+- epoach : 100
+
+#### v15_2
+
+- calculate angle as `float16`
+- epoach : 150
+
+#### v15_3
+
+- calculate angle as `float16`
+- epoach : 200
+
+#### v15_4
+
+- calculate angle as `float32`
+- epoach : 100
+
+#### v15_5
+
+- calculate angle as `float32`
+- epoach : 150
+
+#### v15_6
+
+- calculate angle as `float32`
+- epoach : 200
+
+
