@@ -210,7 +210,6 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
             }
             handled
         }
-
         /** "대화 종료" 버튼 클릭 */
         binding.btnStopConversation.setOnClickListener {
             stopConversation()
@@ -304,6 +303,7 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
         handler = RecognitionHandler(this)
         naverRecognizer = NaverRecognizer(this, handler!!)
         startSTTCoroutine()
+
     }
 
     /******** CSR 관련 함수 ********/
@@ -317,6 +317,7 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
 
     private fun startSTTRoutine() = runBlocking {
         playSTT()
+
     }
 
     private suspend fun playSTT() = coroutineScope {
@@ -352,7 +353,7 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
                 val speechRecognitionResult = msg.obj as SpeechRecognitionResult
                 val results = speechRecognitionResult.results
                 val result = results[0].toString()
-                startSTT(result, false) // 이 부분을 변경
+                startSTT(result, false) 
             }
             /** 인식 오류가 발생한 경우 */
             R.id.recognitionError -> {
@@ -384,7 +385,14 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
             isLeft = isMine
         )
 
+        // Add STT result to the conversation
         conversationCameraAdapter.addItemAndScroll(conversationCameraModel, recyclerView)
+
+        // If recording is selected, save the STT result to the text file
+        if (isNowRecording) {
+            addTextLine(sttResult, isMine)
+            writeTextFile(sttResult)
+        }
     }
 
     /******** NAVER TTS API 관련 함수 ********/
