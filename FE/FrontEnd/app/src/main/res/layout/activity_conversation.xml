@@ -99,7 +99,8 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
-        android:text="TextView"
+        android:text="현재 수어"
+        android:fontFamily="@font/line_seed_kr_bd"
         android:textSize="20sp"
         android:textColor="@color/base"
         app:layout_constraintEnd_toEndOf="parent"
@@ -110,7 +111,7 @@
         android:layout_width="match_parent"
         android:layout_height="250dp"
         android:orientation="vertical"
-        app:layout_constraintTop_toBottomOf="@id/btn_stop_conversation"
+        app:layout_constraintTop_toBottomOf="@id/tv_CRS"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent">
 
@@ -119,12 +120,12 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="15dp"
-            android:layout_marginBottom="10dp"
+            android:layout_marginBottom="5dp"
             android:gravity="center_horizontal|center_vertical"
             android:text="빠른 사용"
             android:fontFamily="@font/line_seed_kr_bd"
             android:textColor="@color/base"
-            android:textSize="24sp" />
+            android:textSize="20sp" />
 
         <Button
             android:id="@+id/btn_early_use_1"
