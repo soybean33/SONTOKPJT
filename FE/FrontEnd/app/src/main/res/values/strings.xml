@@ -1,0 +1,20 @@
+<resources>
+    <string name="app_name">Son Talk Sign</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <!--  로그인/회원가입  -->
+    <string name="phone_number">전화번호</string>
+    <string name="password">비밀번호</string>
+    <string name="password_confirm">비밀번호 확인</string>
+
+    <!--  대화 저장  -->
+    <string name="input_title">제목</string>
+    <string name="input_tag">태그</string>
+    <string name="my_conversation_content">&gt;&gt;</string> <!-- >> -->
+    <string name="my_conversation_time">&gt;</string> <!-- > -->
+    <string name="your_conversation_content">&lt;&lt;</string> <!-- << -->
+    <string name="your_conversation_time">&lt;</string> <!-- < -->
+
+    <string name="str_start">Start</string>
+    <string name="str_stop">Stop</string>
+</resources>

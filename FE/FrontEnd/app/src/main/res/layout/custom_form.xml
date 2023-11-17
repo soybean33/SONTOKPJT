@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="300dp"
+    android:layout_height="wrap_content"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:background="@drawable/form_outline" >
+
+    <Button
+        android:id="@+id/btn_cancel_store"
+        android:layout_width="43dp"
+        android:layout_height="22dp"
+        android:text="취소"
+        android:textSize="16sp"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        android:layout_marginTop="19dp"
+        android:layout_marginLeft="28dp"
+        android:background="#00ff0000" />
+
+    <TextView
+        android:id="@+id/tv_form_title"
+        android:layout_width="120dp"
+        android:layout_height="30dp"
+        android:text="대화 저장"
+        android:fontFamily="@font/line_seed_kr_bd"
+        android:textColor="@color/black"
+        android:gravity="center"
+        android:textSize="27sp"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="19dp"/>
+
+    <Button
+        android:id="@+id/btn_store"
+        android:layout_width="43dp"
+        android:layout_height="22dp"
+        android:text="저장"
+        android:textSize="16sp"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        android:layout_marginTop="19dp"
+        android:layout_marginRight="28dp"
+        android:background="#00ff0000" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintTop_toBottomOf="@+id/tv_form_title"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        android:layout_marginVertical="30dp"
+        android:layout_marginHorizontal="27dp">
+
+        <com.sts.sontalksign.feature.common.CustomInput.CustomInputText
+            android:id="@+id/ci_title_conversation"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:inputTitle="@string/input_title"
+            />
+
+        <FrameLayout
+            android:id="@+id/fl_tag_list"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="13dp">
+
+            <com.sts.sontalksign.feature.common.CustomInput.CustomInputTag
+                android:id="@+id/ci_tag_conversation"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:inputTitle="@string/input_tag"
+                />
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rv_selected_tag_list"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="14dp"
+                app:layoutManager="androidx.recyclerview.widget.GridLayoutManager"
+                android:orientation="horizontal"
+                tools:listitem="@layout/history_tag_item"
+                android:layout_gravity="left"
+                android:layout_marginLeft="10dp"
+                />
+
+        </FrameLayout>
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rv_tag_list"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:layoutManager="androidx.recyclerview.widget.GridLayoutManager"
+            android:orientation="horizontal"
+            tools:listitem="@layout/history_tag_item"
+            android:layout_gravity="center"
+            android:layout_marginTop="10dp"/>
+    </LinearLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>
