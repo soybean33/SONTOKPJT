@@ -25,8 +25,8 @@
 
 ## **3️⃣ 아키텍처**
 ### 시스템 다이어그램
-![systemdiagram_청각장애인](./assets/시스템다이어그램_청각장애인)
-![systemdiagram_비장애인](./assets/시스템다이어그램_비장애인)
+![systemdiagram_청각장애인](./assets/시스템다이어그램_청각장애인.png)
+![systemdiagram_비장애인](./assets/시스템다이어그램_비장애인.png)
 
 ### 개발환경
 <h4>🌐 공통</h4>
@@ -70,6 +70,20 @@
 [SONTOK 다운로드](https://play.google.com/store/apps/details?id=com.sts.sontalksign&pcampaignid=web_share) 해당 Google Play링크에서 APK 파일을 다운받아 안드로이드 환경에서 설치할 수 있습니다.
 
 ## **5️⃣ 사용자 화면**
+1) 대화 대기 화면
+![대화 대기 화면](./assets/01_대화대기.jpg)
+
+2) 실시간 대화 화면
+![실시간 대화 화면](./assets/02_실시간대화.jpg)
+
+3) 대화 내용 저장 팝업
+![대화 내용 저장 팝업](./assets/03_대화내용저장팝업.jpg)
+
+4) 저장된 대화 내용 목록 화면
+![저장된 대화 내용 목록 화면](./assets/04_대화내용목록확인.jpg)
+
+5) 대화 내용 자세히 보기 화면
+![대화 내용 자세히 보기 화면](./assets/05_대화내용자세히보기.jpg)
 
 
 ## **6️⃣ 릴리즈 히스토리**
