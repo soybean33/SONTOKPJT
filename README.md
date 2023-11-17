@@ -25,8 +25,8 @@
 
 ## **3️⃣ 아키텍처**
 ### 시스템 다이어그램
-![systemdiagram1](./assets/시스템다이어그램1)
-![systemdiagram1](./assets/시스템다이어그램2)
+![systemdiagram1](./assets/시스템다이어그_청각장애인)
+![systemdiagram1](./assets/시스템다이어그램_비장애인)
 
 ### 개발환경
 <h4>🌐 공통</h4>
@@ -69,13 +69,8 @@
 
 [SONTOK 다운로드](https://play.google.com/store/apps/details?id=com.sts.sontalksign&pcampaignid=web_share) 해당 Google Play링크에서 APK 파일을 다운받아 안드로이드 환경에서 설치할 수 있습니다.
 
-## **5️⃣ 사용 예시**
-![example](./assets/example.png)
-- [Merge Request 보러 가기](https://lab.ssafy.com/ssafy_opensource/8th_voicepassing/-/merge_requests)
-- [VoicePassing 직접 사용해 보기](https://k8a607.p.ssafy.io/)
-- [Issue 바로가기](https://lab.ssafy.com/ssafy_opensource/8th_voicepassing/-/issues)
-- [VoicePassing FAQ 확인하기](https://lab.ssafy.com/ssafy_opensource/8th_voicepassing/-/wikis/FAQ)
-- 더 자세한 내용은 [WIKI](https://lab.ssafy.com/ssafy_opensource/8th_voicepassing/-/wikis/home)를 참고하세요.
+## **5️⃣ 사용자 화면**
+
 
 ## **6️⃣ 릴리즈 히스토리**
 
