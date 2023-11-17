@@ -76,9 +76,6 @@
 - [VoicePassing FAQ 확인하기](https://lab.ssafy.com/ssafy_opensource/8th_voicepassing/-/wikis/FAQ)
 - 더 자세한 내용은 [WIKI](https://lab.ssafy.com/ssafy_opensource/8th_voicepassing/-/wikis/home)를 참고하세요.
 
-## ** 개발 설정**
-자세한 내용은 [포팅 메뉴얼](https://lab.ssafy.com/ssafy_opensource/8th_voicepassing/-/blob/master/exec/%ED%8F%AC%ED%8C%85%EB%A9%94%EB%89%B4%EC%96%BC_VoicePassing.pdf)을 참고하세요.
-
 ## **6️⃣ 릴리즈 히스토리**
 
 * 1.1.9
