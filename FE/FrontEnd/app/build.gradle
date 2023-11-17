@@ -6,6 +6,7 @@ plugins {
 android {
     namespace 'com.sts.sontalksign'
     compileSdk 33
+    ndkVersion "26.1.10909125"
 
     defaultConfig {
         applicationId "com.sts.sontalksign"
@@ -36,7 +37,8 @@ android {
     }
 
     buildFeatures {
-        viewBinding true    // 바인딩
+        viewBinding true
+        mlModelBinding true// 바인딩
     }
 
     aaptOptions {
@@ -45,6 +47,8 @@ android {
 }
 
 dependencies {
+    implementation 'org.tensorflow:tensorflow-lite-metadata:0.1.0'
+
     //CameraX 라이브러리
     def camerax_version = "1.1.0-beta01"
     implementation "androidx.camera:camera-core:${camerax_version}"
@@ -69,6 +73,15 @@ dependencies {
     implementation 'org.tensorflow:tensorflow-lite-select-tf-ops:+'
     implementation 'org.tensorflow:tensorflow-lite:2.14.0'
     implementation 'org.tensorflow:tensorflow-lite-gpu:2.14.0'
+
+    implementation 'org.tensorflow:tensorflow-lite-task-vision:0.3.0'
+    implementation 'org.tensorflow:tensorflow-lite-task-text:0.3.0'
+    implementation 'org.tensorflow:tensorflow-lite-task-audio:0.3.0'
+    implementation 'org.tensorflow:tensorflow-lite-support:0.3.0'
+
+    // Tensorflow Lite dependencies
+    implementation 'org.tensorflow:tensorflow-lite-task-vision-play-services:0.4.2'
+    implementation 'com.google.android.gms:play-services-tflite-gpu:16.1.0'
 
     // Jetpack WindowManager - Foldable 처리
     implementation "androidx.window:window:1.1.0"
