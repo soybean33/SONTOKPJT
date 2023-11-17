@@ -7,6 +7,7 @@
 ## v4
 
 - 2 labels
+  
   > actions: ['석사', '연구']
 - calculate angle as `float32`
 - epoach : 200
@@ -286,41 +287,9 @@
 
 - use mediapipe pose heavy model
 - `z` 축 값 무시
-- leg 분할 테스트
+- lag 분할 테스트
 
-### 1 leg
-
-#### v14_1
-
-- calculate angle as `float16`
-- epoach : 100
-
-#### v14_2
-
-- calculate angle as `float16`
-- epoach : 150
-
-#### v14_3
-
-- calculate angle as `float16`
-- epoach : 200
-
-#### v14_4
-
-- calculate angle as `float32`
-- epoach : 100
-
-#### v14_5
-
-- calculate angle as `float32`
-- epoach : 150
-
-#### v14_6
-
-- calculate angle as `float32`
-- epoach : 200
-
-### 3 leg
+### 1 lag
 
 #### v14_1
 
@@ -352,7 +321,7 @@
 - calculate angle as `float32`
 - epoach : 200
 
-### 5 leg
+### 3 lag
 
 #### v14_1
 
@@ -384,7 +353,39 @@
 - calculate angle as `float32`
 - epoach : 200
 
-### 10 leg
+### 5 lag
+
+#### v14_1
+
+- calculate angle as `float16`
+- epoach : 100
+
+#### v14_2
+
+- calculate angle as `float16`
+- epoach : 150
+
+#### v14_3
+
+- calculate angle as `float16`
+- epoach : 200
+
+#### v14_4
+
+- calculate angle as `float32`
+- epoach : 100
+
+#### v14_5
+
+- calculate angle as `float32`
+- epoach : 150
+
+#### v14_6
+
+- calculate angle as `float32`
+- epoach : 200
+
+### 10 lag
 
 #### v14_1
 
@@ -428,9 +429,9 @@
 
 - use mediapipe pose heavy model
 - `z` 축 값 무시
-- leg 분할
+- lag 분할
 
-### 1 leg
+### 1 lag
 #### v15_1
 
 - calculate angle as `float16`
@@ -460,7 +461,7 @@
 
 - calculate angle as `float32`
 - epoach : 200
-### 3 legs
+### 3 lags
 #### v15_1
 
 - calculate angle as `float16`
@@ -490,7 +491,7 @@
 
 - calculate angle as `float32`
 - epoach : 200
-### 5 legs
+### 5 lags
 #### v15_1
 
 - calculate angle as `float16`
@@ -520,7 +521,7 @@
 
 - calculate angle as `float32`
 - epoach : 200
-### 10 legs
+### 10 lags
 #### v15_1
 
 - calculate angle as `float16`
