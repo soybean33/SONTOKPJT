@@ -18,7 +18,7 @@ import java.util.Locale
 class HistoryFragment : Fragment() {
 
     private lateinit var binding: FragmentHistoryBinding
-    private lateinit var historyListAdapter: HistoryListAdapter
+    lateinit var historyListAdapter: HistoryListAdapter
 
     var historyList: ArrayList<HistoryListModel> = ArrayList()
 
@@ -43,7 +43,6 @@ class HistoryFragment : Fragment() {
             adapter = historyListAdapter
         }
 
-
         // Safe call for directory
         val dirPath = directory
         if (dirPath != null) {
@@ -51,8 +50,6 @@ class HistoryFragment : Fragment() {
             readTextFile()
         }
     }
-
-
 
     private fun readFileContents(filePath: String): String {
         val file = File(filePath)
@@ -62,12 +59,9 @@ class HistoryFragment : Fragment() {
     }
 
     private fun readTextFile() {
-
         directory = requireActivity().filesDir.absolutePath //내부경로의 절대 경로
 
-
         if (directory != null) {
-            val formatter = SimpleDateFormat("yyyyMMddHHmmss", Locale.getDefault())
             val files = File(directory).listFiles() // Using local val here
 
             files?.forEach { file ->
@@ -93,11 +87,12 @@ class HistoryFragment : Fragment() {
                                 }
                             }
 
-                            val date = formatter.parse(file.name.split(".")[0])
-
                             // 원하는 출력 형식으로 SimpleDateFormat을 다시 사용하여 포맷
+                            val date = file.name.split(".")[0]
+                            val storedFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
                             val outputFormat = SimpleDateFormat("yyyy년 MM월 dd일", Locale.getDefault())
-                            val formattedDate = outputFormat.format(date)
+                            val resultDate = storedFormat.parse(date)
+                            val formattedDate = outputFormat.format(resultDate)
 
                             historyList.add(HistoryListModel(title, formattedDate, tagItems))
                         }

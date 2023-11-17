@@ -6,6 +6,7 @@ import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.sts.sontalksign.R
 import com.sts.sontalksign.databinding.ActivityHistoryDetailBinding
 import com.sts.sontalksign.feature.common.CommonTagItem
 import com.sts.sontalksign.feature.common.TagSingleton
@@ -13,7 +14,6 @@ import java.io.File
 
 
 class HistoryDetailActivity : AppCompatActivity() {
-
     private lateinit var binding: ActivityHistoryDetailBinding
     private lateinit var historyDetailTagAdapter: HistoryItemTagAdapter
     private lateinit var historyDetailConversationAdapter: HistoryDetailConversationAdapter
@@ -25,6 +25,7 @@ class HistoryDetailActivity : AppCompatActivity() {
     private var directory: String? = null
 
     private var historyTitle: String? = null // historyTitle 추가
+    private var detailFile: File ?= null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -41,8 +42,13 @@ class HistoryDetailActivity : AppCompatActivity() {
         // 가져온 historyTitle을 TextView에 설정
         binding.tvHistoryDetailTitle.text = historyTitle
 
+        binding.btnDeleteHisotry.setOnClickListener {
+            detailFile!!.delete()
+            supportFragmentManager.popBackStack()
+            val historyFragment: HistoryFragment = HistoryFragment()
+            historyFragment.historyListAdapter.notifyDataSetChanged()
+        }
     }
-
 
     @SuppressLint("NotifyDataSetChanged")
     override fun onStart() {
@@ -63,27 +69,22 @@ class HistoryDetailActivity : AppCompatActivity() {
             adapter = historyDetailTagAdapter
         }
 
-
         // Safe call for directory
         val dirPath = directory
         if (dirPath != null) {
-
             readTextFile(directory ?: filesDir.absolutePath, historyTitle ?: "")
         }
     }
 
     private fun parseLine(line: String): HistoryDetailConversationModel? {
-        val isLeft = line.contains("<<") // Check if it's a left message
+        val isLeft = line.contains(">") // Check if it's a left message
         val parts = line.split("<", ">") // Split the line at '<'
 
         // Check if we have at least 3 parts (<<, Message, Time)
         if (parts.size == 0) return null
 
-
         val messageContent = parts[0]
         val messageTime = parts[1]
-
-
 
         return HistoryDetailConversationModel(messageContent, messageTime, isLeft)
     }
@@ -97,7 +98,6 @@ class HistoryDetailActivity : AppCompatActivity() {
 
     @SuppressLint("NotifyDataSetChanged")
     private fun readTextFile(directoryPath: String, historyTitle: String) {
-
         val files = File(directoryPath).listFiles()
 
         files?.forEach { file ->
@@ -108,6 +108,7 @@ class HistoryDetailActivity : AppCompatActivity() {
 
                     if (lines.size >= 3 && lines[0] == historyTitle) {
 //                        binding.tvHistoryDetailTitle.text = lines[0]
+                        detailFile = file
                         val tagsLine = lines[1]
 
                         val tagsList = tagsLine.substringAfter("TAGS_").trim().split("_")
@@ -120,7 +121,7 @@ class HistoryDetailActivity : AppCompatActivity() {
                             }
                         }
 
-                            var splited = lines[2].split("<<", ">>")
+                        var splited = lines[2].split("<<", ">>")
 
                         for (line in splited) {
                             if (line.equals("")) continue

@@ -203,7 +203,7 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
             //완료버튼 클릭에만 처리
             if (actionId == EditorInfo.IME_ACTION_DONE) {
                 var inpContent = textView.text.toString()
-                addTextLine(inpContent, false)
+                addTextLine(inpContent, true)
                 binding.etTextConversation.setText("")
 
                 generateTtsApi(inpContent) //TTS 적용 - 텍스트를 음성 출력
@@ -372,7 +372,7 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
         return msg.what
     }
 
-    /** SST 백그라운드 실행 초기 설정 */
+    /** STT 백그라운드 실행 초기 설정 */
     fun startSTT(sttResult: String, isMine: Boolean) {
         if (sttResult.isNullOrBlank()) return
         if (isTTSPlaying) {
@@ -380,10 +380,10 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
             return
         }
 
-        val currentTime = System.currentTimeMillis()
+        val currentTalkTime = System.currentTimeMillis()
         val conversationCameraModel = ConversationCameraModel(
             ConversationText = sttResult,
-            ConversationTime = FileFormats.timeFormat.format(currentTime),
+            ConversationTime = FileFormats.timeFormat.format(currentTalkTime),
             isLeft = isMine
         )
 
@@ -392,8 +392,7 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
 
         // If recording is selected, save the STT result to the text file
         if (isNowRecording) {
-            addTextLine(sttResult, false)
-            writeTextFile(sttResult)
+            addTextLine(sttResult, isMine)
         }
     }
 
