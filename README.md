@@ -85,10 +85,10 @@
 |이름|역할|담당|비고|
 |:---|:---|:---|:---|
 |탁성건(팀장)|ML||profornnan@gmail.com|
-|강성구|ML||sungku2757@gmail.com|
+|강성구|ML|modeling, data 전처리, 모델 버전 관리, 파일구조 관리|sungku2757@gmail.com|
 |이재홍|ML||h78749891@gmail.com|
 |김용우|Android App|Figma 기획 및 제작, Front-End(media pipe, tensorflow lite), 모델 테스트|greenlife126@gmail.com|
-|동화영|Android App|Figma 기획 및 제작, 안드로이드 애플리케이션 개발, MediaPipe 적용, TTS 적용, MediaPipe의 결과를 ML 입력데이터로 변환|donghwayeong@gmail.com|
+|동화영|Android App|Figma 기획 및 제작, Front-End(MediaPipe 적용, TTS 적용, MediaPipe의 결과를 ML 입력데이터로 변환)|donghwayeong@gmail.com|
 |임서희|Android App|Figma 기획 및 제작, Front-End|seooh212@gmail.com|
 
 ## **8️⃣ 회고**
