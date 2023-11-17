@@ -207,6 +207,7 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
                 binding.etTextConversation.setText("")
 
                 generateTtsApi(inpContent) //TTS 적용 - 텍스트를 음성 출력
+                addTextLine(inpContent, true)
             }
             handled
         }
@@ -217,25 +218,25 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
 
         binding.btnEarlyUse1.setOnClickListener {
             var earlyUse1 = "안녕하세요! 이 기기를 통해 의사소통을 하려고 합니다. 말씀하시면 텍스트를 통해 제가 볼 수 있어요."
-            addTextLine(earlyUse1, false)
+            addTextLine(earlyUse1, true)
             generateTtsApi(earlyUse1)
         }
 
         binding.btnEarlyUse2.setOnClickListener {
             var earlyUse1 = "네"
-            addTextLine(earlyUse1, false)
+            addTextLine(earlyUse1, true)
             generateTtsApi(earlyUse1)
         }
 
         binding.btnEarlyUse3.setOnClickListener {
             var earlyUse1 = "아니오"
-            addTextLine(earlyUse1, false)
+            addTextLine(earlyUse1, true)
             generateTtsApi(earlyUse1)
         }
 
         binding.btnEarlyUse4.setOnClickListener {
             var earlyUse1 = "감사합니다"
-            addTextLine(earlyUse1, false)
+            addTextLine(earlyUse1, true)
             generateTtsApi(earlyUse1)
         }
 
@@ -353,7 +354,8 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
                 val speechRecognitionResult = msg.obj as SpeechRecognitionResult
                 val results = speechRecognitionResult.results
                 val result = results[0].toString()
-                startSTT(result, false) 
+                startSTT(result, false)
+
             }
             /** 인식 오류가 발생한 경우 */
             R.id.recognitionError -> {
@@ -390,7 +392,7 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
 
         // If recording is selected, save the STT result to the text file
         if (isNowRecording) {
-            addTextLine(sttResult, isMine)
+            addTextLine(sttResult, false)
             writeTextFile(sttResult)
         }
     }
