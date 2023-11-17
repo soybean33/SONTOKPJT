@@ -25,7 +25,10 @@
 
 ## **3️⃣ 아키텍처**
 ### 시스템 다이어그램
+##### 1) 청각장애인
 ![systemdiagram_청각장애인](./assets/시스템다이어그램_청각장애인.png)
+
+##### 2) 비장애인
 ![systemdiagram_비장애인](./assets/시스템다이어그램_비장애인.png)
 
 ### 개발환경
@@ -70,20 +73,20 @@
 [SONTOK 다운로드](https://play.google.com/store/apps/details?id=com.sts.sontalksign&pcampaignid=web_share) 해당 Google Play링크에서 APK 파일을 다운받아 안드로이드 환경에서 설치할 수 있습니다.
 
 ## **5️⃣ 사용자 화면**
-1) 대화 대기 화면
-![대화 대기 화면](./assets/01_대화대기.jpg)
+##### 1) 대화 대기 화면
+![대화 대기 화면](./assets/01_대화대기.jpg){width=30%}
 
-2) 실시간 대화 화면
-![실시간 대화 화면](./assets/02_실시간대화.jpg)
+##### 2) 실시간 대화 화면
+![실시간 대화 화면](./assets/02_실시간대화.jpg){width=30%}
 
-3) 대화 내용 저장 팝업
-![대화 내용 저장 팝업](./assets/03_대화내용저장팝업.jpg)
+##### 3) 대화 내용 저장 팝업
+![대화 내용 저장 팝업](./assets/03_대화내용저장팝업.jpg){width=30%}
 
-4) 저장된 대화 내용 목록 화면
-![저장된 대화 내용 목록 화면](./assets/04_대화내용목록확인.jpg)
+##### 4) 저장된 대화 내용 목록 화면
+![저장된 대화 내용 목록 화면](./assets/04_대화내용목록확인.jpg){width=30%}
 
-5) 대화 내용 자세히 보기 화면
-![대화 내용 자세히 보기 화면](./assets/05_대화내용자세히보기.jpg)
+##### 5) 대화 내용 자세히 보기 화면
+![대화 내용 자세히 보기 화면](./assets/05_대화내용자세히보기.jpg){width=30%}
 
 
 ## **6️⃣ 릴리즈 히스토리**
@@ -94,9 +97,9 @@
 ## **7️⃣ 팀원 정보 및 업무 분담**
 |이름|역할|담당|비고|
 |:---|:---|:---|:---|
-|탁성건(팀장)|ML||profornnan@gmail.com|
+|탁성건(팀장)|ML|data 수집, dataset 생성, modeling|profornnan@gmail.com|
 |강성구|ML|modeling, data 전처리, 모델 버전 관리, 파일구조 관리|sungku2757@gmail.com|
-|이재홍|ML||h78749891@gmail.com|
+|이재홍|ML|ML, 영상, 발표 자료|h78749891@gmail.com|
 |김용우|Android App|Figma 기획 및 제작, Front-End(media pipe, tensorflow lite), 모델 테스트|greenlife126@gmail.com|
 |동화영|Android App|Figma 기획 및 제작, Front-End(MediaPipe 적용, TTS 적용, MediaPipe의 결과를 ML 입력데이터로 변환)|donghwayeong@gmail.com|
 |임서희|Android App|Figma 기획 및 제작, Front-End|seooh212@gmail.com|
@@ -104,10 +107,10 @@
 ## **8️⃣ 회고**
 |프로필|내용|비고|
 |:---|:---|:---|
-| <a href="https://github.com/profornnan"><img src="https://avatars.githubusercontent.com/u/59037261?v=4" width="100px;" alt="">| **탁성건**<br />   ||
+| <a href="https://github.com/profornnan"><img src="https://avatars.githubusercontent.com/u/59037261?v=4" width="100px;" alt="">| **탁성건**<br />인공지능이라는 새로운 분야에 도전하며 직접 데이터 셋 생성 전처리 및 학습 과정을 거치며 ML에 대한 이해를 높일 수 있었던 좋은 경험이었습니다.   ||
 | <a href="https://github.com/L1m3Kun"><img src="https://avatars.githubusercontent.com/u/113879996?v=4" width="100px;" alt="">| **강성구**<br />새로운 분야에 대한 도전이어서 어려움이 많았지만 팀원들과 함께라서 한걸음 한걸음 나아갈 수 있었습니다.   ||
 | <a href="https://github.com/soybean33"><img src="https://avatars.githubusercontent.com/u/80668684?v=4?s=100" width="100px;" alt=""/> | **김용우**<br />공통, 특화를 거쳐 SSAFY에서의 마지막 프로젝트인 자율 프로젝트를 마무리 지었습니다.<br/>프로젝트를 진행하며 그 동안 쌓았던 노하우와 기술을 마음껏 쏟아 부을 수 있는 좋은 기회였습니다. 팀원들이 모두 열심히 해 주어서 프로젝트가 잘 마무리 될 수 있었습니다.<br/>다만, 프로젝트를 마무리 할 때는 언제나,, "조금만 더 시간이 있었다면..." 이라는 아쉬움이 남는 것 같습니다.<br/>온 디바이스에서 3개의 인공지능 모델(media pipe pose, media pipe hand * 2, 우리의 model)과 클로바 X의 STT, TTS 를 모두 적용해 보는 좋은 경험이였습니다.   |
 | <a href="https://github.com/HwayeongD"><img src="https://avatars.githubusercontent.com/u/121176739?v=4?s=100" width="100px;" alt="">| **동화영**<br />팀원들과 자율적으로 주제를 정하며 누군가의 삶에 도움이 되는 서비스를 만들자는 하나의 목표를 정하였습니다. 지금껏 개개인이 쌓아온 기술력을 총집합하여 하나의 애플리케이션에 녹아낼 수 있는 소중한 기회였습니다.<br/>처음 적용해보는 STT, TTS, MediaPipe 기술을 안드로이드 온디바이스 환경으로 적용해보는 도전적인 과제이었으나, 실사용자들이 우리의 서비스를 사용하면서 편리하게 소통할 수 있을 모습을 상상하며 끊임없이 도전한 프로젝트였습니다.     ||
-| <a href="https://github.com/h78749891"><img src="https://avatars.githubusercontent.com/u/125847525?v=4" width="100px;" alt="">| **이재홍**<br />   ||
+| <a href="https://github.com/h78749891"><img src="https://avatars.githubusercontent.com/u/125847525?v=4" width="100px;" alt="">| **이재홍**<br />성실하게 노력하는 팀원들과 새로운 분야를 여러 각도에서 접근해 볼 수 있는 기회였습니다.   ||
 | <a href="https://github.com/seooh99"><img src="https://avatars.githubusercontent.com/u/122509553?v=4" width="100px;" alt="">| **임서희**<br />STT와 TTS 그리고 실시간 통신을 통한 수어 번역 프로젝트를 경험할 수 있었고 즐겁게 프로젝트를 마무리 한 것 같습니다.   ||
 
