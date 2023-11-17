@@ -1,0 +1,7 @@
+venv/
+.venv/
+db.sqlite3
+migrations/
+__pycache__/
+.DS_Store
+.aab

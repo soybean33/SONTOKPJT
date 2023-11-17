@@ -1,0 +1,174 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/cl_conversation"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".feature.conversation.ConversationActivity">
+
+    <androidx.coordinatorlayout.widget.CoordinatorLayout
+        android:id="@+id/camera_container"
+        android:layout_width="match_parent"
+        android:layout_height="700dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <androidx.camera.view.PreviewView
+            android:id="@+id/pv_camera"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            app:scaleType="fillStart" />
+
+        <View
+            android:id="@+id/v_background_conversation"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="#66000000"
+            android:visibility="gone" />
+
+        <LinearLayout
+            android:id="@+id/llv_CameraConversation"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical" >
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rv_CameraConversation"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_marginHorizontal="5dp" />
+        </LinearLayout>
+
+        <com.sts.sontalksign.feature.conversation.HandOverlayView
+            android:id="@+id/hand_overlay"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+
+        <com.sts.sontalksign.feature.conversation.PoseOverlayView
+            android:id="@+id/pose_overlay"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+
+        <TextView
+            android:id="@+id/tv_alert_unfolded"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="플립을 접은 후 대화를 시작해주세요!"
+            android:textColor="@color/tag6color"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:background="@color/subgray"
+            android:paddingVertical="15dp"
+            android:gravity="center"
+            android:visibility="gone" />
+    </androidx.coordinatorlayout.widget.CoordinatorLayout>
+
+
+    <EditText
+        android:id="@+id/et_text_conversation"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:ems="10"
+        android:hint="텍스트를 입력하세요"
+        android:inputType="text"
+        android:textColor="@color/base"
+        android:textColorHint="@color/base"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/camera_container" />
+
+    <Button
+        android:id="@+id/btn_stop_conversation"
+        android:layout_width="300dp"
+        android:layout_height="52dp"
+        android:layout_marginTop="10dp"
+        android:background="@drawable/button_auth"
+        android:fontFamily="@font/line_seed_kr_bd"
+        android:text="대화 종료"
+
+        android:textColor="@color/jaffa500"
+
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/et_text_conversation" />
+
+    <TextView
+        android:id="@+id/tv_CRS"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:text="현재 수어"
+        android:fontFamily="@font/line_seed_kr_bd"
+        android:textSize="20sp"
+        android:textColor="@color/base"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/btn_stop_conversation" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="250dp"
+        android:orientation="vertical"
+        app:layout_constraintTop_toBottomOf="@id/tv_CRS"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent">
+
+        <TextView
+            android:id="@+id/tv_early_use"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="15dp"
+            android:layout_marginBottom="5dp"
+            android:gravity="center_horizontal|center_vertical"
+            android:text="빠른 사용"
+            android:fontFamily="@font/line_seed_kr_bd"
+            android:textColor="@color/base"
+            android:textSize="20sp" />
+
+        <Button
+            android:id="@+id/btn_early_use_1"
+            android:layout_width="250dp"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="5dp"
+            android:gravity="center_horizontal|center_vertical"
+            android:layout_gravity="center_horizontal"
+            android:text="사용설명서"
+            android:fontFamily="@font/line_seed_kr_bd"
+            android:textSize="18sp" />
+
+        <Button
+            android:id="@+id/btn_early_use_2"
+            android:layout_width="250dp"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="5dp"
+            android:gravity="center_horizontal|center_vertical"
+            android:layout_gravity="center_horizontal"
+            android:text="네"
+            android:fontFamily="@font/line_seed_kr_bd"
+            android:textSize="18sp" />
+
+        <Button
+            android:id="@+id/btn_early_use_3"
+            android:layout_width="250dp"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="5dp"
+            android:gravity="center_horizontal|center_vertical"
+            android:layout_gravity="center_horizontal"
+            android:text="아니오"
+            android:fontFamily="@font/line_seed_kr_bd"
+            android:textSize="18sp" />
+
+        <Button
+            android:id="@+id/btn_early_use_4"
+            android:layout_width="250dp"
+            android:layout_height="wrap_content"
+            android:gravity="center_horizontal|center_vertical"
+            android:layout_gravity="center_horizontal"
+            android:text="감사합니다"
+            android:fontFamily="@font/line_seed_kr_bd"
+            android:textSize="18sp" />
+    </LinearLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>
