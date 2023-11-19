@@ -664,20 +664,19 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
                     mediaPipe(imageProxy)
                     mediaPipeProcess()
                 }
+                Log.d("렛ㅅㅅㅅㅅㅅㅅㅅㅅㅅㅅㅅㅅㅅㅅㅅ", "Ret value: $ret")
 
-                if (ret != "" && ret != "1") {
-                    binding.tvCRS.text = ret
-                }
-                if (ret.isNotEmpty() && ret != "1") {
+                if (ret == ".") {
+                    addTextLine(sign, false)
+                    generateTtsApi(sign)
+                    sign = ""
+                } else if (ret.isNotEmpty() && ret != "1") {
+                    // 다른 문자열일 경우 처리
                     binding.tvCRS.text = ret
                     if (preret != ret) {
                         sign += ret + " "
                         preret = ret
                     }
-                } else if (ret == ".") {
-                    addTextLine(sign, false)
-                    generateTtsApi(sign)
-                    sign = ""
                 }
             } catch (e: Exception) {
                 // 오류 처리 코드
@@ -686,7 +685,6 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
             }
         }
     }
-
     /** imageProxy 처리 */
     private suspend fun mediaPipe(imageProxy: ImageProxy) = coroutineScope {
         val frameTime = SystemClock.uptimeMillis()
