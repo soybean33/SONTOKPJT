@@ -668,12 +668,25 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
                 if (ret != "" && ret != "1") {
                     binding.tvCRS.text = ret
                 }
+                if (ret.isNotEmpty() && ret != "1") {
+                    binding.tvCRS.text = ret
+                    if (preret != ret) {
+                        sign += ret + " "
+                        preret = ret
+                    }
+                } else if (ret == ".") {
+                    addTextLine(sign, false)
+                    generateTtsApi(sign)
+                    sign = ""
+                }
             } catch (e: Exception) {
-                // 예외 처리를 수행하세요.
-                Log.e("mediaPipeSequence", e.message.toString())
+                // 오류 처리 코드
+                Log.e("MediaPipeSequence", "Error: ${e.message}")
+                // 필요한 경우 사용자에게 오류 메시지 표시
             }
         }
     }
+
     /** imageProxy 처리 */
     private suspend fun mediaPipe(imageProxy: ImageProxy) = coroutineScope {
         val frameTime = SystemClock.uptimeMillis()
