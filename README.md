@@ -1,4 +1,5 @@
 # SONTOK
+
 ![header](./assets/sontok_logo.png){width=30%}
 
 🎈 프로젝트명 : SONTOK
@@ -16,6 +17,7 @@
 ***청인**: 농인에 대비되는 개념으로 음성언어를 중심으로 의사소통을 하는 사람
 
 ## **2️⃣ 세부기능**
+
 |구분|기능|설명|비고|
 |:---|:---|:---|:---|
 |1|실시간 수어 번역|농인의 수어를 텍스트로 번역, 텍스트를 음성으로 변환하여 청인에게 전달||
@@ -24,15 +26,21 @@
 |4|대화 내용 열람|저장한 대화 내용을 불러오기||
 
 ## **3️⃣ 아키텍처**
+
 ### 시스템 다이어그램
+
 ##### 1) 청각장애인
+
 ![systemdiagram_청각장애인](./assets/시스템다이어그램_청각장애인.png)
 
 ##### 2) 비장애인
+
 ![systemdiagram_비장애인](./assets/시스템다이어그램_비장애인.png)
 
 ### 개발환경
+
 <h4>🌐 공통</h4>
+
 | 상세       |       내용        |
 | ---------- | :--------------- |
 | GitLab     | 형상 관리 |
@@ -43,6 +51,7 @@
 </br>
 
 <h4>📱 FrontEnd</h4>
+
 | 상세            |  버전  |  비고  |
 | :-------------- | :----: | :----- |
 | Kotlin          |  1.8   ||
@@ -53,8 +62,8 @@
 | Tensorflow Lite |  2.14.0||
 | Naver CLOVA     |  1.1.6 | CLOVA Speech Recognition(CSR)  |
 
-
 <h4>📱 Machine Learning</h4>
+
 | 상세            |  버전  |  비고  |
 | :-------------- | :----: | :----- |
 |Python           |  3.11.6||
@@ -63,17 +72,18 @@
 |Mediapipe        | 0.10.7||
 |Matplotlib       | 3.8.0||
 
-
-
 ## **4️⃣ 설치**
 
 [SONTOK 다운로드](https://play.google.com/store/apps/details?id=com.sts.sontalksign&pcampaignid=web_share) 해당 Google Play링크에서 APK 파일을 다운받아 안드로이드 환경에서 설치할 수 있습니다.
 
 ## **5️⃣ 사용자 화면**
+
 ##### 1) 실시간 대화
+
 ![실시간 대화](./assets/01_실시간대화.png)
 
 ##### 2) 대화 내용 저장
+
 ![대화 내용 저장](./assets/02_대화내용저장.png)
 
 
@@ -83,6 +93,7 @@
     * 최종 릴리즈 버전
 
 ## **7️⃣ 팀원 정보 및 업무 분담**
+
 |이름|역할|담당|비고|
 |:---|:---|:---|:---|
 |탁성건(팀장)|ML|data 수집, dataset 생성, modeling|profornnan@gmail.com|
@@ -93,6 +104,7 @@
 |임서희|Android App|Figma 기획 및 제작, Front-End|seooh212@gmail.com|
 
 ## **8️⃣ 회고**
+
 |프로필|내용|비고|
 |:---|:---|:---|
 | <a href="https://github.com/profornnan"><img src="https://avatars.githubusercontent.com/u/59037261?v=4" width="100px;" alt="">| **탁성건**<br />인공지능이라는 새로운 분야에 도전하며 데이터 셋 생성, 전처리 및 학습 과정을 통해 ML에 대한 이해를 높일 수 있었던 좋은 경험이었습니다. ||
