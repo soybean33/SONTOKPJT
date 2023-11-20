@@ -552,4 +552,9 @@
 - calculate angle as `float32`
 - epoach : 200
 
-
+## v16
+- change model & input shape
+### lag 1
+#### v16_2
+- calculate angle as `float16`
+- epoach : 150
