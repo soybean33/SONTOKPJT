@@ -23,7 +23,7 @@ class HandSignHelper() {
     }
     
     /** 확률을 출력되는 값으로 변경 */
-    var signWords : Array<String> = arrayOf("", ".", "끝내다", "담당", "발표", "제", "준비", "?")
+    var signWords : Array<String> = arrayOf("", ".", "가다", "동대문", "따뜻하다", "먹다", "수제비", "오늘")
     val signWordSize : Int = signWords.size
     var wordQueue : Array<String> = arrayOf(".", "1", "2", "3", "4", "5", "6", "7")
     val wordCounterMap : MutableMap<String, Int> = mutableMapOf("." to 0, "1" to 0, "2" to 0, "3" to 0, "4" to 0, "5" to 0, "6" to 0, "7" to 0)
