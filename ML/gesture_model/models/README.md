@@ -7,8 +7,9 @@
 ## v4
 
 - 2 labels
-  
+
   > actions: ['석사', '연구']
+
 - calculate angle as `float32`
 - epoach : 200
 
@@ -417,8 +418,6 @@
 - calculate angle as `float32`
 - epoach : 200
 
-
-
 ## v15
 
 - 여러개의 파일로 구성
@@ -432,6 +431,7 @@
 - lag 분할
 
 ### 1 lag
+
 #### v15_1
 
 - calculate angle as `float16`
@@ -461,7 +461,9 @@
 
 - calculate angle as `float32`
 - epoach : 200
+
 ### 3 lags
+
 #### v15_1
 
 - calculate angle as `float16`
@@ -491,7 +493,9 @@
 
 - calculate angle as `float32`
 - epoach : 200
+
 ### 5 lags
+
 #### v15_1
 
 - calculate angle as `float16`
@@ -521,7 +525,9 @@
 
 - calculate angle as `float32`
 - epoach : 200
+
 ### 10 lags
+
 #### v15_1
 
 - calculate angle as `float16`
@@ -552,4 +558,35 @@
 - calculate angle as `float32`
 - epoach : 200
 
+## v16
 
+- change model & input shape
+
+### lag 1
+
+#### v16_2
+
+- calculate angle as `float16`
+- epoach : 150
+
+## v17
+
+- stateful train
+
+### lag1
+
+#### v17_2
+
+- calculate angle as `float16`
+- epoach : 150
+
+## v18
+
+- change angel index
+
+### lag1
+
+#### v17_2
+
+- calculate angle as `float16`
+- epoach : 150

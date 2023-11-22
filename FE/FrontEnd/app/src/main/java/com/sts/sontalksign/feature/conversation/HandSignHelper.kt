@@ -23,14 +23,14 @@ class HandSignHelper() {
     }
     
     /** 확률을 출력되는 값으로 변경 */
-    var signWords : Array<String> = arrayOf("", ".", "끝내다", "담당", "발표", "제", "준비", "?")
+    var signWords : Array<String> = arrayOf("", ".", "가다", "동대문", "따뜻하다", "먹다", "수제비", "오늘")
     val signWordSize : Int = signWords.size
     var wordQueue : Array<String> = arrayOf(".", "1", "2", "3", "4", "5", "6", "7")
     val wordCounterMap : MutableMap<String, Int> = mutableMapOf("." to 0, "1" to 0, "2" to 0, "3" to 0, "4" to 0, "5" to 0, "6" to 0, "7" to 0)
 
     /** 변경해보며 적용해 봐야하는 임계값들 */
     val probabilityThreshold: Float = 0.8f
-    val counterThreshold: Int = 5
+    val counterThreshold: Int = 10
 
     /** PoseLandmark 정형화 - 33개의 Pose = 11개의 Face + 22개의 Body */
     fun initPose(poseResultBundle: PoseLandmarkerHelper.ResultBundle) {
@@ -195,8 +195,8 @@ class HandSignHelper() {
     /** HandLandmarker 필요한 데이터로 변경 */
     private fun calHand(hand: Array<Array<Float>>) : FloatArray {
         /** 각도를 구할 20개의 점 */
-        val startJoints = intArrayOf(0, 1, 2, 3, 0, 5, 6, 7, 0, 9, 10, 11, 0, 13, 14, 15, 0, 17, 18, 19)
-        val destJoints = intArrayOf(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20)
+        val startJoints = intArrayOf(0,1,2,3,0,5,6,7,0,9,10,11,0,13,14,15,0,17,18,19)
+        val destJoints = intArrayOf(1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20)
 
         val hand_v1 : Array<Array<Float>> = calculateIdx(hand, startJoints)
         val hand_v2 : Array<Array<Float>> = calculateIdx(hand, destJoints)
@@ -222,8 +222,8 @@ class HandSignHelper() {
     /** PoseLandmarker 필요한 데이터로 변경 */
     private  fun calPose(pose: Array<Array<Float>>) : FloatArray{
         /** 각도를 구할 15개의 점 */
-        val startJoints = intArrayOf(0, 4, 5, 6, 0, 1, 2, 3, 14, 12, 24, 13, 11, 23)
-        val destJoints = intArrayOf(4, 5, 6, 8, 1, 2, 3, 7, 16, 14, 12, 15, 13, 11)
+        val startJoints = intArrayOf(0,4,5,6,0,1,2,3,12,14,11,13,11,23)
+        val destJoints = intArrayOf(4,5,6,8,1,2,3,7,14,16,13,15,12,24)
 
         val pose_v1:  Array<Array<Float>> = calculateIdx(pose, startJoints)
         val pose_v2:  Array<Array<Float>> = calculateIdx(pose, destJoints)
@@ -272,8 +272,8 @@ class HandSignHelper() {
     /** 손 벡터 내적 */
     private fun calculateHandAngles(hand_v: Array<Array<Float>>): FloatArray {
         val angles = FloatArray(15)
-        val joints1 = intArrayOf(0, 1, 2, 4, 5, 6, 8, 9, 10, 12, 13, 14, 16, 17, 18)
-        val joints2 = intArrayOf(1, 2, 3, 5, 6, 7, 9, 10, 11, 13, 14, 15, 17, 18, 19)
+        val joints1 = intArrayOf(0,1,2,4,5,6,8,9,10,12,13,14,16,17,18)
+        val joints2 = intArrayOf(1,2,3,5,6,7,9,10,11,13,14,15,17,18,19)
 
         for (i in 0 until 15) {
             val dotProduct = vectorDot(hand_v[joints1[i]], hand_v[joints2[i]])
@@ -286,8 +286,8 @@ class HandSignHelper() {
     /** 포즈 벡터 내적 */
     private fun calculatePoseAngles(hand_v: Array<Array<Float>>): FloatArray {
         val angles = FloatArray(10)
-        val joints1 = intArrayOf(0, 1, 2, 4, 5, 6, 8, 9, 11, 12)
-        val joints2 = intArrayOf(1, 2, 3, 5, 6, 7, 9, 10, 12, 13)
+        val joints1 = intArrayOf(0,1,2,4,5,6,12,8,12,10)
+        val joints2 = intArrayOf(1,2,3,5,6,7,8,9,10,11)
 
         for (i in 0 until 10) {
             val dotProduct = vectorDot(hand_v[joints1[i]], hand_v[joints2[i]])
