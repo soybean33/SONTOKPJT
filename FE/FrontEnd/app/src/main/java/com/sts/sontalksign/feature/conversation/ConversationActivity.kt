@@ -155,6 +155,7 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
     /** MediaPlayer 관련 변수(Naver Clova TTS API) */
     private lateinit var mediaPlayer: MediaPlayer
     private var isTTSPlaying: Boolean = false
+    private var isSTTAvailable: Boolean = true
 
     /** naverspeech-sdk-android(CLOVA Speech Recognition(CSR)) */
     private var handler: RecognitionHandler? = null
@@ -207,7 +208,6 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
                 binding.etTextConversation.setText("")
 
                 generateTtsApi(inpContent) //TTS 적용 - 텍스트를 음성 출력
-                addTextLine(inpContent, true)
             }
             handled
         }
@@ -356,7 +356,6 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
                     val results = speechRecognitionResult.results
                     val result = results[0].toString()
                     startSTT(result, false)
-
                 }
                 /** 인식 오류가 발생한 경우 */
                 R.id.recognitionError -> {
@@ -380,8 +379,12 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
     fun startSTT(sttResult: String, isMine: Boolean) {
         try {
             if (sttResult.isNullOrBlank()) return
-            if (isTTSPlaying) {
-                isTTSPlaying = false
+            if (!isSTTAvailable) {
+//                isTTSPlaying = false
+                if(!isTTSPlaying) {
+                    isSTTAvailable = true
+                }
+                Log.d("startSTT;", "isTTSPlaying: ${isSTTAvailable}, ${isTTSPlaying}")
                 return
             }
 
@@ -414,6 +417,7 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
                     .execute() //API 요청
 
                 if (response.isSuccessful) {
+                    isSTTAvailable = false
                     isTTSPlaying = true
                     val body = response.body()
                     if (body != null) {
@@ -436,6 +440,12 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
                         mediaPlayer.setDataSource(resFile.path)
                         mediaPlayer.prepare()
                         mediaPlayer.start()
+
+                        mediaPlayer.setOnCompletionListener {
+                            isTTSPlaying = false
+                            Log.d("d;sjf;", "isTTSPlaying: ${isTTSPlaying}")
+                        }
+
                         // Add the TTS result to the RecyclerView
                         runOnUiThread {
                             handleTTSResult(line, true)
@@ -672,7 +682,6 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
                     mediaPipe(imageProxy)
                     mediaPipeProcess()
                 }
-                Log.d("렛ㅅㅅㅅㅅㅅㅅㅅㅅㅅㅅㅅㅅㅅㅅㅅ", "Ret value: $ret")
 
                 if (ret == ".") {
                     addTextLine(sign, false)
