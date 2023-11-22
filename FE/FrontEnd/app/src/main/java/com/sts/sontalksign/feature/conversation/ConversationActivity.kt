@@ -21,6 +21,7 @@ import android.media.MediaPlayer
 import android.os.Build
 import android.os.Bundle
 import android.os.Handler
+import android.os.Looper
 import android.os.Message
 import android.os.SystemClock
 import android.util.Log
@@ -154,8 +155,8 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
 
     /** MediaPlayer 관련 변수(Naver Clova TTS API) */
     private lateinit var mediaPlayer: MediaPlayer
+//    private var isTTSPlaying: Boolean = false
     private var isTTSPlaying: Boolean = false
-
     /** naverspeech-sdk-android(CLOVA Speech Recognition(CSR)) */
     private var handler: RecognitionHandler? = null
     private var naverRecognizer: NaverRecognizer? = null
@@ -217,10 +218,27 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
         }
 
         binding.btnEarlyUse1.setOnClickListener {
+
             var earlyUse1 = "안녕하세요! 이 기기를 통해 의사소통을 하려고 합니다. 말씀하시면 텍스트를 통해 제가 볼 수 있어요."
             addTextLine(earlyUse1, true)
             generateTtsApi(earlyUse1)
+
+            // 5000 밀리초(5초) 후에 다시 실행
+            Handler(Looper.getMainLooper()).postDelayed({
+
+                var earlyUse10 = "오늘 따듯하다"
+                addTextLine(earlyUse10, true)
+                generateTtsApi(earlyUse10)
+            }, 15000)
+
+
+            Handler(Looper.getMainLooper()).postDelayed({
+                var earlyUse11 = "동대문 가다 수제비 먹다"
+                addTextLine(earlyUse11, true)
+                generateTtsApi(earlyUse11)
+            }, 30000)
         }
+
 
         binding.btnEarlyUse2.setOnClickListener {
             var earlyUse1 = "네"
