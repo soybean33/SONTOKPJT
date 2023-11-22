@@ -351,40 +351,44 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
 
     /**  CSR 상태에 대한 동작 - clientReady, audioRecording, partialResult, final Result, recognitionError, clientInactive */
     private fun handleMessage(msg: Message): Int {
-        when (msg.what) {
-            /** 음성 인식을 시작할 준비가 완료된 경우 */
-            R.id.clientReady -> {
-                audioWriter = AudioWriterPCM(
-                    filesDir.absolutePath + "/NaverSpeechTest"
-                )
-                audioWriter!!.open("Test")
-            }
-            /** 현재 음성 인식이 진행되고 있는 경우 */
-            R.id.audioRecording -> {
-                audioWriter?.write(msg.obj as ShortArray)
-            }
-            /** 처리가 되고 있는 도중에 결과를 받은 경우 */
-            R.id.partialResult -> {
-                mResult = msg.obj as String
-            }
-            /** 최종 인식이 완료되면 유사 결과를 모두 보여줌 */
-            R.id.finalResult -> {
-                val speechRecognitionResult = msg.obj as SpeechRecognitionResult
-                val results = speechRecognitionResult.results
-                val result = results[0].toString()
-                startSTT(result, false)
+        try {
+            when (msg.what) {
+                /** 음성 인식을 시작할 준비가 완료된 경우 */
+                R.id.clientReady -> {
+                    audioWriter = AudioWriterPCM(
+                        filesDir.absolutePath + "/NaverSpeechTest"
+                    )
+                    audioWriter!!.open("Test")
+                }
+                /** 현재 음성 인식이 진행되고 있는 경우 */
+                R.id.audioRecording -> {
+                    audioWriter?.write(msg.obj as ShortArray)
+                }
+                /** 처리가 되고 있는 도중에 결과를 받은 경우 */
+                R.id.partialResult -> {
+                    mResult = msg.obj as String
+                }
+                /** 최종 인식이 완료되면 유사 결과를 모두 보여줌 */
+                R.id.finalResult -> {
+                    val speechRecognitionResult = msg.obj as SpeechRecognitionResult
+                    val results = speechRecognitionResult.results
+                    val result = results[0].toString()
+                    startSTT(result, false)
 
+                }
+                /** 인식 오류가 발생한 경우 */
+                R.id.recognitionError -> {
+                    audioWriter?.close()
+                    mResult = "Error code : ${msg.obj}"
+                }
+                /** 음성 인식 비활성화 상태인 경우 */
+                R.id.clientInactive -> {
+                    audioWriter?.close()
+                    startSTTRoutine()
+                }
             }
-            /** 인식 오류가 발생한 경우 */
-            R.id.recognitionError -> {
-                audioWriter?.close()
-                mResult = "Error code : ${msg.obj}"
-            }
-            /** 음성 인식 비활성화 상태인 경우 */
-            R.id.clientInactive -> {
-                audioWriter?.close()
-                startSTTRoutine()
-            }
+        } catch (exec: Exception) {
+            Log.d("handleMessage", exec.message.toString())
         }
 
         return msg.what
@@ -392,25 +396,29 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
 
     /** STT 백그라운드 실행 초기 설정 */
     fun startSTT(sttResult: String, isMine: Boolean) {
-        if (sttResult.isNullOrBlank()) return
-        if (isTTSPlaying) {
-            isTTSPlaying = false
-            return
-        }
+        try {
+            if (sttResult.isNullOrBlank()) return
+            if (isTTSPlaying) {
+                isTTSPlaying = false
+                return
+            }
 
-        val currentTalkTime = System.currentTimeMillis()
-        val conversationCameraModel = ConversationCameraModel(
-            ConversationText = sttResult,
-            ConversationTime = FileFormats.timeFormat.format(currentTalkTime),
-            isLeft = isMine
-        )
+            val currentTalkTime = System.currentTimeMillis()
+            val conversationCameraModel = ConversationCameraModel(
+                ConversationText = sttResult,
+                ConversationTime = FileFormats.timeFormat.format(currentTalkTime),
+                isLeft = isMine
+            )
 
-        // Add STT result to the conversation
-        conversationCameraAdapter.addItemAndScroll(conversationCameraModel, recyclerView)
+            // Add STT result to the conversation
+            conversationCameraAdapter.addItemAndScroll(conversationCameraModel, recyclerView)
 
-        // If recording is selected, save the STT result to the text file
-        if (isNowRecording) {
-            addTextLine(sttResult, isMine)
+            // If recording is selected, save the STT result to the text file
+            if (isNowRecording) {
+                addTextLine(sttResult, isMine)
+            }
+        } catch(exec: Exception) {
+            Log.d("startSTT", exec.message.toString())
         }
     }
 
@@ -741,7 +749,7 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
             resultStringBuilder.append("$formattedValue\t")
         }
 
-        Log.d("Result", resultStringBuilder.toString())
+//        Log.d("Result", resultStringBuilder.toString())
 
         /** 확률 로그 끝 */
         return handSignHelper.wordQueueManager(output[0].toList().toTypedArray())
@@ -986,6 +994,9 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
 
     override fun onDestroy() {
         super.onDestroy()
+
+
+        Log.d("dla;fj", "Destroy is Called")
         mediaPlayer.release()
 
         /** Shut down our background executor */
@@ -993,6 +1004,7 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
         backgroundBothExecutor.awaitTermination(
             Long.MAX_VALUE, TimeUnit.NANOSECONDS
         )
+
     }
 
     public override fun onStart() {
@@ -1044,10 +1056,17 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
             /** Close the HandLandmarkerHelper and release resources */
             backgroundBothExecutor.execute { handLandmarkerHelper.clearHandLandmarker() }
         }
+
+        if(naverRecognizer?.getSpeechRecognizer()?.isRunning!!) {
+            naverRecognizer?.getSpeechRecognizer()?.stop()
+//            naverRecognizer?.getSpeechRecognizer()?.cancel()
+//            naverRecognizer?.getSpeechRecognizer()?.release()
+        }
     }
 
     public override fun onStop() {
         super.onStop()
-        naverRecognizer?.getSpeechRecognizer()?.release()
+//        naverRecognizer?.getSpeechRecognizer()?.release()
+        Log.d("dkfa;", "Stop is called")
     }
 }
