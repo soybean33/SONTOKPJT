@@ -224,20 +224,38 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
             addTextLine(earlyUse1, true)
             generateTtsApi(earlyUse1)
 
+
+            Handler(Looper.getMainLooper()).postDelayed({
+
+                var earlyUse100 = "안녕하세요 날씨가 많이 풀렸죠"
+                addTextLine(earlyUse100, false)
+                startSTT(earlyUse100, false)
+            }, 17000)
+
+
             // 5000 밀리초(5초) 후에 다시 실행
             Handler(Looper.getMainLooper()).postDelayed({
 
                 var earlyUse10 = "오늘 따듯하다"
                 addTextLine(earlyUse10, true)
                 generateTtsApi(earlyUse10)
-            }, 15000)
+            }, 23000)
+
+
+
+            Handler(Looper.getMainLooper()).postDelayed({
+
+                var earlyUse101 = "오늘 나들이 가시나요"
+                addTextLine(earlyUse101, false)juuuuuuujuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuj ,,  h
+/                                                                                                                   //                      startSTT(earlyUse101, false)
+            }, 30000)
 
 
             Handler(Looper.getMainLooper()).postDelayed({
                 var earlyUse11 = "동대문 가다 수제비 먹다"
                 addTextLine(earlyUse11, true)
                 generateTtsApi(earlyUse11)
-            }, 30000)
+            }, 40000)
         }
 
 
@@ -419,7 +437,7 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
 
             // If recording is selected, save the STT result to the text file
             if (isNowRecording) {
-                addTextLine(sttResult, isMine)
+//                addTextLine(sttResult, isMine)
             }
         } catch(exec: Exception) {
             Log.d("startSTT", exec.message.toString())
@@ -703,8 +721,8 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
                 }
 
                 if (ret == ".") {
-                    addTextLine(sign, false)
-                    generateTtsApi(sign)
+//                    addTextLine(sign, false)
+//                    generateTtsApi(sign)
                     sign = ""
                 } else if (ret.isNotEmpty() && ret != "1") {
                     // 다른 문자열일 경우 처리
