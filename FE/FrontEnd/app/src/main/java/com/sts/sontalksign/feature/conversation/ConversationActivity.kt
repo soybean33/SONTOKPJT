@@ -229,7 +229,7 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
 
                 var earlyUse100 = "안녕하세요 날씨가 많이 풀렸죠"
                 addTextLine(earlyUse100, false)
-                startSTT(earlyUse100, false)
+                TempSTT(earlyUse100)
             }, 17000)
 
 
@@ -246,8 +246,8 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
             Handler(Looper.getMainLooper()).postDelayed({
 
                 var earlyUse101 = "오늘 나들이 가시나요"
-                addTextLine(earlyUse101, false)juuuuuuujuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuj ,,  h
-/                                                                                                                   //                      startSTT(earlyUse101, false)
+                addTextLine(earlyUse101, false)
+                TempSTT(earlyUse101)                                                                                                          //                      startSTT(earlyUse101, false)
             }, 30000)
 
 
@@ -412,6 +412,19 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
         return msg.what
     }
 
+
+
+    fun TempSTT(sttResult: String) {
+        val currentTalkTime = System.currentTimeMillis()
+        val conversationCameraModel = ConversationCameraModel(
+            ConversationText = sttResult,
+            ConversationTime = FileFormats.timeFormat.format(currentTalkTime),
+            isLeft = false
+        )
+
+        // Add STT result to the conversation
+        conversationCameraAdapter.addItemAndScroll(conversationCameraModel, recyclerView)
+    }
     /** STT 백그라운드 실행 초기 설정 */
     fun startSTT(sttResult: String, isMine: Boolean) {
         try {
@@ -425,15 +438,17 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
                 return
             }
 
-            val currentTalkTime = System.currentTimeMillis()
-            val conversationCameraModel = ConversationCameraModel(
-                ConversationText = sttResult,
-                ConversationTime = FileFormats.timeFormat.format(currentTalkTime),
-                isLeft = isMine
-            )
+            TempSTT(sttResult)
 
-            // Add STT result to the conversation
-            conversationCameraAdapter.addItemAndScroll(conversationCameraModel, recyclerView)
+//            val currentTalkTime = System.currentTimeMillis()
+//            val conversationCameraModel = ConversationCameraModel(
+//                ConversationText = sttResult,
+//                ConversationTime = FileFormats.timeFormat.format(currentTalkTime),
+//                isLeft = isMine
+//            )
+//
+//            // Add STT result to the conversation
+//            conversationCameraAdapter.addItemAndScroll(conversationCameraModel, recyclerView)
 
             // If recording is selected, save the STT result to the text file
             if (isNowRecording) {
