@@ -75,4 +75,4 @@
 
 ### V12
 
-- 하반신 Landmarks data 삭제
+- 하반신 Landmarks data 삭제 및 왼손, 오른손 데이터 버그 수정
