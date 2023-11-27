@@ -97,7 +97,7 @@
         android:id="@+id/tv_CRS"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="10dp"
+        android:layout_marginTop="16dp"
         android:text="현재 수어"
         android:fontFamily="@font/line_seed_kr_bd"
         android:textSize="20sp"
@@ -113,10 +113,11 @@
         android:layout_height="260dp"
         android:orientation="horizontal"
         android:weightSum="2"
-        android:layout_marginTop="10dp"
+        android:layout_marginTop="16dp"
         app:layout_constraintTop_toBottomOf="@id/tv_CRS"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent">
+        app:layout_constraintStart_toStartOf="parent"
+        android:visibility="gone">
 
         <LinearLayout
             android:id="@+id/ll_reacts"

@@ -732,10 +732,12 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
                 }
 
                 if (ret == ".") {
-                    addTalkLine(sign, true)
-                    addTextLine(sign, true)
-                    generateTtsApi(sign)
-                    sign = ""
+                    if(sign != "") {
+                        addTalkLine(sign, true)
+                        addTextLine(sign, true)
+                        generateTtsApi(sign)
+                        sign = ""
+                    }
                 } else if (ret.isNotEmpty()) { // && ret != "1") {
                     // 다른 문자열일 경우 처리
                     binding.tvCRS.text = ret
@@ -957,7 +959,10 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
      * */
     private fun updateUI(newLayoutInfo: WindowLayoutInfo) {
         /** foldable 폰이 아닌 경우 UI 갱신 불가 */
-        if (newLayoutInfo.displayFeatures.isNullOrEmpty()) return
+        if (newLayoutInfo.displayFeatures.isNullOrEmpty()) {
+            binding.cameraContainer.layoutParams.height = dpToPx(500)
+            return
+        }
 
         var oldLayoutHeight: Int? = null
         var newLayoutHeight: Int? = null
@@ -976,6 +981,7 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
 
             binding.tvAlertUnfolded.visibility = View.GONE
             binding.vBackgroundConversation.visibility = View.VISIBLE
+            binding.llHotkeys.visibility = View.VISIBLE
         } else if (newLayoutInfo.displayFeatures[0].toString().contains("FLAT")) {
             oldLayoutHeight = (newLayoutInfo.displayFeatures[0].bounds.bottom * 0.9).toInt()
             newLayoutHeight = dpToPx(700)
@@ -986,6 +992,7 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
 
             binding.tvAlertUnfolded.visibility = View.VISIBLE
             binding.vBackgroundConversation.visibility = View.GONE
+            binding.llHotkeys.visibility = View.GONE
         }
 
         /** Camera Preview의 Height */
