@@ -10,7 +10,7 @@ class HandSignHelper() {
 
     var leftHand : Array<Array<Float>> = Array(21) {Array(2) {0f}} /** 왼손 RAW 좌표 */
     var rightHand: Array<Array<Float>> = Array(21) {Array(2) {0f}} /** 오른손 RAW 좌표 */
-    var pose: Array<Array<Float>> = Array(33) {Array(2) {0f}} /** 포즈 RAW 좌표 */
+    var pose: Array<Array<Float>> = Array(27) {Array(2) {0f}} /** 포즈 RAW 좌표 */
 
     var lag: Int = 1
     
@@ -18,25 +18,25 @@ class HandSignHelper() {
     /** model에 들어가는 입력값은 frameDeque[5][190] 크기의 2차원 배열을 한차원 감싼 형태 */
     val frameDeque = ArrayList<FloatArray>().apply {
         repeat(lag) {
-            add(FloatArray(190) {0f})
+            add(FloatArray(178) {0f})
         }
     }
     
     /** 확률을 출력되는 값으로 변경 */
-    var signWords : Array<String> = arrayOf("", ".", "가다", "동대문", "따뜻하다", "먹다", "수제비", "오늘")
+    var signWords : Array<String> = arrayOf("", ".", "가다", "너", "동대문", "따뜻하다", "마시다", "먹다", "?", "수제비", "오늘", "읽다", "책", "커피")
     val signWordSize : Int = signWords.size
-    var wordQueue : Array<String> = arrayOf(".", "1", "2", "3", "4", "5", "6", "7")
-    val wordCounterMap : MutableMap<String, Int> = mutableMapOf("." to 0, "1" to 0, "2" to 0, "3" to 0, "4" to 0, "5" to 0, "6" to 0, "7" to 0)
+    var wordQueue : Array<String> = arrayOf(".", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13")
+    val wordCounterMap : MutableMap<String, Int> = mutableMapOf("." to 0, "1" to 0, "2" to 0, "3" to 0, "4" to 0, "5" to 0, "6" to 0, "7" to 0, "8" to 0, "9" to 0, "10" to 0, "11" to 0, "12" to 0, "13" to 0)
 
     /** 변경해보며 적용해 봐야하는 임계값들 */
     val probabilityThreshold: Float = 0.8f
-    val counterThreshold: Int = 10
+    val counterThreshold: Int = 20
 
     /** PoseLandmark 정형화 - 33개의 Pose = 11개의 Face + 22개의 Body */
     fun initPose(poseResultBundle: PoseLandmarkerHelper.ResultBundle) {
         if(poseResultBundle.results.first().landmarks().size == 1) {
             var poseFlag = true
-            for(i in 0 until 33) {                
+            for(i in 0 until 27) {
                 pose[i][0] = poseResultBundle.results.first().landmarks()[0][i].x()
                 pose[i][1] = poseResultBundle.results.first().landmarks()[0][i].y()
                 if(pose[i][0] < 0 || pose[i][1] < 0 || pose[i][0] > 1 || pose[i][1] > 1) {
@@ -46,7 +46,7 @@ class HandSignHelper() {
             }
 
             if(!poseFlag){
-                for(i in 0 until 33) {
+                for(i in 0 until 27) {
                     for(j in 0 until  2) {
                         pose[i][j] = 0f
                     }
@@ -305,7 +305,7 @@ class HandSignHelper() {
     }
 
     fun Solution() : ArrayList<FloatArray> {
-        val result = FloatArray(190) {0f}
+        val result = FloatArray(178) {0f}
 
         /** leftHand 데이터 - point와 angle */
         for(i in 0 until 21) {
@@ -332,7 +332,7 @@ class HandSignHelper() {
         }
 
         /** pose 데이터 - point와 angle */
-        for(i in 0 until 33) {
+        for(i in 0 until 27) {
             for(j in 0 until 2) {
                 result[114 + i  * 2 + j] = pose[i][j]
             }
@@ -340,7 +340,7 @@ class HandSignHelper() {
 
         val resultPose = calPose(pose)
         for(i in 0 until 10) {
-            result[180 + i] = (resultPose[i] * (180.0 / Math.PI)).toFloat()
+            result[168 + i] = (resultPose[i] * (180.0 / Math.PI)).toFloat()
         }
 
         frameDeque.add(result)
@@ -418,10 +418,11 @@ class HandSignHelper() {
 }
 
 /**
+ * 23.11.27 Pose 33개 -> 27개로 변경 (성구님 요청)
+ *
  * leftHand 21 * 2 = 42 + 15 = 57
  * rightHand 상동 = 57
  * ==== 114
- * pose 33 * 2 = 66 + 10 = 76
- * ==== 57 + 57 + 76 = 190
- *
+ * pose 27 * 2 = 54 + 10 = 64
+ * ==== 57 + 57 + 64 = 178
  * */

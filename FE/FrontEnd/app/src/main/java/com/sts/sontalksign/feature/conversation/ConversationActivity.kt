@@ -8,6 +8,7 @@ import android.animation.ValueAnimator
 import android.annotation.SuppressLint
 
 import android.content.Context
+import android.content.Intent
 
 import android.content.pm.PackageManager
 import android.content.res.AssetFileDescriptor
@@ -25,6 +26,8 @@ import android.os.Looper
 import android.os.Message
 import android.os.SystemClock
 import android.util.Log
+import android.util.Rational
+import android.util.Size
 import android.view.View
 
 import android.view.WindowManager
@@ -65,6 +68,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Dispatchers.Default
 import kotlinx.coroutines.Dispatchers.Main
 import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
@@ -91,7 +95,6 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
     HandLandmarkerHelper.LandmarkerListener {
     companion object {
         private const val TAG: String = "ConversationActivity"
-        private const val cTAG = "CameraX Preview"
         private const val hlTAG = "Hand Landmarker"
         private const val pTAG = "Pose Landmarker"
         private const val FILENAME_FORMAT = "yyyy-MM-dd-HH-mm-ss-SSS"
@@ -155,7 +158,6 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
 
     /** MediaPlayer 관련 변수(Naver Clova TTS API) */
     private lateinit var mediaPlayer: MediaPlayer
-//    private var isTTSPlaying: Boolean = false
     private var isTTSPlaying: Boolean = false
     private var isSTTAvailable: Boolean = true
 
@@ -164,6 +166,8 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
     private var naverRecognizer: NaverRecognizer? = null
     private var mResult: String? = null
     private var audioWriter: AudioWriterPCM? = null
+    private var jobSTT: Job ?= null
+    private var isTalking: Boolean = true
 
     /** 내부저장소 - txt 파일 */
     private var directory: String? = null
@@ -181,7 +185,6 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
     private var sign: String = ""
     private var preret: String = ""
 
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
@@ -191,99 +194,35 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
         windowInfoTracker = WindowInfoTracker.getOrCreate(this@ConversationActivity)
         onWindowLayoutInfoChange()
 
-        /** RecyclerView 초기화 */
-        recyclerView = binding.rvCameraConversation
-        recyclerView.layoutManager = LinearLayoutManager(this)
-        conversationCameraAdapter = ConversationCameraAdapter(conversationCamera)
-        recyclerView.adapter = conversationCameraAdapter
-        (recyclerView.layoutManager as LinearLayoutManager).scrollToPosition(
-            conversationCameraAdapter.itemCount - 1
-        )
-
-        /** 텍스트 입력 이벤트 처리 */
-        binding.etTextConversation.setOnEditorActionListener { textView, actionId, _ ->
-            var handled = false
-            //완료버튼 클릭에만 처리
-            if (actionId == EditorInfo.IME_ACTION_DONE) {
-                var inpContent = textView.text.toString()
-                addTextLine(inpContent, true)
-                binding.etTextConversation.setText("")
-
-                generateTtsApi(inpContent) //TTS 적용 - 텍스트를 음성 출력
-            }
-            handled
-        }
-        /** "대화 종료" 버튼 클릭 */
-        binding.btnStopConversation.setOnClickListener {
-            stopConversation()
-        }
-
-        binding.btnEarlyUse1.setOnClickListener {
-
-            var earlyUse1 = "안녕하세요! 이 기기를 통해 의사소통을 하려고 합니다. 말씀하시면 텍스트를 통해 제가 볼 수 있어요."
-            addTextLine(earlyUse1, true)
-            generateTtsApi(earlyUse1)
-
-
-            Handler(Looper.getMainLooper()).postDelayed({
-
-                var earlyUse100 = "안녕하세요 날씨가 많이 풀렸죠"
-                addTextLine(earlyUse100, false)
-                TempSTT(earlyUse100)
-            }, 17000)
-
-
-            // 5000 밀리초(5초) 후에 다시 실행
-            Handler(Looper.getMainLooper()).postDelayed({
-
-                var earlyUse10 = "오늘 따듯하다"
-                addTextLine(earlyUse10, true)
-                generateTtsApi(earlyUse10)
-            }, 23000)
-
-
-
-            Handler(Looper.getMainLooper()).postDelayed({
-
-                var earlyUse101 = "오늘 나들이 가시나요"
-                addTextLine(earlyUse101, false)
-                TempSTT(earlyUse101)                                                                                                          //                      startSTT(earlyUse101, false)
-            }, 30000)
-
-
-            Handler(Looper.getMainLooper()).postDelayed({
-                var earlyUse11 = "동대문 가다 수제비 먹다"
-                addTextLine(earlyUse11, true)
-                generateTtsApi(earlyUse11)
-            }, 40000)
-        }
-
-
-        binding.btnEarlyUse2.setOnClickListener {
-            var earlyUse1 = "네"
-            addTextLine(earlyUse1, true)
-            generateTtsApi(earlyUse1)
-        }
-
-        binding.btnEarlyUse3.setOnClickListener {
-            var earlyUse1 = "아니오"
-            addTextLine(earlyUse1, true)
-            generateTtsApi(earlyUse1)
-        }
-
-        binding.btnEarlyUse4.setOnClickListener {
-            var earlyUse1 = "감사합니다"
-            addTextLine(earlyUse1, true)
-            generateTtsApi(earlyUse1)
-        }
-
-        /** 대화내용 저장 */
+        /******** 대화내용 저장 ********/
         /** 대화 시작 - "녹음하기" 여부 저장 */
         isNowRecording = intent.getBooleanExtra("isRecord", false)
 
         /** 내부저장소의 경로 저장 */
         directory = filesDir.absolutePath //내부경로의 절대 경로
         createTextFile() //대화 텍스트 파일 생성
+
+        /** "대화 종료" 버튼 클릭 */
+        binding.btnStopConversation.setOnClickListener {
+            stopConversation()
+        }
+
+        /** 텍스트 입력 이벤트 처리 */
+        binding.etTextConversation.setOnEditorActionListener { textView, actionId, event ->
+            var handled = false
+            //완료버튼 클릭에만 처리
+            if (actionId == EditorInfo.IME_ACTION_DONE) {
+                var inpContent = textView.text.toString()
+                binding.etTextConversation.setText("")
+
+                generateTtsApi(inpContent) //TTS 적용 - 텍스트를 음성 출력
+                addTextLine(inpContent, true)
+                addTalkLine(inpContent, true)
+
+                handled = true
+            }
+            handled
+        }
 
         /** TTS 초기 설정 */
         /** 음성 출력을 위한 MediaPlayer 초기 설정 */
@@ -293,6 +232,15 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
                 .setContentType(AudioAttributes.CONTENT_TYPE_SPEECH)
                 .setUsage(AudioAttributes.USAGE_MEDIA)
                 .build()
+        )
+
+        /** RecyclerView 초기화 */
+        recyclerView = binding.rvCameraConversation
+        recyclerView.layoutManager = LinearLayoutManager(this)
+        conversationCameraAdapter = ConversationCameraAdapter(conversationCamera)
+        recyclerView.adapter = conversationCameraAdapter
+        (recyclerView.layoutManager as LinearLayoutManager).scrollToPosition(
+            conversationCameraAdapter.itemCount - 1
         )
 
         /** 카메라 권한 요청 */
@@ -338,15 +286,73 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
         getTfliteInterpreter()
 
         /** CSR 관련 처리 */
+        isTalking = true
         handler = RecognitionHandler(this)
         naverRecognizer = NaverRecognizer(this, handler!!)
-        startSTTCoroutine()
+//        startSTTCoroutine()
 
+        /** HOT KEY **/
+        binding.btnEarlyUse1.setOnClickListener {
+            var earlyUse1 = "안녕하세요! 이 기기로 대화를 하려고 합니다. 말씀하시면 제가 텍스트로 볼 수 있어요."
+            addTextLine(earlyUse1, true)
+            addTalkLine(earlyUse1, true)
+            generateTtsApi(earlyUse1)
+
+//            Handler(Looper.getMainLooper()).postDelayed({
+//
+//                var earlyUse100 = "안녕하세요 날씨가 많이 풀렸죠"
+//                addTextLine(earlyUse100, false)
+//                addTalkLine(earlyUse100, false)
+//            }, 17000)
+//
+//            // 5000 밀리초(5초) 후에 다시 실행
+//            Handler(Looper.getMainLooper()).postDelayed({
+//
+//                var earlyUse10 = "오늘 따듯하다"
+//                addTextLine(earlyUse10, true)
+//                generateTtsApi(earlyUse10)
+//            }, 23000)
+//
+//            Handler(Looper.getMainLooper()).postDelayed({
+//
+//                var earlyUse101 = "오늘 나들이 가시나요"
+//                addTextLine(earlyUse101, false)
+//                addTalkLine(earlyUse101, false)
+//                //startSTT(earlyUse101, false)
+//            }, 30000)
+//
+//            Handler(Looper.getMainLooper()).postDelayed({
+//                var earlyUse11 = "동대문 가다 수제비 먹다"
+//                addTextLine(earlyUse11, true)
+//                generateTtsApi(earlyUse11)
+//            }, 40000)
+        }
+
+        binding.btnEarlyUse2.setOnClickListener {
+            var earlyUse1 = "네"
+            addTextLine(earlyUse1, true)
+            addTalkLine(earlyUse1, true)
+            generateTtsApi(earlyUse1)
+        }
+
+        binding.btnEarlyUse3.setOnClickListener {
+            var earlyUse1 = "아니오"
+            addTextLine(earlyUse1, true)
+            addTalkLine(earlyUse1, true)
+            generateTtsApi(earlyUse1)
+        }
+
+        binding.btnEarlyUse4.setOnClickListener {
+//            var earlyUse1 = "감사합니다"
+//            addTextLine(earlyUse1, true)
+//            generateTtsApi(earlyUse1)
+            startSTTRoutine()
+        }
     }
 
     /******** CSR 관련 함수 ********/
     private fun startSTTCoroutine() {
-        lifecycleScope.launch(Dispatchers.Default) {
+        jobSTT = lifecycleScope.launch(Dispatchers.Default) {
             lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 startSTTRoutine()
             }
@@ -354,8 +360,21 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
     }
 
     private fun startSTTRoutine() = runBlocking {
-        playSTT()
+        try {
+            if (!naverRecognizer!!.getSpeechRecognizer().isRunning) {
+                mResult = ""
+                naverRecognizer!!.recognize()
+            } else {
+                Log.d(TAG, "stop and wait Final Result")
+                naverRecognizer!!.getSpeechRecognizer().stop()
+            }
+        } finally {
 
+        }
+//        launch(Dispatchers.Default) {
+//
+//        }
+    //        jobSTT = playSTT()
     }
 
     private suspend fun playSTT() = coroutineScope {
@@ -402,7 +421,7 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
                 /** 음성 인식 비활성화 상태인 경우 */
                 R.id.clientInactive -> {
                     audioWriter?.close()
-                    startSTTRoutine()
+//                    if(isTalking) startSTTRoutine()
                 }
             }
         } catch (exec: Exception) {
@@ -412,47 +431,22 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
         return msg.what
     }
 
-
-
-    fun TempSTT(sttResult: String) {
-        val currentTalkTime = System.currentTimeMillis()
-        val conversationCameraModel = ConversationCameraModel(
-            ConversationText = sttResult,
-            ConversationTime = FileFormats.timeFormat.format(currentTalkTime),
-            isLeft = false
-        )
-
-        // Add STT result to the conversation
-        conversationCameraAdapter.addItemAndScroll(conversationCameraModel, recyclerView)
-    }
     /** STT 백그라운드 실행 초기 설정 */
     fun startSTT(sttResult: String, isMine: Boolean) {
+        Log.d("startSTT", sttResult + "${isSTTAvailable}, ${isTTSPlaying}")
         try {
             if (sttResult.isNullOrBlank()) return
-            if (!isSTTAvailable) {
-//                isTTSPlaying = false
-                if(!isTTSPlaying) {
-                    isSTTAvailable = true
-                }
-                Log.d("startSTT;", "isTTSPlaying: ${isSTTAvailable}, ${isTTSPlaying}")
-                return
-            }
+//            if (!isSTTAvailable) {
+//                if(!isTTSPlaying) {
+//                    isSTTAvailable = true
+//                }
+//                return
+//            }
 
-            TempSTT(sttResult)
+            addTalkLine(sttResult, isMine)
 
-//            val currentTalkTime = System.currentTimeMillis()
-//            val conversationCameraModel = ConversationCameraModel(
-//                ConversationText = sttResult,
-//                ConversationTime = FileFormats.timeFormat.format(currentTalkTime),
-//                isLeft = isMine
-//            )
-//
-//            // Add STT result to the conversation
-//            conversationCameraAdapter.addItemAndScroll(conversationCameraModel, recyclerView)
-
-            // If recording is selected, save the STT result to the text file
             if (isNowRecording) {
-//                addTextLine(sttResult, isMine)
+                addTextLine(sttResult, isMine)
             }
         } catch(exec: Exception) {
             Log.d("startSTT", exec.message.toString())
@@ -495,12 +489,6 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
 
                         mediaPlayer.setOnCompletionListener {
                             isTTSPlaying = false
-                            Log.d("d;sjf;", "isTTSPlaying: ${isTTSPlaying}")
-                        }
-
-                        // Add the TTS result to the RecyclerView
-                        runOnUiThread {
-                            handleTTSResult(line, true)
                         }
                     }
                 } else {
@@ -516,34 +504,14 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
     }
 
     /** NAVER TTS API 결과 처리 */
-    @SuppressLint("SuspiciousIndentation")
-    fun handleTTSResult(ttsResult: String, isMine: Boolean) {
-        val currentTime = System.currentTimeMillis()
+    fun addTalkLine(content: String, isMine: Boolean) {
         val conversationCameraModel = ConversationCameraModel(
-            ConversationText = ttsResult,
-            ConversationTime = FileFormats.timeFormat.format(currentTime),
+            ConversationText = content,
+            ConversationTime = FileFormats.timeFormat.format(System.currentTimeMillis()),
             isLeft = isMine
         )
 
         this.conversationCameraAdapter.addItemAndScroll(conversationCameraModel, recyclerView)
-    }
-
-    /******** ML Model 관련 함수 ********/
-    /** Tensorflow Lite 모델의 Interpreter 초기 설정 */
-    private fun getTfliteInterpreter() {
-        tflite = Interpreter(loadModelFile(this))
-    }
-
-    /** MODEL FILE 초기 로드 */
-    private fun loadModelFile(context: Context): ByteBuffer {
-        val am: AssetManager = context.getAssets()
-        val afd: AssetFileDescriptor = am.openFd(MODEL_CLASSIFIER)
-        val fis: FileInputStream = FileInputStream(afd.fileDescriptor)
-        val fc: FileChannel = fis.channel
-        val startOffSet: Long = afd.startOffset
-        val declaredLength: Long = afd.declaredLength
-
-        return fc.map(FileChannel.MapMode.READ_ONLY, startOffSet, declaredLength)
     }
 
     /******** 대화 내용 기록 관련 함수 ********/
@@ -558,36 +526,6 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
         convFilename = FileFormats.dataFormat.format(currentTime) + ".txt"
 
         textList = ""
-    }
-
-    /** 나의 발화 텍스트 생성 */
-    private fun getMyConversation(content: String, time: String): String {
-        return getString(R.string.my_conversation_content) + content + getString(R.string.my_conversation_time) + time
-    }
-
-    /** 상대의 발화 텍스트 생성 */
-    private fun getYourConversation(content: String, time: String): String {
-        return getString(R.string.your_conversation_content) + content + getString(R.string.your_conversation_time) + time
-    }
-
-    /** 발화 내용 한 줄 추가
-     * isMine - 0:나의 대사, 1:상대의 대사
-     * */
-    private fun addTextLine(content: String, isMine: Boolean) {
-        /** 녹음하기 미선택의 경우 대황 내용 저장 X */
-        if (!isNowRecording) return
-
-        var bContent = String()
-        currentTime = System.currentTimeMillis()
-        when (isMine) {
-            true -> bContent =
-                getMyConversation(content, FileFormats.timeFormat.format(currentTime))
-
-            false -> bContent =
-                getYourConversation(content, FileFormats.timeFormat.format(currentTime))
-        }
-
-        textList += bContent
     }
 
     /** 파일 쓰기 */
@@ -634,8 +572,6 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
 
     /** 대화 종료 처리 함수 */
     private fun stopConversation() {
-        Log.d(TAG, "stopConversation() START")
-
         /** 녹음하기를 선택한 경우 - 팝업 발생 및 대화 내용 저장 */
         if (isNowRecording) {
             val cForm = CustomForm(this)
@@ -654,19 +590,67 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
                 }
             })
         } else {
-            // When recording is not happening and "End conversation?" popup should be shown
             val nForm = CustomNoRecordForm(this)
             nForm.show()
-            nForm.setOnBtnDismissCancelClickedListener(object :
-                CustomNoRecordForm.OnBtnDismissCancelClickedListener {
-                override fun onBtnDismissCancelClicked() {
-                    // This will be called when the dismiss or cancel button is clicked
-                    finish()
-                }
+            nForm.setOnBtnClickedListener(object : CustomNoRecordForm.OnBtnClickedListener {
+                    override fun onBtnDismissClicked() {
+                        finish()
+                    }
 
-            }
-            )
+                override fun onBtnCancelClicked() {
+
+                }
+            })
         }
+    }
+
+    /** 발화 내용 한 줄 추가
+     * isMine - 0:나의 대사, 1:상대의 대사
+     * */
+    private fun addTextLine(content: String, isMine: Boolean) {
+        /** 녹음하기 미선택의 경우 대황 내용 저장 X */
+        if (!isNowRecording) return
+
+        var bContent = ""
+        currentTime = System.currentTimeMillis()
+
+        if(isMine) {
+            bContent =
+                getMyConversation(content, FileFormats.timeFormat.format(currentTime))
+        } else {
+            bContent =
+                getYourConversation(content, FileFormats.timeFormat.format(currentTime))
+        }
+
+        textList += bContent
+    }
+
+    /** 나의 발화 텍스트 생성 */
+    private fun getMyConversation(content: String, time: String): String {
+        return getString(R.string.my_conversation_content) + content + getString(R.string.my_conversation_time) + time
+    }
+
+    /** 상대의 발화 텍스트 생성 */
+    private fun getYourConversation(content: String, time: String): String {
+        return getString(R.string.your_conversation_content) + content + getString(R.string.your_conversation_time) + time
+    }
+
+    /******** ML Model 관련 함수 ********/
+    /** Tensorflow Lite 모델의 Interpreter 초기 설정 */
+    private fun getTfliteInterpreter() {
+        tflite = Interpreter(loadModelFile(this))
+    }
+
+    /** MODEL FILE 초기 로드 */
+    private fun loadModelFile(context: Context): ByteBuffer {
+        val am: AssetManager = context.getAssets()
+        val afd: AssetFileDescriptor = am.openFd(MODEL_CLASSIFIER)
+        val fis: FileInputStream = FileInputStream(afd.fileDescriptor)
+        val fc: FileChannel = fis.channel
+        val startOffSet: Long = afd.startOffset
+        val declaredLength: Long = afd.declaredLength
+
+        return fc.map(FileChannel.MapMode.READ_ONLY, startOffSet, declaredLength)
     }
 
     /******** CameraX 관련 함수 ********/
@@ -694,13 +678,20 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
             CameraSelector.Builder().requireLensFacing(cameraFacing).build()
         /** 전면 카메라를 기본으로 선택 */
 
-        preview = Preview.Builder().setTargetAspectRatio(AspectRatio.RATIO_4_3)
+        val aspectRatio = Rational(1, 1)
+        //AspectRatio.RATIO_4_3
+//        preview = Preview.Builder().setTargetAspectRatio(Size(720, 720))
+        preview = Preview.Builder()
+//            .setTargetAspectRatio(AspectRatio.RATIO_4_3)
+            .setTargetResolution(Size(480, 640))
             .setTargetRotation(binding.pvCamera.display.rotation)
             .build()
 
         /** ImageAnalysis. Using RGBA 8888 to match how our models work */
         imageAnalyzer =
-            ImageAnalysis.Builder().setTargetAspectRatio(AspectRatio.RATIO_4_3)
+//            ImageAnalysis.Builder().setTargetAspectRatio(AspectRatio.RATIO_4_3)
+            ImageAnalysis.Builder()
+                .setTargetResolution(Size(480, 640))
                 .setTargetRotation(binding.pvCamera.display.rotation)
                 .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
                 .setOutputImageFormat(ImageAnalysis.OUTPUT_IMAGE_FORMAT_RGBA_8888)
@@ -792,7 +783,7 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
             resultStringBuilder.append("$formattedValue\t")
         }
 
-//        Log.d("Result", resultStringBuilder.toString())
+        Log.d("Result", resultStringBuilder.toString())
 
         /** 확률 로그 끝 */
         return handSignHelper.wordQueueManager(output[0].toList().toTypedArray())
@@ -846,6 +837,7 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
     ) {
         this?.runOnUiThread {
             if (binding != null) {
+                Log.d("TEST-Pose", resultBundle.results.first().toString())
                 handSignHelper.initPose(resultBundle)
 
                 /** OverlayView에 필수 정보 전달 */
@@ -880,7 +872,7 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
     ) {
         this.runOnUiThread {
             if (binding != null) {
-//                Log.d("TEST-Hand", resultBundle.results.first().toString())
+                Log.d("TEST-Hand", resultBundle.results.first().toString())
 
                 handSignHelper.initHand(resultBundle)
 
@@ -908,6 +900,35 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
 //                )
             }
         }
+    }
+
+    /******** 권한 요청 관련 함수 ********/
+    /** 필수 권한 확인 및 요청 */
+    private fun allPermissionsGranted() = REQUIRED_PERMISSIONS.all {
+        ContextCompat.checkSelfPermission(
+            baseContext, it
+        ) == PackageManager.PERMISSION_GRANTED
+    }
+
+    /** 권한 요청 처리 - 카메라 */
+    override fun onRequestPermissionsResult(
+        requestCode: Int, permissions: Array<out String>, grantResults: IntArray
+    ) {
+        if (requestCode == REQUEST_CODE_PERMISSIONS) {
+            if (allPermissionsGranted()) {
+                setUpCamera()
+            } else {
+                Toast.makeText(
+                    this,
+                    "Permissions not granted by the user.",
+                    Toast.LENGTH_SHORT
+                )
+                    .show()
+                finish()
+            }
+        }
+
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
     }
 
     /******** Z Flip 모델 반응형 관련 함수 ********/
@@ -947,7 +968,6 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
             oldTextColor = Color.BLACK
             newTextColor = Color.WHITE
 
-//            isFolded = true
             binding.tvAlertUnfolded.visibility = View.GONE
             binding.vBackgroundConversation.visibility = View.VISIBLE
         } else if (newLayoutInfo.displayFeatures[0].toString().contains("FLAT")) {
@@ -958,7 +978,6 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
             oldTextColor = Color.WHITE
             newTextColor = Color.BLACK
 
-//            isFolded = false
             binding.tvAlertUnfolded.visibility = View.VISIBLE
             binding.vBackgroundConversation.visibility = View.GONE
         }
@@ -1004,50 +1023,6 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
     private fun dpToPx(dp: Int): Int {
         val scale = resources.displayMetrics.density
         return (dp * scale + 0.5f).toInt()
-    }
-
-    /******** 권한 요청 관련 함수 ********/
-    /** 필수 권한 확인 및 요청 */
-    private fun allPermissionsGranted() = REQUIRED_PERMISSIONS.all {
-        ContextCompat.checkSelfPermission(
-            baseContext, it
-        ) == PackageManager.PERMISSION_GRANTED
-    }
-
-    /** 권한 요청 처리 - 카메라 */
-    override fun onRequestPermissionsResult(
-        requestCode: Int, permissions: Array<out String>, grantResults: IntArray
-    ) {
-        if (requestCode == REQUEST_CODE_PERMISSIONS) {
-            if (allPermissionsGranted()) {
-                setUpCamera()
-            } else {
-                Toast.makeText(
-                    this,
-                    "Permissions not granted by the user.",
-                    Toast.LENGTH_SHORT
-                )
-                    .show()
-                finish()
-            }
-        }
-
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-
-
-        Log.d("dla;fj", "Destroy is Called")
-        mediaPlayer.release()
-
-        /** Shut down our background executor */
-        backgroundBothExecutor.shutdown()
-        backgroundBothExecutor.awaitTermination(
-            Long.MAX_VALUE, TimeUnit.NANOSECONDS
-        )
-
     }
 
     public override fun onStart() {
@@ -1099,17 +1074,33 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
             /** Close the HandLandmarkerHelper and release resources */
             backgroundBothExecutor.execute { handLandmarkerHelper.clearHandLandmarker() }
         }
-
-        if(naverRecognizer?.getSpeechRecognizer()?.isRunning!!) {
-            naverRecognizer?.getSpeechRecognizer()?.stop()
-//            naverRecognizer?.getSpeechRecognizer()?.cancel()
-//            naverRecognizer?.getSpeechRecognizer()?.release()
-        }
     }
 
-    public override fun onStop() {
+    override fun onStop() {
         super.onStop()
-//        naverRecognizer?.getSpeechRecognizer()?.release()
-        Log.d("dkfa;", "Stop is called")
+        isTalking = false
+        runBlocking {
+            jobSTT?.cancel()
+            jobSTT?.join()
+        }
+
+        audioWriter?.close()
+        if(naverRecognizer?.getSpeechRecognizer()?.isRunning!!) {
+            naverRecognizer?.getSpeechRecognizer()?.stop()
+        }
+
+//            naverRecognizer?.getSpeechRecognizer()?.cancel()
+            naverRecognizer?.getSpeechRecognizer()?.release()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        mediaPlayer.release()
+
+        /** Shut down our background executor */
+        backgroundBothExecutor.shutdown()
+        backgroundBothExecutor.awaitTermination(
+            Long.MAX_VALUE, TimeUnit.NANOSECONDS
+        )
     }
 }

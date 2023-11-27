@@ -7,7 +7,7 @@ import com.sts.sontalksign.databinding.CustomNoRecordFormBinding
 class CustomNoRecordForm(private val context: AppCompatActivity) {
     private lateinit var binding: CustomNoRecordFormBinding
     private val nDialog = Dialog(context)
-    private var onClickListener: OnBtnDismissCancelClickedListener? = null // Listener type corrected, and set to nullable for safety
+    private lateinit var onClickListener: OnBtnClickedListener
 
     fun show() {
         binding = CustomNoRecordFormBinding.inflate(context.layoutInflater)
@@ -17,21 +17,22 @@ class CustomNoRecordForm(private val context: AppCompatActivity) {
         nDialog.show()
 
         binding.btnDismiss.setOnClickListener {
-            onClickListener?.onBtnDismissCancelClicked() // Call the listener's method
+            onClickListener?.onBtnDismissClicked()
+            nDialog.dismiss()
         }
 
         binding.btnCancel.setOnClickListener {
-            onClickListener?.onBtnDismissCancelClicked() // Call the listener's method
+            onClickListener?.onBtnCancelClicked()
+            nDialog.dismiss()
         }
-
-        // TODO: Handle other events if necessary
     }
 
-    fun setOnBtnDismissCancelClickedListener(listener: OnBtnDismissCancelClickedListener) {
+    fun setOnBtnClickedListener(listener: OnBtnClickedListener) {
         onClickListener = listener
     }
 
-    interface OnBtnDismissCancelClickedListener {
-        fun onBtnDismissCancelClicked() // Corrected method name and removed unnecessary parameters
+    interface OnBtnClickedListener {
+        fun onBtnDismissClicked() //"종료" 버튼
+        fun onBtnCancelClicked() //"취소" 버튼
     }
 }

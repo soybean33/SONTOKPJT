@@ -4,13 +4,14 @@
     android:id="@+id/llh_HistoryConversationText"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:gravity="right"
-    app:layout_constraintEnd_toEndOf="parent"
-    app:layout_constraintLeft_toLeftOf="parent"
-    app:layout_constraintRight_toRightOf="parent"
-    app:layout_constraintStart_toStartOf="parent"
-    app:layout_constraintTop_toTopOf="parent"
-    android:alpha="1">
+    android:orientation="horizontal"
+    android:alpha="0.8" >
+
+    <Space
+        android:id="@+id/space_left"
+        android:layout_width="20dp"
+        android:layout_height="match_parent"
+        android:visibility="gone"/>
 
     <TextView
         android:id="@+id/tv_HistoryConversationText"
@@ -21,5 +22,12 @@
         android:fontFamily="@font/line_seed_kr_bd"
         android:padding="15dp"
         android:text="메시지 텍스트"
+        android:textSize="20sp"
         android:textColor="@color/black" />
+
+    <Space
+        android:id="@+id/space_right"
+        android:layout_width="20dp"
+        android:layout_height="match_parent"
+        android:visibility="gone"/>
 </LinearLayout>

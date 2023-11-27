@@ -1,6 +1,8 @@
+import android.opengl.Visibility
 import android.util.TypedValue
 import android.view.Gravity
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.marginLeft
 import androidx.core.view.marginRight
@@ -16,20 +18,21 @@ class ConversationCameraAdapter(private val conversationCameraList: ArrayList<Co
         fun bind(conversationCamera: ConversationCameraModel) {
             binding.tvHistoryConversationText.text = conversationCamera.ConversationText
 
+//            val dpValue = 10 // 원하는 dp 값
+//            val density = resources.displayMetrics.density
+//            val marginInPixels = (dpValue * density).toInt()
+
             val isLeftMessage = conversationCamera.isLeft
             if (isLeftMessage) {
-                binding.llhHistoryConversationText.gravity = Gravity.END
-                binding.tvHistoryConversationText.setTextSize(TypedValue.COMPLEX_UNIT_SP, 20f)
-                binding.llhHistoryConversationText.alpha = 0.8f // 투명도를 0.8로 설정
                 binding.tvHistoryConversationText.gravity = Gravity.RIGHT //오른쪽 정렬
-//                binding.tvHistoryConversationText.setPadding(0, 0, 0, 10) // 10dp padding at the bottom
+                binding.spaceLeft.visibility = View.VISIBLE
+                binding.spaceRight.visibility = View.GONE
+                binding.llhHistoryConversationText.gravity = Gravity.RIGHT
             } else {
-                binding.llhHistoryConversationText.gravity = Gravity.START
-                binding.tvHistoryConversationText.setTextSize(TypedValue.COMPLEX_UNIT_SP, 20f)
-                binding.llhHistoryConversationText.alpha = 0.8f // 투명도를 0.8로 설정
                 binding.tvHistoryConversationText.gravity = Gravity.LEFT //왼쪽 정렬
-//                binding.tvHistoryConversationText.setPadding(0, 0, 0, 10) // 10dp padding at the bottom
-
+                binding.spaceRight.visibility = View.VISIBLE
+                binding.spaceLeft.visibility = View.GONE
+                binding.llhHistoryConversationText.gravity = Gravity.LEFT
             }
         }
     }
@@ -50,7 +53,7 @@ class ConversationCameraAdapter(private val conversationCameraList: ArrayList<Co
     // 아이템 추가 및 스크롤
     fun addItemAndScroll(conversationCameraModel: ConversationCameraModel, recyclerView: RecyclerView) {
         conversationCameraList.add(conversationCameraModel)
+        recyclerView.scrollToPosition(conversationCameraList.size)
         notifyDataSetChanged()
-        recyclerView.scrollToPosition(conversationCameraList.size - 1)
     }
 }

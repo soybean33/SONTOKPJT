@@ -28,17 +28,18 @@
             android:background="#66000000"
             android:visibility="gone" />
 
-        <LinearLayout
-            android:id="@+id/llv_CameraConversation"
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rv_CameraConversation"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:orientation="vertical" >
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/rv_CameraConversation"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:layout_marginHorizontal="5dp" />
-        </LinearLayout>
+            android:layout_marginHorizontal="5dp" />
+<!--        <LinearLayout-->
+<!--            android:id="@+id/llv_CameraConversation"-->
+<!--            android:layout_width="match_parent"-->
+<!--            android:layout_height="match_parent"-->
+<!--            android:orientation="vertical" >-->
+<!--            -->
+<!--        </LinearLayout>-->
 
         <com.sts.sontalksign.feature.conversation.HandOverlayView
             android:id="@+id/hand_overlay"
@@ -106,7 +107,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/btn_stop_conversation"
-        android:visibility="gone" />
+        android:visibility="visible" />
 
     <LinearLayout
         android:layout_width="match_parent"
