@@ -46,7 +46,6 @@ def calculate_angle(
 def create_data(file_root:str, file_list:list, hand_model_path: str, pose_model_path:str, dataset_type:str, dataset_save_path:str, seq_length:int) -> None:
     # 동작 라벨 모음 actions_save :  파일 저장용 
     actions = {}
-    actions_save = []
     # video 데이터 모음 (.mp4)
     videos = []
     
@@ -65,7 +64,7 @@ def create_data(file_root:str, file_list:list, hand_model_path: str, pose_model_
     pose_angle_index_list_2 = [1,2,3,5,6,7,8,9,10,11]
 
     # action_idx : 동작 라벨의 index, label_index : dataset 안에 설정되는 index
-    action_idx = label_idx = 0
+    action_idx = label_idx = 0  
 
     file_list.sort()
 
@@ -114,9 +113,9 @@ def create_data(file_root:str, file_list:list, hand_model_path: str, pose_model_
         # video frame data
         video_data = []
 
-
         print(f"action: {actions[video_label]}, file name : {video}")
         print(f'real save label idx is :{label_idx}')
+        f = open(f"test/text/test.txt", 'w')
         
         while cap.isOpened():
             frame_data = []
@@ -127,6 +126,10 @@ def create_data(file_root:str, file_list:list, hand_model_path: str, pose_model_
             img = mp.Image(image_format=mp.ImageFormat.SRGB, data=img)
             hand_result = mp_hands.detect_for_video(img, int(cap.get(cv2.CAP_PROP_POS_MSEC)))
             pose_result = mp_pose.detect_for_video(img, int(cap.get(cv2.CAP_PROP_POS_MSEC)))
+            for i in range(len(hand_result.hand_landmarks)):
+                f.write("hand"+str(hand_result.hand_landmarks[0][i])+"\n")
+            f.write("pose"+str(pose_result.pose_landmarks[0][0])+"\n")
+
 
             if pose_result.pose_landmarks and (hand_result.hand_landmarks or video_label == ''):
                 # Hand
@@ -152,6 +155,7 @@ def create_data(file_root:str, file_list:list, hand_model_path: str, pose_model_
                 # hand landmarker angle 저장
                 for hand_idx in range(len(hand_result.hand_landmarks)):
                     res = hand_result.hand_landmarks[hand_idx]
+                    
                     if len(hand_result.hand_landmarks) == 1:
                         
                         if hand_result.handedness[hand_idx][0].category_name == 'Left' and hand_result.handedness[hand_idx][0].score >= 0.8:
@@ -177,7 +181,7 @@ def create_data(file_root:str, file_list:list, hand_model_path: str, pose_model_
                 # pose
                 # pose anlge 계산 후 저장
                 for res in pose_result.pose_landmarks:
-                    res = res[:27]
+                    res = res[:25]
                     frame_data = np.append(frame_data, calculate_angle(res, pose_start_joint_index, pose_destination_joint_index, pose_angle_index_list_1, pose_angle_index_list_2))
                 if dataset_type == 'train':
                     frame_data = np.append(frame_data, actions[video_label])
@@ -214,7 +218,7 @@ def create_data(file_root:str, file_list:list, hand_model_path: str, pose_model_
     # 라벨 데이터 저장
     if dataset_type == "train":
         np.save(os.path.join(dataset_save_path, f'labels'), sorted(list(actions.keys()), key=lambda x:actions[x]))
-
+    f.close()
     return
 
 
