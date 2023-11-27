@@ -292,11 +292,25 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
 //        startSTTCoroutine()
 
         /** HOT KEY **/
-        binding.btnEarlyUse1.setOnClickListener {
-            var earlyUse1 = "안녕하세요! 이 기기로 대화를 하려고 합니다. 말씀하시면 제가 텍스트로 볼 수 있어요."
-            addTextLine(earlyUse1, true)
-            addTalkLine(earlyUse1, true)
-            generateTtsApi(earlyUse1)
+        binding.btnReactYes.setOnClickListener {
+            clickedHotkey(binding.btnReactYes.text.toString())
+        }
+
+        binding.btnReactNo.setOnClickListener {
+            clickedHotkey(binding.btnReactNo.text.toString())
+        }
+
+        binding.btnReactThanks.setOnClickListener {
+            clickedHotkey(binding.btnReactThanks.text.toString())
+        }
+
+        binding.btnInfoManual.setOnClickListener {
+            clickedHotkey(getString(R.string.info_manual))
+        }
+
+        binding.btnInfoAnswer.setOnClickListener {
+            startSTTRoutine()
+        }
 
 //            Handler(Looper.getMainLooper()).postDelayed({
 //
@@ -326,28 +340,13 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
 //                addTextLine(earlyUse11, true)
 //                generateTtsApi(earlyUse11)
 //            }, 40000)
-        }
+    }
 
-        binding.btnEarlyUse2.setOnClickListener {
-            var earlyUse1 = "네"
-            addTextLine(earlyUse1, true)
-            addTalkLine(earlyUse1, true)
-            generateTtsApi(earlyUse1)
-        }
-
-        binding.btnEarlyUse3.setOnClickListener {
-            var earlyUse1 = "아니오"
-            addTextLine(earlyUse1, true)
-            addTalkLine(earlyUse1, true)
-            generateTtsApi(earlyUse1)
-        }
-
-        binding.btnEarlyUse4.setOnClickListener {
-//            var earlyUse1 = "감사합니다"
-//            addTextLine(earlyUse1, true)
-//            generateTtsApi(earlyUse1)
-            startSTTRoutine()
-        }
+    /******** HOT KEY 클릭 이벤트 함수 ********/
+    private fun clickedHotkey(content: String) {
+        addTextLine(content, true)
+        addTalkLine(content, true)
+        generateTtsApi(content)
     }
 
     /******** CSR 관련 함수 ********/
@@ -363,9 +362,11 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
         try {
             if (!naverRecognizer!!.getSpeechRecognizer().isRunning) {
                 mResult = ""
+                binding.btnInfoAnswer.text = getString(R.string.stt_listening)
                 naverRecognizer!!.recognize()
             } else {
                 Log.d(TAG, "stop and wait Final Result")
+                binding.btnInfoAnswer.isEnabled = false
                 naverRecognizer!!.getSpeechRecognizer().stop()
             }
         } finally {
@@ -417,10 +418,14 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
                 R.id.recognitionError -> {
                     audioWriter?.close()
                     mResult = "Error code : ${msg.obj}"
+                    binding.btnInfoAnswer.text = getString(R.string.stt_wait)
+                    binding.btnInfoAnswer.isEnabled = true
                 }
                 /** 음성 인식 비활성화 상태인 경우 */
                 R.id.clientInactive -> {
                     audioWriter?.close()
+                    binding.btnInfoAnswer.text = getString(R.string.stt_wait)
+                    binding.btnInfoAnswer.isEnabled = true
 //                    if(isTalking) startSTTRoutine()
                 }
             }
@@ -727,10 +732,11 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
                 }
 
                 if (ret == ".") {
-//                    addTextLine(sign, false)
-//                    generateTtsApi(sign)
+                    addTalkLine(sign, true)
+                    addTextLine(sign, true)
+                    generateTtsApi(sign)
                     sign = ""
-                } else if (ret.isNotEmpty() && ret != "1") {
+                } else if (ret.isNotEmpty()) { // && ret != "1") {
                     // 다른 문자열일 경우 처리
                     binding.tvCRS.text = ret
                     if (preret != ret) {
@@ -1050,6 +1056,8 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
 
         /** STT 초기 설정 */
         mResult = ""
+        binding.btnInfoAnswer.text = getString(R.string.stt_wait)
+        binding.btnInfoAnswer.isEnabled = true
     }
 
     override fun onPause() {
