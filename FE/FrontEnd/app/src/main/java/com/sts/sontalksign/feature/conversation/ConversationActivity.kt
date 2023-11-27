@@ -732,10 +732,12 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
                 }
 
                 if (ret == ".") {
-                    addTalkLine(sign, true)
-                    addTextLine(sign, true)
-                    generateTtsApi(sign)
-                    sign = ""
+                    if(sign != "") {
+                        addTalkLine(sign, true)
+                        addTextLine(sign, true)
+                        generateTtsApi(sign)
+                        sign = ""
+                    }
                 } else if (ret.isNotEmpty()) { // && ret != "1") {
                     // 다른 문자열일 경우 처리
                     binding.tvCRS.text = ret
