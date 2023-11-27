@@ -15,6 +15,10 @@
     <string name="your_conversation_content">&lt;&lt;</string> <!-- << -->
     <string name="your_conversation_time">&lt;</string> <!-- < -->
 
+    <string name="info_manual">안녕하세요! 이 기기로 대화를 하려고 합니다. 말씀하시면 제가 텍스트로 볼 수 있어요.</string>
+
     <string name="str_start">Start</string>
     <string name="str_stop">Stop</string>
+    <string name="stt_wait">상대방 말 듣기</string>
+    <string name="stt_listening">듣는 중</string>
 </resources>

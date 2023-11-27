@@ -53,7 +53,7 @@ class ConversationCameraAdapter(private val conversationCameraList: ArrayList<Co
     // 아이템 추가 및 스크롤
     fun addItemAndScroll(conversationCameraModel: ConversationCameraModel, recyclerView: RecyclerView) {
         conversationCameraList.add(conversationCameraModel)
-        recyclerView.scrollToPosition(conversationCameraList.size)
         notifyDataSetChanged()
+        recyclerView.scrollToPosition(conversationCameraList.size - 1)
     }
 }
