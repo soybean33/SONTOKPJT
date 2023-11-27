@@ -23,14 +23,14 @@ class HandSignHelper() {
     }
     
     /** 확률을 출력되는 값으로 변경 */
-    var signWords : Array<String> = arrayOf("", ".", "가요", "너는", "동대문", "따뜻해요", "마셔요", "먹어요", "?", "수제비", "오늘", "읽어요", "책", "커피")
+    var signWords : Array<String> = arrayOf(".", "가요", "너는", "동대문", "따뜻해요", "마셔요", "먹어요", "?", "수제비", "오늘", "읽어요", "책", "커피")
     val signWordSize : Int = signWords.size
     var wordQueue : Array<String> = arrayOf(".", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13")
     val wordCounterMap : MutableMap<String, Int> = mutableMapOf("." to 0, "1" to 0, "2" to 0, "3" to 0, "4" to 0, "5" to 0, "6" to 0, "7" to 0, "8" to 0, "9" to 0, "10" to 0, "11" to 0, "12" to 0, "13" to 0)
 
     /** 변경해보며 적용해 봐야하는 임계값들 */
     val probabilityThreshold: Float = 0.8f
-    val counterThreshold: Int = 20
+    val counterThreshold: Int = 17
 
     /** PoseLandmark 정형화 - 33개의 Pose = 11개의 Face + 22개의 Body */
     fun initPose(poseResultBundle: PoseLandmarkerHelper.ResultBundle) {
@@ -305,7 +305,7 @@ class HandSignHelper() {
     }
 
     fun Solution() : ArrayList<FloatArray> {
-        val result = FloatArray(178) {0f}
+        val result = FloatArray(174) {0f}
 
         /** leftHand 데이터 - point와 angle */
         for(i in 0 until 21) {
