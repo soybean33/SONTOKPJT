@@ -187,6 +187,7 @@
 
 - calculate angle as `float32`
 - epoach : 100
+  뿡
 
 ### v12_5
 
@@ -583,10 +584,55 @@
 ## v18
 
 - change angel index
+- 8 labels
+
+  - ["", ".", "끝내다", "담당", "발표", "제", "준비", "?"]
 
 ### lag1
 
-#### v17_2
+#### v18_2
 
 - calculate angle as `float16`
 - epoach : 150
+
+## v21
+
+- change pose landmarks num
+  - `0:26` : 하반신 제외
+- 8 labels
+
+  - ['가다' '동대문' '따뜻하다' '먹다' '수제비' '오늘' '' '.']
+
+#### v21_2
+
+- calculate angle as `float16`
+- epoach : 150
+
+## v22
+
+- change pose landmarks num
+  - `0:26` : 하반신 제외
+- `.`, `빈값` 데이터 변경
+- 8 labels
+
+  - ['가다' '동대문' '따뜻하다' '먹다' '수제비' '오늘' '' '.']
+
+#### v22_2
+
+- calculate angle as `float16`
+- epoach : 150
+
+## v24
+
+- change pose landmarks num
+  - `0:26` : 하반신 제외
+- update left, right hand data
+- lags 수 변경 : 1
+- 8 labels
+
+  - ['가다' '동대문' '따뜻하다' '먹다' '수제비' '오늘' '' '.']
+
+#### v24_1
+
+- calculate angle as `float16`
+- epoach : 160
