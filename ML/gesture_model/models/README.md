@@ -627,12 +627,61 @@
 - change pose landmarks num
   - `0:26` : 하반신 제외
 - update left, right hand data
-- lags 수 변경 : 1
 - 8 labels
 
   - ['가다' '동대문' '따뜻하다' '먹다' '수제비' '오늘' '' '.']
 
 #### v24_1
 
+- lags : 1
+- calculate angle as `float16`
+- epoach : 160
+
+#### v24_30
+
+- lags : 30
+- calculate angle as `float16`
+- epoach : 160
+
+## v25
+
+- change pose landmarks num
+  - `0:26` : 하반신 제외
+- update left, right hand data
+- 14 labels
+
+  - ['가다' '동대문' '따뜻하다' '먹다' '수제비' '오늘' '' '.' '너' '마시다' '물음표' '읽다' '책' '커피']
+
+#### v25_1
+
+- lags : 1
+- calculate angle as `float16`
+- epoach : 160
+
+#### v25_30
+
+- lags : 30
+- calculate angle as `float16`
+- epoach : 160
+
+## v26
+
+- camera ratio `3:4`
+- change pose landmarks num
+  - `0:26` : 하반신 제외
+- update left, right hand data
+- 14 labels
+
+  - ['가다' '동대문' '따뜻하다' '먹다' '수제비' '오늘' '' '.' '너' '마시다' '물음표' '읽다' '책' '커피']
+
+#### v26_1
+
+- lags : 1
+- calculate angle as `float16`
+- epoach : 160
+
+#### v26_30
+
+- lags : 30
 - calculate angle as `float16`
 - epoach : 160
