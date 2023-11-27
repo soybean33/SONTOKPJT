@@ -3,9 +3,11 @@ package com.sts.sontalksign.feature.history
 import android.util.TypedValue
 import android.view.Gravity
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.recyclerview.widget.RecyclerView
+import com.sts.sontalksign.R
 
 import com.sts.sontalksign.databinding.HistoryConversationBinding
 
@@ -22,17 +24,18 @@ class HistoryDetailConversationAdapter(private val historyDetailConList: ArrayLi
             // 왼쪽/오른쪽 여부에 따라 메시지 아이템을 조절
             val isLeftMessage = historyDetailConversation.isLeft
             if (isLeftMessage) {
-                binding.llhHistoryConversationText.gravity = Gravity.END
-                binding.tvHistoryConversationText.setTextSize(TypedValue.COMPLEX_UNIT_SP, 20f)
-
-//                binding.tvHistoryConversationText.setPadding(0, 0, 0, 10) // 10dp padding at the bottom
+                binding.tvHistoryConversationText.setBackgroundResource(R.drawable.rounded_conversation_item_right)
+                binding.tvHistoryConversationText.gravity = Gravity.RIGHT //오른쪽 정렬
+                binding.spaceLeft.visibility = View.VISIBLE
+                binding.spaceRight.visibility = View.GONE
+                binding.llhHistoryConversationText.gravity = Gravity.RIGHT
             } else {
-                binding.llhHistoryConversationText.gravity = Gravity.START
-                binding.tvHistoryConversationText.setTextSize(TypedValue.COMPLEX_UNIT_SP, 20f)
-//                binding.tvHistoryConversationText.setPadding(0, 0, 0, 10) // 10dp padding at the bottom
+                binding.tvHistoryConversationText.setBackgroundResource(R.drawable.rounded_conversation_item_left)
+                binding.tvHistoryConversationText.gravity = Gravity.LEFT //왼쪽 정렬
+                binding.spaceRight.visibility = View.VISIBLE
+                binding.spaceLeft.visibility = View.GONE
+                binding.llhHistoryConversationText.gravity = Gravity.LEFT
             }
-
-
 
         }
     }

@@ -1,11 +1,15 @@
 package com.sts.sontalksign.feature.common
 
 import android.app.Dialog
+import android.content.Context
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.util.Log
+import android.view.Gravity
 import android.view.View
+import android.view.ViewGroup
 import android.view.Window
+import android.view.WindowManager
 import android.widget.Adapter
 import android.widget.AdapterView
 import android.widget.Toast
@@ -42,6 +46,14 @@ class CustomForm(private val context : AppCompatActivity) {
         binding = CustomFormBinding.inflate(context.layoutInflater)
         fDialog.requestWindowFeature(Window.FEATURE_NO_TITLE)
         fDialog.setContentView(binding.root)
+
+        /** LayoutParams 설정 및 원하는 위치로 gravity 설정 */
+        val layoutParams = WindowManager.LayoutParams()
+        layoutParams.copyFrom(fDialog.window?.attributes)
+        layoutParams.gravity = Gravity.TOP or Gravity.CENTER_HORIZONTAL
+        layoutParams.y = 200 // y 좌표
+        fDialog.window?.attributes = layoutParams
+
         fDialog.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
         fDialog.show()
 

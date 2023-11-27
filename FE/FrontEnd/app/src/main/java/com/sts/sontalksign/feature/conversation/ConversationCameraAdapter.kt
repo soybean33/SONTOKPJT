@@ -1,12 +1,15 @@
+import android.graphics.drawable.Drawable
 import android.opengl.Visibility
 import android.util.TypedValue
 import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.content.res.ResourcesCompat
 import androidx.core.view.marginLeft
 import androidx.core.view.marginRight
 import androidx.recyclerview.widget.RecyclerView
+import com.sts.sontalksign.R
 import com.sts.sontalksign.databinding.HistoryConversationBinding
 import com.sts.sontalksign.feature.conversation.ConversationCameraModel
 
@@ -18,17 +21,15 @@ class ConversationCameraAdapter(private val conversationCameraList: ArrayList<Co
         fun bind(conversationCamera: ConversationCameraModel) {
             binding.tvHistoryConversationText.text = conversationCamera.ConversationText
 
-//            val dpValue = 10 // 원하는 dp 값
-//            val density = resources.displayMetrics.density
-//            val marginInPixels = (dpValue * density).toInt()
-
             val isLeftMessage = conversationCamera.isLeft
             if (isLeftMessage) {
+                binding.tvHistoryConversationText.setBackgroundResource(R.drawable.rounded_conversation_item_right)
                 binding.tvHistoryConversationText.gravity = Gravity.RIGHT //오른쪽 정렬
                 binding.spaceLeft.visibility = View.VISIBLE
                 binding.spaceRight.visibility = View.GONE
                 binding.llhHistoryConversationText.gravity = Gravity.RIGHT
             } else {
+                binding.tvHistoryConversationText.setBackgroundResource(R.drawable.rounded_conversation_item_left)
                 binding.tvHistoryConversationText.gravity = Gravity.LEFT //왼쪽 정렬
                 binding.spaceRight.visibility = View.VISIBLE
                 binding.spaceLeft.visibility = View.GONE
