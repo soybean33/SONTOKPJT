@@ -317,34 +317,59 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
             startSTTRoutine() // STT 한 사이클 동작
         }
 
-//            Handler(Looper.getMainLooper()).postDelayed({
+//        Handler(Looper.getMainLooper()).postDelayed({
 //
-//                var earlyUse100 = "안녕하세요 날씨가 많이 풀렸죠"
-//                addTextLine(earlyUse100, false)
-//                addTalkLine(earlyUse100, false)
-//            }, 17000)
+//            var earlyUse100 = "안녕하세요 오늘 날씨가 많이 풀렸죠"
+//            addTextLine(earlyUse100, false)
+//            addTalkLine(earlyUse100, false)
+//        }, 17000)
 //
-//            // 5000 밀리초(5초) 후에 다시 실행
-//            Handler(Looper.getMainLooper()).postDelayed({
+//        // 5000 밀리초(5초) 후에 다시 실행
+//        Handler(Looper.getMainLooper()).postDelayed({
 //
-//                var earlyUse10 = "오늘 따듯하다"
-//                addTextLine(earlyUse10, true)
-//                generateTtsApi(earlyUse10)
-//            }, 23000)
+//            var earlyUse10 = "오늘 따뜻해요"
+//            addTextLine(earlyUse10, true)
+//            addTalkLine(earlyUse10, true)
+//            generateTtsApi(earlyUse10)
+//        }, 23000)
 //
-//            Handler(Looper.getMainLooper()).postDelayed({
+//        Handler(Looper.getMainLooper()).postDelayed({
 //
-//                var earlyUse101 = "오늘 나들이 가시나요"
-//                addTextLine(earlyUse101, false)
-//                addTalkLine(earlyUse101, false)
-//                //startSTT(earlyUse101, false)
-//            }, 30000)
+//            var earlyUse101 = "오늘 나들이 가시나요"
+//            addTextLine(earlyUse101, false)
+//            addTalkLine(earlyUse101, false)
+//            //startSTT(earlyUse101, false)
+//        }, 30000)
 //
-//            Handler(Looper.getMainLooper()).postDelayed({
-//                var earlyUse11 = "동대문 가다 수제비 먹다"
-//                addTextLine(earlyUse11, true)
-//                generateTtsApi(earlyUse11)
-//            }, 40000)
+//        Handler(Looper.getMainLooper()).postDelayed({
+//            var earlyUse11 = "동대문 가요 동대문 수제비 먹어요"
+//            addTextLine(earlyUse11, true)
+//            addTalkLine(earlyUse11, true)
+//            generateTtsApi(earlyUse11)
+//        }, 40000)
+//
+//        Handler(Looper.getMainLooper()).postDelayed({
+//
+//            var earlyUse102 = "오 동대문 수제비 맛있죠 먹고 다른 일정도 있나요"
+//            addTextLine(earlyUse102, false)
+//            addTalkLine(earlyUse102, false)
+//            //startSTT(earlyUse102, false)
+//        }, 50000)
+//
+//        Handler(Looper.getMainLooper()).postDelayed({
+//            var earlyUse12 = "책"
+//            addTextLine(earlyUse12, true)
+//            addTalkLine(earlyUse12, true)
+//            generateTtsApi(earlyUse12)
+//        }, 60000)
+//
+//        Handler(Looper.getMainLooper()).postDelayed({
+//            var earlyUse13 = "책 읽어요"
+//            addTextLine(earlyUse13, true)
+//            addTalkLine(earlyUse13, true)
+//            generateTtsApi(earlyUse13)
+//        }, 65000)
+
     }
 
     /******** HOT KEY 클릭 이벤트 함수 ********/
