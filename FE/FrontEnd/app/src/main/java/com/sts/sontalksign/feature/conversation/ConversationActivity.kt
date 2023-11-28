@@ -310,6 +310,10 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
         /** "사용설명서" 버튼 */
         binding.btnInfoManual.setOnClickListener {
             clickedHotkey(getString(R.string.info_manual))
+            imageAnalyzer!!.setAnalyzer(backgroundBothExecutor) { image ->
+                        mediaPipeSequence(image)
+            }
+
         }
 
         /** "상대방 말 듣기" 버튼 */
@@ -732,12 +736,12 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
                 .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
                 .setOutputImageFormat(ImageAnalysis.OUTPUT_IMAGE_FORMAT_RGBA_8888)
                 .build()
-                .also {
-                    /** analyzer 할당 */
-                    it.setAnalyzer(backgroundBothExecutor) { image ->
-                        mediaPipeSequence(image)
-                    }
-                }
+//                .also {
+//                    /** analyzer 할당 */
+//                    it.setAnalyzer(backgroundBothExecutor) { image ->
+//                        mediaPipeSequence(image)
+//                    }
+//                }
 
         /** 바인딩된 항목 전체 제거 */
         cameraProvider.unbindAll()
