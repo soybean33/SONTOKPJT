@@ -291,25 +291,30 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
         naverRecognizer = NaverRecognizer(this, handler!!)
 //        startSTTCoroutine()
 
-        /** HOT KEY **/
+        /******** HOT KEY ********/
+        /** "네" 버튼 */
         binding.btnReactYes.setOnClickListener {
             clickedHotkey(binding.btnReactYes.text.toString())
         }
 
+        /** "아니오" 버튼 */
         binding.btnReactNo.setOnClickListener {
             clickedHotkey(binding.btnReactNo.text.toString())
         }
 
+        /** "감사합니다" 버튼 */
         binding.btnReactThanks.setOnClickListener {
             clickedHotkey(binding.btnReactThanks.text.toString())
         }
 
+        /** "사용설명서" 버튼 */
         binding.btnInfoManual.setOnClickListener {
             clickedHotkey(getString(R.string.info_manual))
         }
 
+        /** "상대방 말 듣기" 버튼 */
         binding.btnInfoAnswer.setOnClickListener {
-            startSTTRoutine()
+            startSTTRoutine() // STT 한 사이클 동작
         }
 
 //            Handler(Looper.getMainLooper()).postDelayed({
@@ -343,6 +348,7 @@ class ConversationActivity : AppCompatActivity(), PoseLandmarkerHelper.Landmarke
     }
 
     /******** HOT KEY 클릭 이벤트 함수 ********/
+    
     private fun clickedHotkey(content: String) {
         addTextLine(content, true)
         addTalkLine(content, true)
